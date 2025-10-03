@@ -113,7 +113,8 @@ export function formatTickTickDate(dateString: string): string | undefined {
 	// Format the main part of the date object
 	const dateTimePart = date.toFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-	// Manually format the timezone offset - Luxon by default puts a ":" in the date, this format cannot be processed by TickTick
+	// Manually format the timezone offset - Luxon by default puts a ":" in the date offset part, this format cannot be processed by TickTick
+	// See https://developer.ticktick.com/api#/openapi?id=create-task
 	const offsetSign = date.offset >= 0 ? '+' : '-';
 	const offsetHours = String(Math.floor(Math.abs(date.offset) / 60)).padStart(2, '0');
 	const offsetMinutes = String(Math.abs(date.offset) % 60).padStart(2, '0');
