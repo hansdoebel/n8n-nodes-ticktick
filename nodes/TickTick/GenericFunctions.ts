@@ -7,7 +7,9 @@ import type {
 	IHttpRequestOptions,
 } from 'n8n-workflow';
 
+
 import { NodeApiError } from 'n8n-workflow';
+import { DateTime } from 'luxon';
 
 interface Project {
 	id: string;
@@ -106,25 +108,16 @@ export function formatTickTickDate(dateString: string): string | undefined {
 		return undefined;
 	}
 
-	const date = new Date(dateString);
+	const date = DateTime.fromISO(dateString);
 
-	const pad = (num: number) => String(num).padStart(2, '0');
+	// Format the main part of the date object
+	const dateTimePart = date.toFormat("yyyy-MM-dd'T'HH:mm:ss");
 
-	const year = date.getFullYear();
-	const month = pad(date.getMonth() + 1);
-	const day = pad(date.getDate());
-	const hours = pad(date.getHours());
-	const minutes = pad(date.getMinutes());
-	const seconds = pad(date.getSeconds());
+	// Manually format the timezone offset - Luxon by default puts a ":" in the date, this format cannot be processed by TickTick
+	const offsetSign = date.offset >= 0 ? '+' : '-';
+	const offsetHours = String(Math.floor(Math.abs(date.offset) / 60)).padStart(2, '0');
+	const offsetMinutes = String(Math.abs(date.offset) % 60).padStart(2, '0');
+	const timezonePart = `${offsetSign}${offsetHours}${offsetMinutes}`;
 
-	// Calculate correct Timezone offset
-	const timezoneOffset = date.getTimezoneOffset();
-	const offsetSign = timezoneOffset > 0 ? '-' : '+';
-	const offsetHours = pad(Math.floor(Math.abs(timezoneOffset) / 60));
-	const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
-	const timezone = `${offsetSign}${offsetHours}${offsetMinutes}`;
-
-	// TickTick requires format "2019-11-13T03:00:00+0000" - "yyyy-MM-dd'T'HH:mm:ssZ"
-	// See: https://developer.ticktick.com/api#/openapi?id=create-task
-	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${timezone}`;
+	return `${dateTimePart}${timezonePart}`;
 }
