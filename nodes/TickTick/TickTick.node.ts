@@ -8,7 +8,7 @@ import {
 	NodeOperationError,
 } from 'n8n-workflow';
 
-import { tickTickApiRequest, getProjects, getTasks } from './GenericFunctions';
+import { tickTickApiRequest, getProjects, getTasks, formatTickTickDate } from './GenericFunctions';
 
 import { taskFields, taskOperations, projectFields, projectOperations } from './descriptions';
 
@@ -223,14 +223,15 @@ export class TickTick implements INodeType {
 							}
 						} else {
 							const additionalFields = this.getNodeParameter('additionalFields', i) as IDataObject;
+
 							body = {
 								title: this.getNodeParameter('title', i) as string,
 								projectId: this.getNodeParameter('projectId', i) as string,
 								content: (additionalFields.content as string) || undefined,
 								desc: (additionalFields.desc as string) || undefined,
 								isAllDay: (additionalFields.isAllDay as boolean) || false,
-								startDate: (additionalFields.startDate as string) || undefined,
-								dueDate: (additionalFields.dueDate as string) || undefined,
+								startDate: formatTickTickDate(additionalFields.startDate as string),
+								dueDate: formatTickTickDate(additionalFields.dueDate as string),
 								timeZone: (additionalFields.timeZone as string) || undefined,
 								priority: (additionalFields.priority as number) || 0,
 							};

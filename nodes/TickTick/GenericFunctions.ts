@@ -100,3 +100,31 @@ export const TimeZones = [
 	{ name: 'Australia/Sydney', value: 'Australia/Sydney' },
 	{ name: 'Pacific/Auckland', value: 'Pacific/Auckland' },
 ];
+
+export function formatTickTickDate(dateString: string): string | undefined {
+	if (!dateString) {
+		return undefined;
+	}
+
+	const date = new Date(dateString);
+
+	const pad = (num: number) => String(num).padStart(2, '0');
+
+	const year = date.getFullYear();
+	const month = pad(date.getMonth() + 1);
+	const day = pad(date.getDate());
+	const hours = pad(date.getHours());
+	const minutes = pad(date.getMinutes());
+	const seconds = pad(date.getSeconds());
+
+	// Calculate correct Timezone offset
+	const timezoneOffset = date.getTimezoneOffset();
+	const offsetSign = timezoneOffset > 0 ? '-' : '+';
+	const offsetHours = pad(Math.floor(Math.abs(timezoneOffset) / 60));
+	const offsetMinutes = pad(Math.abs(timezoneOffset) % 60);
+	const timezone = `${offsetSign}${offsetHours}${offsetMinutes}`;
+
+	// TickTick requires format "2019-11-13T03:00:00+0000" - "yyyy-MM-dd'T'HH:mm:ssZ"
+	// See: https://developer.ticktick.com/api#/openapi?id=create-task
+	return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${timezone}`;
+}
