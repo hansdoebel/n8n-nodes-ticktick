@@ -279,8 +279,8 @@ export class TickTick implements INodeType {
 								content: (additionalFields.content as string) || undefined,
 								desc: (additionalFields.desc as string) || undefined,
 								isAllDay: (additionalFields.isAllDay as boolean) || false,
-								startDate: (additionalFields.startDate as string) || undefined,
-								dueDate: (additionalFields.dueDate as string) || undefined,
+								startDate: formatTickTickDate(additionalFields.startDate as string),
+								dueDate: formatTickTickDate(additionalFields.dueDate as string),
 								timeZone: (additionalFields.timeZone as string) || undefined,
 								priority: (additionalFields.priority as number) || 0,
 							};
