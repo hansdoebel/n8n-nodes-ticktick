@@ -191,4 +191,5 @@ Future updates to the TickTick API may address these issues, and subsequent vers
 
 ## Version history
 
-- `1.0.0` Initial release
+- `1.1.1` – Added Luxon for date formatting (thank you [mrozekadam](https://github.com/mrozekadam))
+- `1.0.0` – Initial release
