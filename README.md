@@ -6,6 +6,8 @@ This is an n8n community node. It lets you use TickTick in your n8n workflows.
 
 TickTick is a comprehensive productivity app designed to help individuals and teams manage tasks, deadlines, and projects more efficiently. With its intuitive interface, TickTick allows users to easily create, organize, and prioritize tasks, set reminders, and track progress through various views such as lists, kanban boards, and calendars.
 
+---
+
 [Installation](#installation)  
 [Task Operations](#task-operations)  
 [Project Operations](#projectoperations)  
@@ -15,7 +17,7 @@ TickTick is a comprehensive productivity app designed to help individuals and te
 [Resources](#resources)  
 [Version history](#version-history)
 
-## Installation
+## 📦 Installation
 
 Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes/installation/) in the n8n community nodes documentation.
 
@@ -35,7 +37,34 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 5. Agree to the risks of using community nodes: select I understand the risks of installing unverified code from a public source.
 6. Select Install. n8n installs the node, and returns to the Community Nodes list in Settings.
 
-## Task Operations
+---
+
+## 🔑 Credentials
+
+This node supports **two authentication types**:
+
+### 1️⃣ TickTick API Token (recommended)
+
+Steps:
+1. In TickTick: Account Settings → API Token → "Manage"
+2. Copy token
+3. Create credential in n8n → **TickTick API Token**
+4. Paste token → Save
+
+
+### 2️⃣ TickTick OAuth2
+
+Steps:
+1. Add credential in your n8n instance and select **TickTick OAuth2 API**
+2. Visit: [TickTick Developer](https://developer.ticktick.com/)
+3. Go to Manage Apps → New App
+4. Copy **Client ID** & **Client Secret**
+5. In n8n, create credential **TickTick OAuth2 API**
+6. Paste credentials & connect
+
+---
+
+## 🧩 Task Operations
 
 ### 1. Create a Task
 
@@ -87,7 +116,9 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
     - Task identifier (required)
     - Project identifier (required)
 
-## Project Operations
+---
+
+## 📁 Project Operations
 
 ### 1. Create a Project
 
@@ -134,38 +165,20 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
     - Project identifier (required)
 
-## Credentials
+---
 
-1. Add credential in your n8n instance and select **TickTick OAuth2 API**
-2. Visit: [TickTick Developer](https://developer.ticktick.com/)
-3. Manage Apps > New App
-4. Copy **Client ID** and **Client Secret** > Paste in n8n credential
-5. Allow connection
-6. Account connected
+## 🧰 Compatibility
 
-## Compatibility
+Tested successfully on 2025-12-01 with:
 
-Successfully tested on 2025-03-31 with:
-
-- n8n Version: 1.85.4
-- Node Version: 22.14.0
+- n8n Version: 1.121.3
+- Node Version: 22.11.0
 - pnpm Version: 9.1.4
-- No extra packages required
+- No extra packages required (Luxon is bundled)
 
-## Known Issues
+---
 
-### Start date / Due date Parameter
-
-Both parameters will be implemented correctly in the next release. 
-Until then, please refer to the TickTick API documentation for the correct input: 
-
-startDate Parameter:
-Subtask start date time in "yyyy-MM-dd'T'HH:mm:ssZ"
-Example : "2019-11-13T03:00:00+0000"
-
-dueDate Parameter:
-Task due date time in "yyyy-MM-dd'T'HH:mm:ssZ"
-Example : "2019-11-13T03:00:00+0000"
+## ⚠ Known Issues & Notes
 
 ### TickTick API Response for Certain Requests
 
@@ -181,7 +194,9 @@ This project's implementation takes these API characteristics into account, aimi
 
 Future updates to the TickTick API may address these issues, and subsequent versions of this project will aim to incorporate any changes to enhance functionality and user experience.
 
-## Resources
+---
+
+## 🔗 Resources
 
 - [n8n Website](https://n8n.io/)
 - [n8n community nodes documentation](https://docs.n8n.io/integrations/community-nodes/)
@@ -189,7 +204,10 @@ Future updates to the TickTick API may address these issues, and subsequent vers
 - [TickTick Open API documentation](https://developer.ticktick.com/docs#/openapi)
 - [GitHub Repository](https://github.com/hansdoebel/n8n-nodes-ticktick.git)
 
-## Version history
+---
 
+## 📜 Version History
+
+- `1.2.1` – Inbox support, API Token credential, improved task/project operations, success messages
 - `1.1.1` – Added Luxon for date formatting (thank you [mrozekadam](https://github.com/mrozekadam))
 - `1.0.0` – Initial release

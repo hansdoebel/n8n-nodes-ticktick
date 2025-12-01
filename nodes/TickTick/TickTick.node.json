@@ -1,6 +1,6 @@
 {
 	"node": "n8n-nodes-base.TickTick",
-	"nodeVersion": "1.0",
+	"nodeVersion": "1.2",
 	"codexVersion": "1.0",
 	"categories": ["Productivity"],
 	"resources": {
