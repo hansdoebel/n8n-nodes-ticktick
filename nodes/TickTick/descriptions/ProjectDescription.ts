@@ -1,43 +1,43 @@
-import type { INodeProperties } from 'n8n-workflow';
+import type { INodeProperties } from "n8n-workflow";
 
 export const projectOperations: INodeProperties[] = [
 	{
-		displayName: 'Operation',
-		name: 'operation',
-		type: 'options',
+		displayName: "Operation",
+		name: "operation",
+		type: "options",
 		noDataExpression: true,
 		displayOptions: {
 			show: {
-				resource: ['project'],
+				resource: ["project"],
 			},
 		},
 		options: [
 			{
-				name: 'Create',
-				value: 'create',
-				description: 'Create a Project',
-				action: 'Create a project',
+				name: "Create",
+				value: "create",
+				description: "Create a Project",
+				action: "Create a project",
 			},
 			{
-				name: 'Get',
-				value: 'get',
-				description: 'Get a Project',
-				action: 'Get a project',
+				name: "Get",
+				value: "get",
+				description: "Get a Project",
+				action: "Get a project",
 			},
 			{
-				name: 'Update',
-				value: 'update',
-				description: 'Update a Project',
-				action: 'Update a project',
+				name: "Update",
+				value: "update",
+				description: "Update a Project",
+				action: "Update a project",
 			},
 			{
-				name: 'Delete',
-				value: 'delete',
-				description: 'Delete a Project',
-				action: 'Delete a project',
+				name: "Delete",
+				value: "delete",
+				description: "Delete a Project",
+				action: "Delete a project",
 			},
 		],
-		default: 'create',
+		default: "create",
 	},
 ];
 
@@ -46,43 +46,43 @@ export const projectFields: INodeProperties[] = [
 	//		CREATE PROJECT OPERATION
 	//**************************************
 	{
-		displayName: 'JSON Parameters',
-		name: 'jsonParameters',
-		type: 'boolean',
+		displayName: "JSON Parameters",
+		name: "jsonParameters",
+		type: "boolean",
 		default: false,
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['create'],
+				resource: ["project"],
+				operation: ["create"],
 			},
 		},
 	},
 	{
-		displayName: 'Project Name',
-		name: 'name',
-		type: 'string',
-		default: '',
+		displayName: "Project Name",
+		name: "name",
+		type: "string",
+		default: "",
 		required: true,
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['create'],
+				resource: ["project"],
+				operation: ["create"],
 				jsonParameters: [false],
 			},
 		},
 	},
 	{
-		displayName: 'Additional Fields',
-		name: 'additionalFieldsJson',
-		type: 'json',
+		displayName: "Additional Fields",
+		name: "additionalFieldsJson",
+		type: "json",
 		typeOptions: {
 			alwaysOpenEditWindow: true,
 		},
-		default: '',
+		default: "",
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['create'],
+				resource: ["project"],
+				operation: ["create"],
 				jsonParameters: [true],
 			},
 		},
@@ -90,61 +90,61 @@ export const projectFields: INodeProperties[] = [
 			'Object of values to set as described <a href="https://developer.ticktick.com/">here</a>',
 	},
 	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		placeholder: 'Add Field',
+		displayName: "Additional Fields",
+		name: "additionalFields",
+		type: "collection",
+		placeholder: "Add Field",
 		default: {},
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['create'],
+				resource: ["project"],
+				operation: ["create"],
 				jsonParameters: [false],
 			},
 		},
 		options: [
 			{
-				displayName: 'View Mode',
-				name: 'viewMode',
-				type: 'options',
+				displayName: "View Mode",
+				name: "viewMode",
+				type: "options",
 				options: [
 					{
-						name: 'List',
-						value: 'list',
+						name: "List",
+						value: "list",
 					},
 					{
-						name: 'Kanban',
-						value: 'kanban',
+						name: "Kanban",
+						value: "kanban",
 					},
 					{
-						name: 'Timeline',
-						value: 'timeline',
+						name: "Timeline",
+						value: "timeline",
 					},
 				],
-				default: 'list',
+				default: "list",
 			},
 			{
-				displayName: 'Kind',
-				name: 'kind',
-				type: 'options',
+				displayName: "Kind",
+				name: "kind",
+				type: "options",
 				options: [
 					{
-						name: 'Task',
-						value: 'task',
+						name: "Task",
+						value: "task",
 					},
 					{
-						name: 'Note',
-						value: 'note',
+						name: "Note",
+						value: "note",
 					},
 				],
-				default: 'task',
+				default: "task",
 			},
 			{
-				displayName: 'Color',
-				name: 'color',
+				displayName: "Color",
+				name: "color",
 				description: 'Color of project, eg. "#F18181".',
-				type: 'color',
-				default: '',
+				type: "color",
+				default: "",
 			},
 		],
 	},
@@ -152,31 +152,34 @@ export const projectFields: INodeProperties[] = [
 	//		GET PROJECT OPERATION
 	//**************************************
 	{
-		displayName: 'Project Name or ID',
-		name: 'projectId',
-		type: 'options',
+		displayName: "Project Name or ID",
+		name: "projectId",
+		type: "options",
 		typeOptions: {
-			loadOptionsMethod: 'getProjects',
+			loadOptionsMethod: "getProjects",
 		},
-		default: '',
+		default: "inbox",
 		description:
 			'Choose from the list, or specify an ID using an expression. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['get'],
+				resource: ["project"],
+				operation: ["get"],
 			},
 		},
 	},
 	{
-		displayName: 'Get Project with Data',
-		name: 'projectData',
-		type: 'boolean',
+		displayName: "Get Project with Data",
+		name: "projectData",
+		type: "boolean",
 		default: false,
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['get'],
+				resource: ["project"],
+				operation: ["get"],
+			},
+			hide: {
+				projectId: ["inbox"],
 			},
 		},
 	},
@@ -184,47 +187,47 @@ export const projectFields: INodeProperties[] = [
 	//		UPDATE PROJECT OPERATION
 	//**************************************
 	{
-		displayName: 'JSON Parameters',
-		name: 'jsonParameters',
-		type: 'boolean',
+		displayName: "JSON Parameters",
+		name: "jsonParameters",
+		type: "boolean",
 		default: false,
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['update'],
+				resource: ["project"],
+				operation: ["update"],
 			},
 		},
 	},
 	{
-		displayName: 'Project Name or ID',
-		name: 'projectId',
-		type: 'options',
+		displayName: "Project Name or ID",
+		name: "projectId",
+		type: "options",
 		typeOptions: {
-			loadOptionsMethod: 'getProjects',
+			loadOptionsMethod: "getProjects",
 		},
-		default: '',
+		default: "",
 		description:
 			'Choose from the list, or specify an ID using an expression. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['update'],
+				resource: ["project"],
+				operation: ["update"],
 				jsonParameters: [false],
 			},
 		},
 	},
 	{
-		displayName: 'Additional Fields',
-		name: 'additionalFieldsJson',
-		type: 'json',
+		displayName: "Additional Fields",
+		name: "additionalFieldsJson",
+		type: "json",
 		typeOptions: {
 			alwaysOpenEditWindow: true,
 		},
-		default: '',
+		default: "",
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['update'],
+				resource: ["project"],
+				operation: ["update"],
 				jsonParameters: [true],
 			},
 		},
@@ -232,67 +235,67 @@ export const projectFields: INodeProperties[] = [
 			'Object of values to set as described <a href="https://developer.ticktick.com/">here</a>',
 	},
 	{
-		displayName: 'Additional Fields',
-		name: 'additionalFields',
-		type: 'collection',
-		placeholder: 'Add Field',
+		displayName: "Additional Fields",
+		name: "additionalFields",
+		type: "collection",
+		placeholder: "Add Field",
 		default: {},
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['update'],
+				resource: ["project"],
+				operation: ["update"],
 				jsonParameters: [false],
 			},
 		},
 		options: [
 			{
-				displayName: 'Project Name',
-				name: 'name',
-				type: 'string',
-				default: '',
+				displayName: "Project Name",
+				name: "name",
+				type: "string",
+				default: "",
 			},
 			{
-				displayName: 'View Mode',
-				name: 'viewMode',
-				type: 'options',
+				displayName: "View Mode",
+				name: "viewMode",
+				type: "options",
 				options: [
 					{
-						name: 'List',
-						value: 'list',
+						name: "List",
+						value: "list",
 					},
 					{
-						name: 'Kanban',
-						value: 'kanban',
+						name: "Kanban",
+						value: "kanban",
 					},
 					{
-						name: 'Timeline',
-						value: 'timeline',
+						name: "Timeline",
+						value: "timeline",
 					},
 				],
-				default: 'list',
+				default: "list",
 			},
 			{
-				displayName: 'Kind',
-				name: 'kind',
-				type: 'options',
+				displayName: "Kind",
+				name: "kind",
+				type: "options",
 				options: [
 					{
-						name: 'Task',
-						value: 'task',
+						name: "Task",
+						value: "task",
 					},
 					{
-						name: 'Note',
-						value: 'note',
+						name: "Note",
+						value: "note",
 					},
 				],
-				default: 'task',
+				default: "task",
 			},
 			{
-				displayName: 'Color',
-				name: 'color',
+				displayName: "Color",
+				name: "color",
 				description: 'Color of project, eg. "#F18181".',
-				type: 'color',
-				default: '',
+				type: "color",
+				default: "",
 			},
 		],
 	},
@@ -300,19 +303,19 @@ export const projectFields: INodeProperties[] = [
 	//		DELETE PROJECT OPERATION
 	//**************************************
 	{
-		displayName: 'Project Name or ID',
-		name: 'projectId',
-		type: 'options',
+		displayName: "Project Name or ID",
+		name: "projectId",
+		type: "options",
 		typeOptions: {
-			loadOptionsMethod: 'getProjects',
+			loadOptionsMethod: "getProjects",
 		},
-		default: '',
+		default: "",
 		description:
 			'Choose from the list, or specify an ID using an expression. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
-				resource: ['project'],
-				operation: ['delete'],
+				resource: ["project"],
+				operation: ["delete"],
 			},
 		},
 	},
