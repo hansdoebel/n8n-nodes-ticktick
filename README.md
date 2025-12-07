@@ -59,53 +59,38 @@ Steps:
 ### 1. Create a Task
 
     Parameters:
+    - Title (required)
+    - Project (defaults to Inbox if empty)
+    - Additional Fields:
+      - All Day, Completed Time, Content, Description, Due Date, Kind, Priority, Reminders, Repeat Flag, Sort Order, Start Date, Status, Time Zone
+      - Items (Subtasks)
 
-    - Task Title (required)
-    - Task Content
-    - Description of Checklist
-    - All day
-    - Start date
-    - Due date
-   
-    >> use Additional Fields or JSON Parameters
-    >> Subtasks will be part of the next release
-
-### 2. Get Task By Project ID And Task ID
+### 2. Get Task
 
     Parameters:
-
     - Task identifier (required)
     - Project identifier (required)
 
 ### 3. Update a Task
 
     Parameters:
-
-    - Task identifier (required)
-    - Project identifier (required)
-    - Task Title
-    - Task Content
-    - Description of Checklist
-    - All day
-    - Start date
-    - Due date
-
-    >> use Additional Fields or JSON Parameters
+    - Task ID (required)
+    - Project ID (optional - preserves current project if empty)
+    - Update Fields:
+      - All Day, Completed Time, Content, Description, Due Date, Items, Priority, Reminders, Repeat Flag, Sort Order, Start Date, Status, Time Zone, Title
 
 ### 4. Complete a Task
 
     Parameters:
-
     - Task identifier (required)
     - Project identifier (required)
 
 ### 5. Delete a Task
 
     Parameters:
-
     - Task identifier (required)
     - Project identifier (required)
-
+    
 ---
 
 ## 📁 Project Operations
@@ -113,53 +98,33 @@ Steps:
 ### 1. Create a Project
 
     Parameters:
+    - Project Name (required)
+    - Additional Fields: Color, Kind, Sort Order, View Mode
 
-    - Name (required)
-    - Color
-    - View Mode (List, Kanban, Timeline)
-    - Kind (Task, Note)
+### 2. Get Project(s)
 
-    >> use Additional Fields or JSON Parameters
+    Modes:
+    - Get All Projects: Retrieve a list of all projects
+    - Get Specific Project: Retrieve details of a single project (Name, Color, etc.)
+    - Get Project With Data: Retrieve a project along with its tasks and columns (Works for Inbox)
 
-### 2. Get User Project
-
-    Empty Parameters
-
-### 3. Get Project by ID
+### 3. Update a Project
 
     Parameters:
+    - Project ID (required)
+    - Update Fields: Color, Kind, Name, Sort Order, View Mode
 
-    - Project identifier (required)
-
-### 4. Get Project with Data
-
-    Parameters:
-
-    - Project identifier (required)
-
-### 5. Update a Project
+### 4. Delete a Project
 
     Parameters:
-
-    - Project identifier (required)
-    - Name
-    - Color
-    - View Mode (List, Kanban, Timeline)
-    - Kind (Task, Note)
-
-    >> use Additional Fields or JSON Parameters
-
-### 6. Delete a Project
-
-    Parameters:
-
-    - Project identifier (required)
+    - Project ID (required)
+    
 
 ---
 
 ## 🧰 Compatibility
 
-Tested successfully on 2025-12-01 with:
+Tested successfully on 2025-12-07 with:
 
 - n8n Version: 1.121.3
 - Node Version: 22.11.0
@@ -170,19 +135,9 @@ Tested successfully on 2025-12-01 with:
 
 ## ⚠ Known Issues & Notes
 
-### TickTick API Response for Certain Requests
-
-As of the current version of this project, it's important for users to be aware that the TickTick API has specific behaviors regarding the responses for certain operations. Notably:
-
-- **No Content Responses**: For some operations, such as deleting a project or completing a task, the TickTick API returns an HTTP status code indicating success (e.g., `200 OK`) but does not include any response body. This means that while these operations can be successfully executed, the API does not provide additional data or confirmation in the response body.
-
-- **Handling of API Responses**: This custom node has been designed to interpret HTTP status codes as indicators of the success or failure of an operation. Since no further details are provided by the API for certain requests, the node generates its own success messages for user feedback. Users should rely on these status codes and custom messages for confirmation of operation outcomes.
-
-- **API Documentation Discrepancies**: Users may also encounter instances where the behavior of the TickTick API does not fully align with its documentation, particularly regarding the response data for certain requests. We recommend users to proceed with caution and validate the functionality through testing, especially for critical workflows.
-
-This project's implementation takes these API characteristics into account, aiming to provide clear and useful feedback to users whenever possible. However, users are encouraged to conduct their own testing and verification to ensure the node meets their specific needs.
-
-Future updates to the TickTick API may address these issues, and subsequent versions of this project will aim to incorporate any changes to enhance functionality and user experience.
+### API Behavior
+- **Inbox Handling**: The "Default Inbox" is handled internally as the "inbox" ID. It supports fetching data (tasks) but does not support "Get Specific Project" details as it is not a standard project.
+- **Empty Responses**: Operations like delete or complete often return `200 OK` with no body. This node generates a success message for these cases.
 
 ---
 
@@ -198,6 +153,7 @@ Future updates to the TickTick API may address these issues, and subsequent vers
 
 ## 📜 Version History
 
+- `1.3.0` – Major refactor: Fixed API request context, added Inbox support, expanded Task/Project fields, added Subtask support, improved Project Get modes.
 - `1.2.2` – documentation and metadata update only
 - `1.2.1` – Inbox support, API Token credential, improved task/project operations, success messages
 - `1.1.1` – Added Luxon for date formatting (thank you [mrozekadam](https://github.com/mrozekadam))

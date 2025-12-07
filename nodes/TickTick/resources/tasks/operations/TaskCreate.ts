@@ -7,11 +7,20 @@ import {
 
 export const taskCreateFields: INodeProperties[] = [
 	{
-		displayName: "JSON Parameters",
-		name: "jsonParameters",
-		type: "boolean",
-		default: false,
-		displayOptions: { show: { resource: ["task"], operation: ["create"] } },
+		displayName: "Project Name or ID",
+		name: "projectId",
+		type: "options",
+		description:
+			'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
+		typeOptions: { loadOptionsMethod: "getProjects" },
+		default: "",
+		displayOptions: {
+			show: {
+				resource: ["task"],
+				operation: ["create"],
+				jsonParameters: [false],
+			},
+		},
 	},
 	{
 		displayName: "Title",
@@ -28,20 +37,11 @@ export const taskCreateFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: "Project Name or ID",
-		name: "projectId",
-		type: "options",
-		description:
-			'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
-		typeOptions: { loadOptionsMethod: "getProjects" },
-		default: "",
-		displayOptions: {
-			show: {
-				resource: ["task"],
-				operation: ["create"],
-				jsonParameters: [false],
-			},
-		},
+		displayName: "JSON Parameters",
+		name: "jsonParameters",
+		type: "boolean",
+		default: false,
+		displayOptions: { show: { resource: ["task"], operation: ["create"] } },
 	},
 	{
 		displayName: "Additional Fields (JSON)",
