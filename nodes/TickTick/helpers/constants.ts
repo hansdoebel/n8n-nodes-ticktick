@@ -1,0 +1,16 @@
+export const TimeZones = [
+	{ name: "UTC", value: "UTC" },
+	{ name: "Europe/London", value: "Europe/London" },
+	{ name: "Europe/Berlin", value: "Europe/Berlin" },
+	{ name: "Europe/Moscow", value: "Europe/Moscow" },
+	{ name: "Asia/Kolkata", value: "Asia/Kolkata" },
+	{ name: "Asia/Shanghai", value: "Asia/Shanghai" },
+	{ name: "Asia/Tokyo", value: "Asia/Tokyo" },
+	{ name: "America/New_York", value: "America/New_York" },
+	{ name: "America/Chicago", value: "America/Chicago" },
+	{ name: "America/Denver", value: "America/Denver" },
+	{ name: "America/Los_Angeles", value: "America/Los_Angeles" },
+	{ name: "America/Sao_Paulo", value: "America/Sao_Paulo" },
+	{ name: "Australia/Sydney", value: "Australia/Sydney" },
+	{ name: "Pacific/Auckland", value: "Pacific/Auckland" },
+];
