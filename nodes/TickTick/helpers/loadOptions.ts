@@ -27,8 +27,8 @@ export async function getInboxProjectId(
 			"/open/v1/project",
 		)) as Project[];
 
-		const inboxProject = projects.find((p) =>
-			p.kind === "inbox" || p.name.toLowerCase().includes("inbox")
+		const inboxProject = projects.find(
+			(p) => p.kind === "inbox" || p.name.toLowerCase().includes("inbox"),
 		);
 		return inboxProject?.id || "inbox";
 	} catch (error) {
@@ -58,11 +58,25 @@ export async function getProjects(
 				value: project.id,
 			}));
 
-		options.unshift({ name: "Inbox", value: "" });
+		try {
+			const operation = this.getCurrentNodeParameter("operation") as string;
+
+			if (operation !== "delete") {
+				options.unshift({ name: "Inbox", value: "" });
+			}
+		} catch (paramError) {
+			options.unshift({ name: "Inbox", value: "" });
+		}
 
 		return options;
 	} catch (error) {
-		return [{ name: "Inbox", value: "" }];
+		try {
+			const operation = this.getCurrentNodeParameter("operation") as string;
+			if (operation !== "delete") {
+				return [{ name: "Inbox", value: "" }];
+			}
+		} catch (e) {}
+		return [];
 	}
 }
 
