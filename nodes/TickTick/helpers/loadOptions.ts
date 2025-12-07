@@ -4,7 +4,6 @@ import type {
 	IHookFunctions,
 	ILoadOptionsFunctions,
 } from "n8n-workflow";
-import { NodeApiError } from "n8n-workflow";
 import { tickTickApiRequest } from "./apiRequest";
 
 interface Project {
@@ -21,25 +20,19 @@ interface Project {
 export async function getInboxProjectId(
 	this: IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions,
 ): Promise<string> {
-	const endpoint = "/open/v1/project/inbox/data";
 	try {
-		const response =
-			(await tickTickApiRequest.call(this, "GET", endpoint)) as IDataObject;
-		const tasks = (response.tasks as IDataObject[]) || [];
-		const columns = (response.columns as IDataObject[]) || [];
+		const projects = (await tickTickApiRequest.call(
+			this,
+			"GET",
+			"/open/v1/project",
+		)) as Project[];
 
-		const inferredId = (tasks[0]?.projectId as string) ||
-			(columns[0]?.projectId as string);
-
-		if (!inferredId) {
-			throw new NodeApiError(this.getNode(), {
-				message: "Unable to determine Inbox project ID from API response.",
-			});
-		}
-
-		return inferredId;
+		const inboxProject = projects.find((p) =>
+			p.kind === "inbox" || p.name.toLowerCase().includes("inbox")
+		);
+		return inboxProject?.id || "inbox";
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		return "inbox";
 	}
 }
 
@@ -48,46 +41,59 @@ export async function getProjects(
 ): Promise<{ name: string; value: string }[]> {
 	const endpoint = "/open/v1/project";
 	try {
-		const responseData =
-			(await tickTickApiRequest.call(this, "GET", endpoint)) as Project[];
+		const responseData = (await tickTickApiRequest.call(
+			this,
+			"GET",
+			endpoint,
+		)) as Project[];
 
-		const options = responseData.map((project: Project) => ({
-			name: project.name,
-			value: project.id,
-		}));
-
-		const resource = this.getCurrentNodeParameter("resource") as string;
-		const operation = this.getCurrentNodeParameter("operation") as string;
-
-		if (resource === "task") {
-			options.unshift({ name: "Inbox", value: "" });
-		} else if (resource === "project" && operation === "get") {
-			options.unshift({ name: "Inbox", value: "inbox" });
+		if (!Array.isArray(responseData)) {
+			throw new Error("API response is not an array of projects");
 		}
+
+		const options = responseData
+			.filter((project: Project) => project && project.id && project.name)
+			.map((project: Project) => ({
+				name: project.name,
+				value: project.id,
+			}));
+
+		options.unshift({ name: "Inbox", value: "" });
 
 		return options;
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		return [{ name: "Inbox", value: "" }];
 	}
 }
 
 export async function getTasks(
 	this: ILoadOptionsFunctions,
-	projectId: string,
+	projectId?: string,
 ): Promise<{ name: string; value: string }[]> {
-	const id = projectId || "inbox";
-	const endpoint = `/open/v1/project/${id}/data`;
+	const actualProjectId = !projectId || projectId === "" ? "inbox" : projectId;
+
+	const endpoint = `/open/v1/project/${actualProjectId}/data`;
 
 	try {
-		const responseData =
-			(await tickTickApiRequest.call(this, "GET", endpoint)) as IDataObject;
+		const responseData = (await tickTickApiRequest.call(
+			this,
+			"GET",
+			endpoint,
+		)) as IDataObject;
+
 		const tasks = responseData.tasks as IDataObject[];
 
-		return tasks.map((task) => ({
-			name: task.title as string,
-			value: String(task.id),
-		}));
+		if (!Array.isArray(tasks)) {
+			return [];
+		}
+
+		return tasks
+			.filter((task) => task && task.id && task.title)
+			.map((task) => ({
+				name: task.title as string,
+				value: String(task.id),
+			}));
 	} catch (error) {
-		throw new NodeApiError(this.getNode(), error);
+		return [];
 	}
 }

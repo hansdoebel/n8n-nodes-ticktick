@@ -2,7 +2,7 @@ import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
 import {
 	formatTickTickDate,
 	tickTickApiRequest,
-} from "../../../GenericFunctions";
+} from "@ticktick/GenericFunctions";
 
 export const taskUpdateFields: INodeProperties[] = [
 	{

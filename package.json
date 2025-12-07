@@ -36,7 +36,7 @@
 	"main": "index.js",
 	"scripts": {
 		"preinstall": "npx only-allow pnpm",
-		"build": "tsc && gulp build:icons",
+		"build": "tsc && tsc-alias && gulp build:icons",
 		"dev": "tsc --watch",
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes credentials package.json",
@@ -70,6 +70,7 @@
 		"eslint-plugin-n8n-nodes-base": "^1.16.1",
 		"gulp": "^4.0.2",
 		"prettier": "^3.3.2",
+		"tsc-alias": "^1.8.16",
 		"typescript": "^5.5.3"
 	},
 	"peerDependencies": {
