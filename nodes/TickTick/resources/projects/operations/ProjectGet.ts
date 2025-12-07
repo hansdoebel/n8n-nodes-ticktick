@@ -1,12 +1,13 @@
 import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
-import { tickTickApiRequest } from "../../../GenericFunctions";
+import { tickTickApiRequest } from "@ticktick/GenericFunctions";
 
 export const projectGetFields: INodeProperties[] = [
 	{
 		displayName: "Project Name or ID",
 		name: "projectId",
 		type: "options",
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
+		description:
+			'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>',
 		typeOptions: { loadOptionsMethod: "getProjects" },
 		default: "",
 		displayOptions: { show: { resource: ["project"], operation: ["get"] } },

@@ -20,10 +20,10 @@
 		"sourceMap": true,
 		"skipLibCheck": true,
 		"outDir": "./dist/",
-		"baseUrl": "./nodes",
+		"baseUrl": ".",
 		"paths": {
-			"@ticktick/*": ["TickTick/*"],
-			"@helpers/*": ["TickTick/helpers/*"]
+			"@ticktick/*": ["nodes/TickTick/*"],
+			"@helpers/*": ["nodes/TickTick/helpers/*"]
 		}
 	},
 	"include": ["credentials/**/*", "nodes/**/*", "nodes/**/*.json", "package.json"]
