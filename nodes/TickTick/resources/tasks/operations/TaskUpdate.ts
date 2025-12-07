@@ -7,22 +7,32 @@ import {
 
 export const taskUpdateFields: INodeProperties[] = [
 	{
-		displayName: "Task ID",
-		name: "taskId",
-		type: "string",
-		required: true,
-		default: "",
-		displayOptions: {
-			show: { resource: ["task"], operation: ["update"] },
-		},
-		description: "The ID of the task to update",
-	},
-	{
 		displayName: "Project Name or ID",
 		name: "projectId",
 		type: "options",
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. If not specified, the current project of the task will be preserved. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description:
+			'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. If not specified, the current project of the task will be preserved. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 		typeOptions: { loadOptionsMethod: "getProjects" },
+		default: "",
+		displayOptions: {
+			show: {
+				resource: ["task"],
+				operation: ["update"],
+				jsonParameters: [false],
+			},
+		},
+	},
+	{
+		displayName: "Task Name or ID",
+		name: "taskId",
+		type: "options",
+		description:
+			'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. If not specified, the current project of the task will be preserved. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		required: true,
+		typeOptions: {
+			loadOptionsMethod: "getTasks",
+			loadOptionsDependsOn: ["projectId"],
+		},
 		default: "",
 		displayOptions: {
 			show: {
