@@ -198,6 +198,7 @@ Future updates to the TickTick API may address these issues, and subsequent vers
 
 ## 📜 Version History
 
+- `1.2.2` – documentation and metadata update only
 - `1.2.1` – Inbox support, API Token credential, improved task/project operations, success messages
 - `1.1.1` – Added Luxon for date formatting (thank you [mrozekadam](https://github.com/mrozekadam))
 - `1.0.0` – Initial release
