@@ -78,10 +78,12 @@ Tested successfully on 2025-12-07 with:
 
 - [n8n Website](https://n8n.io/)
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
+- [n8n Documentation for LLMs](https://docs.n8n.io/llms.txt)
 - [TickTick Website](https://www.ticktick.com/)
 - [TickTick Open API](https://developer.ticktick.com/docs#/openapi)
 - [GitHub Repository](https://github.com/hansdoebel/n8n-nodes-ticktick)
 - [ticktick-sdk](https://github.com/dev-mirzabicer/ticktick-sdk)
+
 
 ## Version History
 

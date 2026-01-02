@@ -3,3 +3,7 @@ export * from "./TaskGet";
 export * from "./TaskUpdate";
 export * from "./TaskComplete";
 export * from "./TaskDelete";
+export * from "./TaskListCompleted";
+export * from "./TaskListDeleted";
+export * from "./TaskMove";
+export * from "./TaskSetParent";
