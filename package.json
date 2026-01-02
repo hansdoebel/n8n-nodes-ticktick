@@ -57,7 +57,8 @@
 		"n8nNodesApiVersion": 1,
 		"credentials": [
 			"dist/credentials/TickTickOAuth2Api.credentials.js",
-			"dist/credentials/TickTickTokenApi.credentials.js"
+			"dist/credentials/TickTickTokenApi.credentials.js",
+			"dist/credentials/TickTickSessionApi.credentials.js"
 		],
 		"nodes": [
 			"dist/nodes/TickTick/TickTick.node.js"

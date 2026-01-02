@@ -7,6 +7,12 @@ import type {
 	ILoadOptionsFunctions,
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
+import {
+	buildV2Headers,
+	clearV2Session,
+	getV2ApiBase,
+	getV2Session,
+} from "./sessionManager";
 
 export async function tickTickApiRequest(
 	this: IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions,
@@ -88,4 +94,80 @@ export async function tickTickApiRequest(
 	} catch (error) {
 		throw new NodeApiError(this.getNode(), error);
 	}
+}
+
+/**
+ * Make a request to TickTick V2 API using session-based authentication
+ */
+export async function tickTickApiRequestV2(
+	this: IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions,
+	method: IHttpRequestMethods,
+	endpoint: string,
+	body: IDataObject = {},
+	qs: IDataObject = {},
+) {
+	try {
+		// Get session token and device ID
+		const { token, deviceId } = await getV2Session.call(this, this);
+
+		const options: IHttpRequestOptions = {
+			method,
+			url: `${getV2ApiBase()}${endpoint}`,
+			headers: buildV2Headers(token, deviceId) as Record<string, string>,
+			qs,
+			json: true,
+		};
+
+		if (Object.keys(body).length) {
+			options.body = body;
+		}
+
+		const response = await this.helpers.httpRequest(options);
+		return response;
+	} catch (error) {
+		// If authentication failed, clear the cached session
+		if (error.httpCode === 401 || error.httpCode === 403) {
+			try {
+				const credentials = await this.getCredentials("tickTickSessionApi");
+				clearV2Session(credentials.username as string);
+			} catch {
+				// Ignore errors when clearing session
+			}
+		}
+		throw new NodeApiError(this.getNode(), error);
+	}
+}
+
+/**
+ * Get the current authentication method from node parameters
+ */
+export function getAuthenticationType(
+	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	itemIndex = 0,
+): string {
+	try {
+		if ("getCurrentNodeParameter" in context) {
+			return (context as ILoadOptionsFunctions).getCurrentNodeParameter(
+				"authentication",
+			) as string;
+		} else if ("getNodeParameter" in context) {
+			return (context as IExecuteFunctions).getNodeParameter(
+				"authentication",
+				itemIndex,
+			) as string;
+		}
+	} catch {
+		// Fallback to token auth
+	}
+	return "tickTickTokenApi";
+}
+
+/**
+ * Check if the current authentication is V2 (session-based)
+ */
+export function isV2Auth(
+	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	itemIndex = 0,
+): boolean {
+	return getAuthenticationType(context, itemIndex) === "tickTickSessionApi";
 }
