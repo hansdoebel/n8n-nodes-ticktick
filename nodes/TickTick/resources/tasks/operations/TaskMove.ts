@@ -30,8 +30,7 @@ export const taskMoveFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description:
-			'The current project containing the task. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description: 'The current project containing the task. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -48,8 +47,7 @@ export const taskMoveFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description:
-			'The destination project for the task. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description: 'The destination project for the task. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["task"],

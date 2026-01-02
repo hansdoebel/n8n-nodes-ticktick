@@ -83,6 +83,7 @@ Tested successfully on 2025-12-07 with:
 - [TickTick Open API](https://developer.ticktick.com/docs#/openapi)
 - [GitHub Repository](https://github.com/hansdoebel/n8n-nodes-ticktick)
 - [ticktick-sdk](https://github.com/dev-mirzabicer/ticktick-sdk)
+- [@n8n/node-cli README](https://raw.githubusercontent.com/n8n-io/n8n/refs/heads/master/packages/%40n8n/node-cli/README.md)
 
 
 ## Version History

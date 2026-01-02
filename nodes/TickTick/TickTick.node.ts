@@ -111,7 +111,6 @@ export class TickTick implements INodeType {
 				],
 				default: "task",
 			},
-			// V2 API notice for V2-only resources
 			{
 				displayName:
 					"This resource requires V2 API authentication (Username/Password)",

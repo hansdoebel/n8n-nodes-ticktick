@@ -108,7 +108,7 @@ export async function tickTickApiRequestV2(
 ) {
 	try {
 		// Get session token and device ID
-		const { token, deviceId } = await getV2Session.call(this, this);
+		const { token, deviceId } = await getV2Session(this);
 
 		const options: IHttpRequestOptions = {
 			method,
@@ -126,7 +126,9 @@ export async function tickTickApiRequestV2(
 		return response;
 	} catch (error) {
 		// If authentication failed, clear the cached session
-		if (error.httpCode === 401 || error.httpCode === 403) {
+		const statusCode = error.statusCode || error.response?.status ||
+			error.httpCode;
+		if (statusCode === 401 || statusCode === 403) {
 			try {
 				const credentials = await this.getCredentials("tickTickSessionApi");
 				clearV2Session(credentials.username as string);

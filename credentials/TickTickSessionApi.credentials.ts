@@ -1,8 +1,8 @@
-import { ICredentialType, INodeProperties } from "n8n-workflow";
+import type { ICredentialType, INodeProperties } from "n8n-workflow";
 
 export class TickTickSessionApi implements ICredentialType {
 	name = "tickTickSessionApi";
-	displayName = 'TickTick Session API (V2) API';
+	displayName = "TickTick Session API (V2)";
 	documentationUrl = "https://github.com/hansdoebel/n8n-nodes-ticktick";
 	properties: INodeProperties[] = [
 		{
@@ -24,8 +24,20 @@ export class TickTickSessionApi implements ICredentialType {
 			required: true,
 			description: "Your TickTick account password",
 		},
+		{
+			displayName: "Note",
+			name: "notice",
+			type: "notice",
+			default: "",
+			displayOptions: {
+				show: {},
+			},
+			description:
+				"Credential testing is disabled due to n8n limitations. Your credentials will be validated when you use them in a workflow. Make sure to use your TickTick account email as username.",
+		},
 	];
-	// Note: This credential uses session-based authentication
-	// Authentication is handled manually in the session manager
-	// since it requires cookie-based session tokens
+
+	// No test - authentication happens at runtime
+	// This avoids n8n credential test expression bugs and JSON body issues
+	// See: https://github.com/n8n-io/n8n/issues/15996
 }
