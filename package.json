@@ -66,13 +66,13 @@
 	},
 	"devDependencies": {
 		"@types/luxon": "^3.7.1",
-		"@typescript-eslint/parser": "^7.15.0",
-		"eslint": "^8.56.0",
-		"eslint-plugin-n8n-nodes-base": "^1.16.1",
+		"@typescript-eslint/parser": "^7.18.0",
+		"eslint": "^8.57.1",
+		"eslint-plugin-n8n-nodes-base": "^1.16.4",
 		"gulp": "^4.0.2",
-		"prettier": "^3.3.2",
+		"prettier": "^3.7.4",
 		"tsc-alias": "^1.8.16",
-		"typescript": "^5.5.3"
+		"typescript": "^5.9.3"
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"

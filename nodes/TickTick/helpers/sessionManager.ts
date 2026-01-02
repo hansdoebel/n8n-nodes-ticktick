@@ -9,8 +9,8 @@ import { NodeApiError } from "n8n-workflow";
 
 const V2_API_BASE = "https://api.ticktick.com/api/v2";
 const V2_USER_AGENT =
-	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-const V2_DEVICE_VERSION = 6430;
+	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:146.0) Gecko/20100101 Firefox/146.0";
+const V2_DEVICE_VERSION = 6440;
 
 interface SessionCache {
 	token: string;
@@ -45,8 +45,8 @@ export function generateDeviceId(): string {
 export function buildDeviceHeader(deviceId: string): string {
 	return JSON.stringify({
 		platform: "web",
-		os: "macOS 10.15.7",
-		device: "Chrome 120.0.0.0",
+		os: "macOS 10.15",
+		device: "Firefox 146.0",
 		name: "",
 		version: V2_DEVICE_VERSION,
 		id: deviceId,
@@ -67,12 +67,52 @@ export function buildV2Headers(
 		"User-Agent": V2_USER_AGENT,
 		"X-Device": buildDeviceHeader(deviceId),
 		"Cookie": `t=${sessionToken}`,
-		"Content-Type": "application/json",
 	};
 }
 
 /**
- * Authenticate with TickTick V2 API and get a session token
+ * Extract cookies from Set-Cookie headers
+ */
+function extractCookies(
+	setCookieHeaders: string | string[],
+): Record<string, string> {
+	const cookies: Record<string, string> = {};
+	const cookieArray = Array.isArray(setCookieHeaders)
+		? setCookieHeaders
+		: [setCookieHeaders];
+
+	for (const cookieHeader of cookieArray) {
+		// Extract cookie name=value (before first semicolon)
+		const match = cookieHeader.match(/^([^=]+)=([^;]+)/);
+		if (match) {
+			const [, name, value] = match;
+			// Skip empty cookies or deletion cookies
+			if (
+				value && value !== '""' &&
+				!cookieHeader.includes("Expires=Thu, 01 Jan 1970")
+			) {
+				cookies[name] = value;
+			}
+		}
+	}
+
+	return cookies;
+}
+
+/**
+ * Build cookie header string from cookie object
+ */
+function buildCookieHeader(cookies: Record<string, string>): string {
+	return Object.entries(cookies)
+		.map(([name, value]) => `${name}=${value}`)
+		.join("; ");
+}
+
+/**
+ * Authenticate with TickTick V2 API using browser-like flow
+ * Step 1: GET /signin to establish session
+ * Step 2: POST /api/v2/user/signon with session cookies
+ * Step 3: Extract authentication token
  */
 async function authenticateV2(
 	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
@@ -80,26 +120,57 @@ async function authenticateV2(
 	password: string,
 	deviceId: string,
 ): Promise<{ token: string; inboxId: string }> {
-	const response = await context.helpers.httpRequest({
-		method: "POST",
-		url: `${V2_API_BASE}/user/signon`,
+	// STEP 1: GET /signin to establish SESSION cookie (like browser does)
+	const signinResponse = await context.helpers.httpRequest({
+		method: "GET",
+		url: "https://ticktick.com/signin",
 		headers: {
 			"User-Agent": V2_USER_AGENT,
+			"Accept":
+				"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+			"Accept-Language": "en-US,en;q=0.9",
+			"Sec-Fetch-Dest": "document",
+			"Sec-Fetch-Mode": "navigate",
+			"Sec-Fetch-Site": "none",
+		},
+		returnFullResponse: true,
+		skipSslCertificateValidation: false,
+	});
+
+	// Extract cookies from initial signin page
+	const initialCookies: Record<string, string> = {};
+	if (signinResponse.headers["set-cookie"]) {
+		Object.assign(
+			initialCookies,
+			extractCookies(signinResponse.headers["set-cookie"]),
+		);
+	}
+
+	// STEP 2: POST /api/v2/user/signon with SESSION cookie (like browser does)
+	const signonResponse = await context.helpers.httpRequest({
+		method: "POST",
+		url: `${V2_API_BASE}/user/signon?wc=true&remember=true`,
+		headers: {
+			"User-Agent": V2_USER_AGENT,
+			"Accept": "*/*",
+			"Accept-Language": "en-US,en;q=0.9",
 			"X-Device": buildDeviceHeader(deviceId),
-			"Content-Type": "application/json",
+			"X-Requested-With": "XMLHttpRequest",
+			"Origin": "https://ticktick.com",
+			"Referer": "https://ticktick.com/",
+			// Include session cookies from step 1
+			"Cookie": buildCookieHeader(initialCookies),
 		},
 		body: {
 			username,
 			password,
-			wc: true,
-			remember: true,
 		},
 		json: true,
 		returnFullResponse: true,
 	});
 
 	// Check if 2FA is required
-	if (response.body.authId && !response.body.token) {
+	if (signonResponse.body.authId && !signonResponse.body.token) {
 		throw new NodeApiError(
 			context.getNode(),
 			{
@@ -109,34 +180,34 @@ async function authenticateV2(
 		);
 	}
 
-	// Extract token from response body or cookies
-	let token = response.body.token;
+	// STEP 3: Extract token from response body or cookies
+	let token = signonResponse.body.token;
 	if (!token) {
 		// Try to get from Set-Cookie header
-		const cookies = response.headers["set-cookie"];
+		const cookies = signonResponse.headers["set-cookie"];
 		if (cookies) {
-			const cookieArray = Array.isArray(cookies) ? cookies : [cookies];
-			for (const cookie of cookieArray) {
-				const match = cookie.match(/^t=([^;]+)/);
-				if (match) {
-					token = match[1];
-					break;
-				}
-			}
+			const authCookies = extractCookies(cookies);
+			token = authCookies.t;
 		}
 	}
 
 	if (!token) {
+		// Provide detailed error for debugging
+		const errorData = signonResponse.body;
 		throw new NodeApiError(
 			context.getNode(),
 			{
-				message:
-					"Failed to obtain session token from TickTick. Please check your credentials.",
+				message: `Failed to obtain session token from TickTick. ${
+					errorData.errorMessage || "Please check your credentials."
+				}`,
+				description: errorData.errorCode
+					? `Error code: ${errorData.errorCode}`
+					: undefined,
 			} as JsonObject,
 		);
 	}
 
-	const inboxId = response.body.inboxId || "";
+	const inboxId = signonResponse.body.inboxId || "";
 
 	return { token, inboxId };
 }
