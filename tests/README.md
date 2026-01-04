@@ -45,18 +45,34 @@ pnpm test:watch
 
 ### `auth.test.ts`
 Tests the authentication flow:
-- Step 1: GET /signin to establish session cookie
-- Step 2: POST /api/v2/user/signon to authenticate
+- Direct POST to `/api/v2/user/signon` with Python-style JSON formatting
 - Verifies token extraction from response
 
-### `v2-operations.test.ts`
-Tests basic V2 API operations:
-- GET /user/preferences - Get user preferences
-- GET /user/profile - Get user profile
-- GET /batch/check/0 - Initial sync (returns projects, tasks, tags, etc.)
-- GET /projects - List all projects
-- GET /tags - List all tags
-- GET /habits - List all habits
+### `v2-user.test.ts`
+Tests the V2 user resource using session auth:
+- GET /user/profile
+- GET /user/status
+- GET /user/preferences
+
+### `v2-projects.test.ts`
+Tests the V2 projects resource:
+- GET /projects
+
+### `v2-tags.test.ts`
+Tests the V2 tags resource:
+- GET /tags
+
+### `v2-habits.test.ts`
+Tests the V2 habits resource:
+- GET /habits
+
+### `v2-sync.test.ts`
+Tests the V2 sync resource:
+- GET /batch/check/0
+
+### `v2-tasks.test.ts`
+Tests the V2 tasks resource:
+- GET /project/all/trash/pagination
 
 ## Debugging
 

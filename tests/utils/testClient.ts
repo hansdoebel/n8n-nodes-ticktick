@@ -10,7 +10,6 @@ import * as dotenv from "dotenv";
 // Load environment variables
 dotenv.config();
 
-const V2_API_BASE = "https://api.ticktick.com/api/v2";
 const V2_USER_AGENT = "Mozilla/5.0 (rv:145.0) Firefox/145.0";
 const V2_DEVICE_VERSION = 6430;
 

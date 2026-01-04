@@ -14,7 +14,9 @@ export async function userGetPreferencesExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/user/preferences",
+		"/user/preferences/settings",
+		{},
+		{ includeWeb: "true" },
 	);
 
 	return [{ json: response }];

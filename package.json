@@ -44,7 +44,7 @@
 		"test": "jest",
 		"test:watch": "jest --watch",
 		"test:auth": "jest tests/auth.test.ts",
-		"test:v2": "jest tests/v2-operations.test.ts",
+		"test:v2": "jest tests/v2-*.test.ts",
 		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json"
 	},
 	"publishConfig": {

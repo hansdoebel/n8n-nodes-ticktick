@@ -15,7 +15,7 @@ export const taskListDeletedFields: INodeProperties[] = [
 			minValue: 1,
 		},
 		default: 50,
-		description: 'Max number of results to return',
+		description: "Max number of results to return",
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -39,7 +39,7 @@ export async function taskListDeletedExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/trash/task",
+		"/project/all/trash/pagination",
 		{},
 		qs,
 	);
