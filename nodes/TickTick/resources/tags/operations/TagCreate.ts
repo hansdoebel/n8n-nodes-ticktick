@@ -42,6 +42,18 @@ export const tagCreateFields: INodeProperties[] = [
 				description: "The color of the tag in hex format",
 			},
 			{
+				displayName: "Sort Type",
+				name: "sortType",
+				type: "options",
+				options: [
+					{ name: "None", value: "NONE" },
+					{ name: "Manual", value: "MANUAL" },
+					{ name: "Alphabetical", value: "ALPHABETICAL" },
+				],
+				default: "NONE",
+				description: "How the tag is sorted within its group",
+			},
+			{
 				displayName: "Parent Tag",
 				name: "parent",
 				type: "string",
@@ -67,20 +79,33 @@ export async function tagCreateExecute(
 	const name = this.getNodeParameter("name", index) as string;
 	const additionalFields = this.getNodeParameter("additionalFields", index) as {
 		color?: string;
+		sortType?: string;
 		parent?: string;
 		sortOrder?: number;
 	};
 
+	const normalizedName = name.toLowerCase().replace(/\s+/g, "");
+
+	const tag: Record<string, unknown> = {
+		name: normalizedName,
+		label: name,
+	};
+
+	if (additionalFields.color) {
+		tag.color = additionalFields.color;
+	}
+	if (additionalFields.parent) {
+		tag.parent = additionalFields.parent;
+	}
+	if (additionalFields.sortType && additionalFields.sortType !== "NONE") {
+		tag.sortType = additionalFields.sortType;
+	}
+	if (typeof additionalFields.sortOrder === "number") {
+		tag.sortOrder = additionalFields.sortOrder;
+	}
+
 	const body = {
-		add: [
-			{
-				name: name.toLowerCase(),
-				label: name,
-				color: additionalFields.color,
-				parent: additionalFields.parent,
-				sortOrder: additionalFields.sortOrder,
-			},
-		],
+		add: [tag],
 	};
 
 	const response = await tickTickApiRequestV2.call(

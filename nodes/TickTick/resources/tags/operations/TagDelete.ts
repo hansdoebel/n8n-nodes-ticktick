@@ -7,7 +7,7 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagDeleteFields: INodeProperties[] = [
 	{
-		displayName: 'Tag Name or ID',
+		displayName: "Tag Name or ID",
 		name: "tagName",
 		type: "options",
 		typeOptions: {
@@ -15,7 +15,8 @@ export const tagDeleteFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description: 'The tag to delete. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description:
+			'The tag to delete. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["tag"],
@@ -31,15 +32,12 @@ export async function tagDeleteExecute(
 ): Promise<INodeExecutionData[]> {
 	const tagName = this.getNodeParameter("tagName", index) as string;
 
-	const body = {
-		delete: [tagName],
-	};
-
 	const response = await tickTickApiRequestV2.call(
 		this,
-		"POST",
-		"/batch/tag",
-		body,
+		"DELETE",
+		"/tag",
+		{},
+		{ name: tagName },
 	);
 
 	return [

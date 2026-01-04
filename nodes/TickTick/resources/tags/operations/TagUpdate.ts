@@ -7,7 +7,7 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagUpdateFields: INodeProperties[] = [
 	{
-		displayName: 'Tag Name or ID',
+		displayName: "Tag Name or ID",
 		name: "tagName",
 		type: "options",
 		typeOptions: {
@@ -15,7 +15,8 @@ export const tagUpdateFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description: 'The tag to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description:
+			'The tag to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["tag"],
@@ -37,11 +38,30 @@ export const tagUpdateFields: INodeProperties[] = [
 		},
 		options: [
 			{
+				displayName: "Label",
+				name: "label",
+				type: "string",
+				default: "",
+				description: "The display name of the tag",
+			},
+			{
 				displayName: "Color",
 				name: "color",
 				type: "color",
 				default: "#F18181",
 				description: "The color of the tag in hex format",
+			},
+			{
+				displayName: "Sort Type",
+				name: "sortType",
+				type: "options",
+				options: [
+					{ name: "None", value: "NONE" },
+					{ name: "Manual", value: "MANUAL" },
+					{ name: "Alphabetical", value: "ALPHABETICAL" },
+				],
+				default: "NONE",
+				description: "How the tag is sorted within its group",
 			},
 			{
 				displayName: "Parent Tag",
@@ -67,18 +87,38 @@ export async function tagUpdateExecute(
 ): Promise<INodeExecutionData[]> {
 	const tagName = this.getNodeParameter("tagName", index) as string;
 	const updateFields = this.getNodeParameter("updateFields", index) as {
+		label?: string;
 		color?: string;
+		sortType?: string;
 		parent?: string;
 		sortOrder?: number;
 	};
 
+	if (!updateFields.label) {
+		throw new Error("Tag label is required for update.");
+	}
+
+	const tag: Record<string, unknown> = {
+		name: tagName,
+		label: updateFields.label,
+		rawName: tagName,
+	};
+
+	if (updateFields.color) {
+		tag.color = updateFields.color;
+	}
+	if (updateFields.parent) {
+		tag.parent = updateFields.parent;
+	}
+	if (updateFields.sortType && updateFields.sortType !== "NONE") {
+		tag.sortType = updateFields.sortType;
+	}
+	if (typeof updateFields.sortOrder === "number") {
+		tag.sortOrder = updateFields.sortOrder;
+	}
+
 	const body = {
-		update: [
-			{
-				name: tagName,
-				...updateFields,
-			},
-		],
+		update: [tag],
 	};
 
 	const response = await tickTickApiRequestV2.call(
