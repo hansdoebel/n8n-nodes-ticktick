@@ -108,12 +108,17 @@ export async function tickTickApiRequestV2(
 ) {
 	try {
 		// Get session token and device ID
-		const { token, deviceId } = await getV2Session(this);
+		const { token, deviceId, userAgent, deviceVersion } = await getV2Session(this);
 
 		const options: IHttpRequestOptions = {
 			method,
 			url: `${getV2ApiBase()}${endpoint}`,
-			headers: buildV2Headers(token, deviceId) as Record<string, string>,
+			headers: buildV2Headers(
+				token,
+				deviceId,
+				userAgent,
+				deviceVersion,
+			) as Record<string, string>,
 			qs,
 			json: true,
 		};

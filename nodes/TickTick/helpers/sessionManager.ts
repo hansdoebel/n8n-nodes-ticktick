@@ -6,11 +6,11 @@ import type {
 	JsonObject,
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
+import * as crypto from "crypto";
 
 const V2_API_BASE = "https://api.ticktick.com/api/v2";
-const V2_USER_AGENT =
-	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:146.0) Gecko/20100101 Firefox/146.0";
-const V2_DEVICE_VERSION = 6440;
+const DEFAULT_V2_USER_AGENT = "Mozilla/5.0 (rv:145.0) Firefox/145.0";
+const DEFAULT_V2_DEVICE_VERSION = 6430;
 
 /**
  * Convert object to JSON with spaces after colons and commas (Python-style)
@@ -39,23 +39,22 @@ const SESSION_TTL_MS = 23 * 60 * 60 * 1000;
  * Uses a MongoDB ObjectId-like format (24 hex chars)
  */
 export function generateDeviceId(): string {
-	// Generate a random device ID using Math.random
-	const chars = "0123456789abcdef";
-	let result = "";
-	for (let i = 0; i < 24; i++) {
-		result += chars[Math.floor(Math.random() * chars.length)];
-	}
-	return result;
+	const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, "0");
+	const random = crypto.randomBytes(8).toString("hex");
+	return timestamp + random;
 }
 
 /**
  * Build the X-Device header required by V2 API
  * Uses minimal format (platform, version, id) with Python-style JSON spacing
  */
-export function buildDeviceHeader(deviceId: string): string {
+export function buildDeviceHeader(
+	deviceId: string,
+	deviceVersion: number = DEFAULT_V2_DEVICE_VERSION,
+): string {
 	return toPythonStyleJson({
 		platform: "web",
-		version: V2_DEVICE_VERSION,
+		version: deviceVersion,
 		id: deviceId,
 	});
 }
@@ -66,10 +65,12 @@ export function buildDeviceHeader(deviceId: string): string {
 export function buildV2Headers(
 	sessionToken: string,
 	deviceId: string,
+	userAgent: string = DEFAULT_V2_USER_AGENT,
+	deviceVersion: number = DEFAULT_V2_DEVICE_VERSION,
 ): IDataObject {
 	return {
-		"User-Agent": V2_USER_AGENT,
-		"X-Device": buildDeviceHeader(deviceId),
+		"User-Agent": userAgent,
+		"X-Device": buildDeviceHeader(deviceId, deviceVersion),
 		"Cookie": `t=${sessionToken}`,
 	};
 }
@@ -103,6 +104,21 @@ function extractCookies(
 	return cookies;
 }
 
+function normalizeDeviceVersion(value: unknown): number {
+	if (typeof value === "number" && Number.isFinite(value)) {
+		return value;
+	}
+
+	if (typeof value === "string") {
+		const parsed = Number.parseInt(value, 10);
+		if (Number.isFinite(parsed)) {
+			return parsed;
+		}
+	}
+
+	return DEFAULT_V2_DEVICE_VERSION;
+}
+
 /**
  * Authenticate with TickTick V2 API
  * Direct POST to /signon with Python-style JSON formatting
@@ -116,6 +132,8 @@ async function authenticateV2(
 	username: string,
 	password: string,
 	deviceId: string,
+	userAgent: string,
+	deviceVersion: number,
 ): Promise<{ token: string; inboxId: string }> {
 	// Prepare body with Python-style JSON formatting (spaces after : and ,)
 	const bodyJson = toPythonStyleJson({ username, password });
@@ -127,9 +145,9 @@ async function authenticateV2(
 		url: `${V2_API_BASE}/user/signon?wc=true&remember=true`,
 		headers: {
 			"Accept-Encoding": "identity",
-			"User-Agent": V2_USER_AGENT,
+			"User-Agent": userAgent,
 			"Content-Type": "application/json",
-			"X-Device": buildDeviceHeader(deviceId),
+			"X-Device": buildDeviceHeader(deviceId, deviceVersion),
 		},
 		body: bodyJson,
 		returnFullResponse: true,
@@ -187,23 +205,44 @@ async function authenticateV2(
  */
 export async function getV2Session(
 	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
-): Promise<{ token: string; inboxId: string; deviceId: string }> {
+): Promise<{
+	token: string;
+	inboxId: string;
+	deviceId: string;
+	userAgent: string;
+	deviceVersion: number;
+}> {
 	const credentials = await context.getCredentials("tickTickSessionApi");
 	const username = credentials.username as string;
 	const password = credentials.password as string;
+	const userAgent = typeof credentials.userAgent === "string" &&
+		credentials.userAgent.trim()
+		? credentials.userAgent.trim()
+		: DEFAULT_V2_USER_AGENT;
+	const deviceVersion = normalizeDeviceVersion(credentials.deviceVersion);
+	const configuredDeviceId = typeof credentials.deviceId === "string"
+		? credentials.deviceId.trim()
+		: "";
+
+	let cached = sessionCache.get(username);
+	if (cached && configuredDeviceId && cached.deviceId !== configuredDeviceId) {
+		sessionCache.delete(username);
+		cached = undefined;
+	}
 
 	// Check cache for valid session
-	const cached = sessionCache.get(username);
 	if (cached && cached.expiresAt > Date.now()) {
 		return {
 			token: cached.token,
 			inboxId: cached.inboxId,
 			deviceId: cached.deviceId,
+			userAgent,
+			deviceVersion,
 		};
 	}
 
 	// Generate or reuse device ID
-	const deviceId = cached?.deviceId || generateDeviceId();
+	const deviceId = configuredDeviceId || cached?.deviceId || generateDeviceId();
 
 	// Authenticate and get new session
 	const { token, inboxId } = await authenticateV2(
@@ -211,6 +250,8 @@ export async function getV2Session(
 		username,
 		password,
 		deviceId,
+		userAgent,
+		deviceVersion,
 	);
 
 	// Cache the session
@@ -221,7 +262,7 @@ export async function getV2Session(
 		expiresAt: Date.now() + SESSION_TTL_MS,
 	});
 
-	return { token, inboxId, deviceId };
+	return { token, inboxId, deviceId, userAgent, deviceVersion };
 }
 
 /**
