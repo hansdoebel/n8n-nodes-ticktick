@@ -183,6 +183,9 @@ export class TickTick implements INodeType {
 						case "get":
 							result = await taskOps.taskGetExecute.call(this, i);
 							break;
+						case "listAll":
+							result = await taskOps.taskListAllExecute.call(this, i);
+							break;
 						case "update":
 							result = await taskOps.taskUpdateExecute.call(this, i);
 							break;

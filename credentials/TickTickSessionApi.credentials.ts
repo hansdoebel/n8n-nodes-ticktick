@@ -47,19 +47,11 @@ export class TickTickSessionApi implements ICredentialType {
 				"Advanced: fixed device ID (24 hex chars). Leave blank to auto-generate.",
 		},
 		{
-			displayName: "Note",
+			displayName:
+				"Session auth uses TickTick's unofficial V2 API. Credential testing is disabled; validation happens when used in a workflow. 2FA is not supported. Use your TickTick account email as username.",
 			name: "notice",
 			type: "notice",
 			default: "",
-			displayOptions: {
-				show: {},
-			},
-			description:
-				"Session auth uses TickTick's unofficial V2 API. Credential testing is disabled; validation happens when used in a workflow. 2FA is not supported. Use your TickTick account email as username.",
 		},
 	];
-
-	// No test - authentication happens at runtime
-	// This avoids n8n credential test expression bugs and JSON body issues
-	// See: https://github.com/n8n-io/n8n/issues/15996
 }

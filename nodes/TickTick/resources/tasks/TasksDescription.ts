@@ -14,6 +14,12 @@ export const taskOperations: INodeProperties[] = [
 			{ name: "Delete", value: "delete", action: "Delete a task" },
 			{ name: "Get", value: "get", action: "Get a task" },
 			{
+				name: "List All",
+				value: "listAll",
+				action: "List all tasks",
+				description: "List all tasks across projects (V2 API)",
+			},
+			{
 				name: "List Completed",
 				value: "listCompleted",
 				action: "List completed tasks",
@@ -53,7 +59,13 @@ export const taskV2Notice: INodeProperties = {
 	displayOptions: {
 		show: {
 			resource: ["task"],
-			operation: ["listCompleted", "listDeleted", "move", "setParent"],
+			operation: [
+				"listAll",
+				"listCompleted",
+				"listDeleted",
+				"move",
+				"setParent",
+			],
 			authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
 		},
 	},
