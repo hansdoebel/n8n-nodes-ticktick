@@ -12,6 +12,15 @@ const V2_USER_AGENT =
 	"Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:146.0) Gecko/20100101 Firefox/146.0";
 const V2_DEVICE_VERSION = 6440;
 
+/**
+ * Convert object to JSON with spaces after colons and commas (Python-style)
+ * TickTick's V2 API expects this format - compact JSON without spaces fails!
+ * This matches Python's json.dumps() default formatting.
+ */
+function toPythonStyleJson(obj: object): string {
+	return JSON.stringify(obj, null, 0).replace(/,/g, ", ").replace(/:/g, ": ");
+}
+
 interface SessionCache {
 	token: string;
 	inboxId: string;
@@ -41,18 +50,13 @@ export function generateDeviceId(): string {
 
 /**
  * Build the X-Device header required by V2 API
+ * Uses minimal format (platform, version, id) with Python-style JSON spacing
  */
 export function buildDeviceHeader(deviceId: string): string {
-	return JSON.stringify({
+	return toPythonStyleJson({
 		platform: "web",
-		os: "macOS 10.15",
-		device: "Firefox 146.0",
-		name: "",
 		version: V2_DEVICE_VERSION,
 		id: deviceId,
-		channel: "website",
-		campaign: "",
-		websocket: "",
 	});
 }
 
@@ -100,19 +104,12 @@ function extractCookies(
 }
 
 /**
- * Build cookie header string from cookie object
- */
-function buildCookieHeader(cookies: Record<string, string>): string {
-	return Object.entries(cookies)
-		.map(([name, value]) => `${name}=${value}`)
-		.join("; ");
-}
-
-/**
- * Authenticate with TickTick V2 API using browser-like flow
- * Step 1: GET /signin to establish session
- * Step 2: POST /api/v2/user/signon with session cookies
- * Step 3: Extract authentication token
+ * Authenticate with TickTick V2 API
+ * Direct POST to /signon with Python-style JSON formatting
+ *
+ * IMPORTANT: TickTick's V2 API requires JSON with spaces after colons and commas
+ * (Python's json.dumps() style). Compact JSON without spaces fails with
+ * "username_password_not_match" error even with correct credentials!
  */
 async function authenticateV2(
 	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
@@ -120,57 +117,31 @@ async function authenticateV2(
 	password: string,
 	deviceId: string,
 ): Promise<{ token: string; inboxId: string }> {
-	// STEP 1: GET /signin to establish SESSION cookie (like browser does)
-	const signinResponse = await context.helpers.httpRequest({
-		method: "GET",
-		url: "https://ticktick.com/signin",
-		headers: {
-			"User-Agent": V2_USER_AGENT,
-			"Accept":
-				"text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-			"Accept-Language": "en-US,en;q=0.9",
-			"Sec-Fetch-Dest": "document",
-			"Sec-Fetch-Mode": "navigate",
-			"Sec-Fetch-Site": "none",
-		},
-		returnFullResponse: true,
-		skipSslCertificateValidation: false,
-	});
+	// Prepare body with Python-style JSON formatting (spaces after : and ,)
+	const bodyJson = toPythonStyleJson({ username, password });
 
-	// Extract cookies from initial signin page
-	const initialCookies: Record<string, string> = {};
-	if (signinResponse.headers["set-cookie"]) {
-		Object.assign(
-			initialCookies,
-			extractCookies(signinResponse.headers["set-cookie"]),
-		);
-	}
-
-	// STEP 2: POST /api/v2/user/signon with SESSION cookie (like browser does)
+	// Direct POST to signon endpoint
+	// IMPORTANT: Accept-Encoding: identity is required - matches Python's urllib behavior
 	const signonResponse = await context.helpers.httpRequest({
 		method: "POST",
 		url: `${V2_API_BASE}/user/signon?wc=true&remember=true`,
 		headers: {
+			"Accept-Encoding": "identity",
 			"User-Agent": V2_USER_AGENT,
-			"Accept": "*/*",
-			"Accept-Language": "en-US,en;q=0.9",
+			"Content-Type": "application/json",
 			"X-Device": buildDeviceHeader(deviceId),
-			"X-Requested-With": "XMLHttpRequest",
-			"Origin": "https://ticktick.com",
-			"Referer": "https://ticktick.com/",
-			// Include session cookies from step 1
-			"Cookie": buildCookieHeader(initialCookies),
 		},
-		body: {
-			username,
-			password,
-		},
-		json: true,
+		body: bodyJson,
 		returnFullResponse: true,
 	});
 
+	// Parse response body (may be string or already parsed object)
+	const responseBody = typeof signonResponse.body === "string"
+		? JSON.parse(signonResponse.body)
+		: signonResponse.body;
+
 	// Check if 2FA is required
-	if (signonResponse.body.authId && !signonResponse.body.token) {
+	if (responseBody.authId && !responseBody.token) {
 		throw new NodeApiError(
 			context.getNode(),
 			{
@@ -180,8 +151,8 @@ async function authenticateV2(
 		);
 	}
 
-	// STEP 3: Extract token from response body or cookies
-	let token = signonResponse.body.token;
+	// Extract token from response body or cookies
+	let token = responseBody.token;
 	if (!token) {
 		// Try to get from Set-Cookie header
 		const cookies = signonResponse.headers["set-cookie"];
@@ -193,21 +164,20 @@ async function authenticateV2(
 
 	if (!token) {
 		// Provide detailed error for debugging
-		const errorData = signonResponse.body;
 		throw new NodeApiError(
 			context.getNode(),
 			{
 				message: `Failed to obtain session token from TickTick. ${
-					errorData.errorMessage || "Please check your credentials."
+					responseBody.errorMessage || "Please check your credentials."
 				}`,
-				description: errorData.errorCode
-					? `Error code: ${errorData.errorCode}`
+				description: responseBody.errorCode
+					? `Error code: ${responseBody.errorCode}`
 					: undefined,
 			} as JsonObject,
 		);
 	}
 
-	const inboxId = signonResponse.body.inboxId || "";
+	const inboxId = responseBody.inboxId || "";
 
 	return { token, inboxId };
 }
