@@ -10,13 +10,39 @@ export const projectUpdateFields: INodeProperties[] = [
 		displayOptions: { show: { resource: ["project"], operation: ["update"] } },
 	},
 	{
-		displayName: "Project Name or ID",
+		displayName: "Project",
 		name: "projectId",
-		type: "options",
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		typeOptions: { loadOptionsMethod: "getProjects" },
-		default: "",
+		description: "The project to update",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchProjects",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				validation: [
+					{
+						type: "regex",
+						properties: {
+							regex: "^[a-zA-Z0-9]+$",
+							errorMessage: "Project ID must contain only letters and numbers",
+						},
+					},
+				],
+				placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["project"],
@@ -117,7 +143,21 @@ export async function projectUpdateExecute(
 		index,
 		false,
 	) as boolean;
-	const projectId = this.getNodeParameter("projectId", index, "") as string;
+
+	// Get the project ID from the resource locator
+	const projectIdValue = this.getNodeParameter("projectId", index, "") as
+		| string
+		| { mode: string; value: string };
+
+	let projectId: string;
+
+	// Handle both resource locator format and legacy string format
+	if (typeof projectIdValue === "object" && projectIdValue !== null) {
+		projectId = projectIdValue.value || "";
+	} else {
+		projectId = projectIdValue || "";
+	}
+
 	let body: Record<string, any> = {};
 
 	if (useJson) {

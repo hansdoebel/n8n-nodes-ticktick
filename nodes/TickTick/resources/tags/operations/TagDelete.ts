@@ -7,16 +7,30 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagDeleteFields: INodeProperties[] = [
 	{
-		displayName: "Tag Name or ID",
+		displayName: "Tag",
 		name: "tagName",
-		type: "options",
-		typeOptions: {
-			loadOptionsMethod: "getTags",
-		},
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		default: "",
-		description:
-			'The tag to delete. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description: "The tag to delete",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchTags",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By Name",
+				name: "name",
+				type: "string",
+				placeholder: "e.g. Important",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["tag"],
@@ -30,7 +44,17 @@ export async function tagDeleteExecute(
 	this: IExecuteFunctions,
 	index: number,
 ): Promise<INodeExecutionData[]> {
-	const tagName = this.getNodeParameter("tagName", index) as string;
+	const tagNameValue = this.getNodeParameter("tagName", index) as
+		| string
+		| { mode: string; value: string };
+
+	let tagName: string;
+
+	if (typeof tagNameValue === "object" && tagNameValue !== null) {
+		tagName = tagNameValue.value || "";
+	} else {
+		tagName = tagNameValue || "";
+	}
 
 	const response = await tickTickApiRequestV2.call(
 		this,

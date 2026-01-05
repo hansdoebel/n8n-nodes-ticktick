@@ -7,12 +7,29 @@ import {
 
 export const taskCreateFields: INodeProperties[] = [
 	{
-		displayName: "Project Name or ID",
+		displayName: "Project",
 		name: "projectId",
-		type: "options",
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-		typeOptions: { loadOptionsMethod: "getProjects" },
-		default: "",
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
+		description: "The project to create the task in",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchProjects",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -268,7 +285,9 @@ export async function taskCreateExecute(
 		}
 	} else {
 		const title = this.getNodeParameter("title", index) as string;
-		const projectId = this.getNodeParameter("projectId", index) as string;
+		const projectIdValue = this.getNodeParameter("projectId", index, "") as
+			| string
+			| { mode: string; value: string };
 		const additional = this.getNodeParameter(
 			"additionalFields",
 			index,
@@ -279,6 +298,14 @@ export async function taskCreateExecute(
 
 		if (!title || title.trim() === "") {
 			throw new Error("Task title is required");
+		}
+
+		let projectId: string;
+
+		if (typeof projectIdValue === "object" && projectIdValue !== null) {
+			projectId = projectIdValue.value || "";
+		} else {
+			projectId = projectIdValue || "";
 		}
 
 		if (projectId && projectId.trim() !== "") {

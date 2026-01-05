@@ -7,16 +7,30 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagUpdateFields: INodeProperties[] = [
 	{
-		displayName: "Tag Name or ID",
+		displayName: "Tag",
 		name: "tagName",
-		type: "options",
-		typeOptions: {
-			loadOptionsMethod: "getTags",
-		},
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		default: "",
-		description:
-			'The tag to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description: "The tag to update",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchTags",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By Name",
+				name: "name",
+				type: "string",
+				placeholder: "e.g. Important",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["tag"],
@@ -85,7 +99,9 @@ export async function tagUpdateExecute(
 	this: IExecuteFunctions,
 	index: number,
 ): Promise<INodeExecutionData[]> {
-	const tagName = this.getNodeParameter("tagName", index) as string;
+	const tagNameValue = this.getNodeParameter("tagName", index) as
+		| string
+		| { mode: string; value: string };
 	const updateFields = this.getNodeParameter("updateFields", index) as {
 		label?: string;
 		color?: string;
@@ -93,6 +109,14 @@ export async function tagUpdateExecute(
 		parent?: string;
 		sortOrder?: number;
 	};
+
+	let tagName: string;
+
+	if (typeof tagNameValue === "object" && tagNameValue !== null) {
+		tagName = tagNameValue.value || "";
+	} else {
+		tagName = tagNameValue || "";
+	}
 
 	if (!updateFields.label) {
 		throw new Error("Tag label is required for update.");

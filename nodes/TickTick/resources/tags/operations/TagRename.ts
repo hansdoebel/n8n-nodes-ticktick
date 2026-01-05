@@ -7,16 +7,30 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagRenameFields: INodeProperties[] = [
 	{
-		displayName: "Current Tag Name or ID",
+		displayName: "Current Tag",
 		name: "oldName",
-		type: "options",
-		typeOptions: {
-			loadOptionsMethod: "getTags",
-		},
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		default: "",
-		description:
-			'The current name of the tag. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description: "The current name of the tag",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchTags",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By Name",
+				name: "name",
+				type: "string",
+				placeholder: "e.g. OldName",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["tag"],
@@ -45,8 +59,18 @@ export async function tagRenameExecute(
 	this: IExecuteFunctions,
 	index: number,
 ): Promise<INodeExecutionData[]> {
-	const oldName = this.getNodeParameter("oldName", index) as string;
+	const oldNameValue = this.getNodeParameter("oldName", index) as
+		| string
+		| { mode: string; value: string };
 	const newName = this.getNodeParameter("newName", index) as string;
+
+	let oldName: string;
+
+	if (typeof oldNameValue === "object" && oldNameValue !== null) {
+		oldName = oldNameValue.value || "";
+	} else {
+		oldName = oldNameValue || "";
+	}
 
 	const body = {
 		name: oldName,

@@ -3,25 +3,56 @@ import { tickTickApiRequest } from "@ticktick/GenericFunctions";
 
 export const taskDeleteFields: INodeProperties[] = [
 	{
-		displayName: "Project Name or ID",
+		displayName: "Project",
 		name: "projectId",
-		type: "options",
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
-		typeOptions: { loadOptionsMethod: "getProjects" },
-		default: "",
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
+		description: "The project containing the task",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchProjects",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+			},
+		],
 		displayOptions: { show: { resource: ["task"], operation: ["delete"] } },
 	},
 	{
-		displayName: "Task Name or ID",
+		displayName: "Task",
 		name: "taskId",
-		type: "options",
-		description: 'Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		typeOptions: {
-			loadOptionsMethod: "getTasks",
-			loadOptionsDependsOn: ["projectId"],
-		},
-		default: "",
+		description: "The task to delete",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchTasks",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 6123abc456def789",
+			},
+		],
 		displayOptions: { show: { resource: ["task"], operation: ["delete"] } },
 	},
 ];
@@ -30,12 +61,27 @@ export async function taskDeleteExecute(
 	this: IExecuteFunctions,
 	index: number,
 ) {
-	const projectId = this.getNodeParameter(
-		"projectId",
-		index,
-		"inbox",
-	) as string;
-	const taskId = this.getNodeParameter("taskId", index) as string;
+	const projectIdValue = this.getNodeParameter("projectId", index, "") as
+		| string
+		| { mode: string; value: string };
+	const taskIdValue = this.getNodeParameter("taskId", index) as
+		| string
+		| { mode: string; value: string };
+
+	let projectId: string;
+	let taskId: string;
+
+	if (typeof projectIdValue === "object" && projectIdValue !== null) {
+		projectId = projectIdValue.value || "";
+	} else {
+		projectId = projectIdValue || "";
+	}
+
+	if (typeof taskIdValue === "object" && taskIdValue !== null) {
+		taskId = taskIdValue.value || "";
+	} else {
+		taskId = taskIdValue || "";
+	}
 
 	const endpoint = `/open/v1/project/${projectId || "inbox"}/task/${taskId}`;
 	await tickTickApiRequest.call(this, "DELETE", endpoint);

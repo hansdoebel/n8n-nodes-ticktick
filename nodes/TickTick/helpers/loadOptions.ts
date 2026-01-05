@@ -84,6 +84,63 @@ export async function getProjects(
 	}
 }
 
+/**
+ * Search projects for resource locator
+ * This method is specifically for resource locator fields that need search capability
+ */
+export async function searchProjects(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	const endpoint = "/open/v1/project";
+	try {
+		const responseData = (await tickTickApiRequest.call(
+			this,
+			"GET",
+			endpoint,
+		)) as Project[];
+
+		if (!Array.isArray(responseData)) {
+			throw new Error("API response is not an array of projects");
+		}
+
+		let options = responseData
+			.filter((project: Project) => project && project.id && project.name)
+			.map((project: Project) => ({
+				name: project.name,
+				value: project.id,
+			}));
+
+		// Add Inbox option (check if operation is not delete)
+		try {
+			const operation = this.getCurrentNodeParameter("operation") as string;
+			if (operation !== "delete") {
+				options.unshift({ name: "Inbox", value: "" });
+			}
+		} catch (paramError) {
+			options.unshift({ name: "Inbox", value: "" });
+		}
+
+		// Filter results based on search query
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		try {
+			const operation = this.getCurrentNodeParameter("operation") as string;
+			if (operation !== "delete") {
+				return [{ name: "Inbox", value: "" }];
+			}
+		} catch (e) {}
+		return [];
+	}
+}
+
 export async function getTasks(
 	this: ILoadOptionsFunctions,
 	projectId?: string,
@@ -111,6 +168,60 @@ export async function getTasks(
 				name: task.title as string,
 				value: String(task.id),
 			}));
+	} catch (error) {
+		return [];
+	}
+}
+
+/**
+ * Search tasks for resource locator
+ */
+export async function searchTasks(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const projectIdParam = this.getCurrentNodeParameter("projectId");
+		let projectId = "";
+
+		if (typeof projectIdParam === "object" && projectIdParam !== null) {
+			projectId = (projectIdParam as { value: string }).value || "";
+		} else {
+			projectId = (projectIdParam as string) || "";
+		}
+
+		const actualProjectId = !projectId || projectId === ""
+			? "inbox"
+			: projectId;
+		const endpoint = `/open/v1/project/${actualProjectId}/data`;
+
+		const responseData = (await tickTickApiRequest.call(
+			this,
+			"GET",
+			endpoint,
+		)) as IDataObject;
+
+		const tasks = responseData.tasks as IDataObject[];
+
+		if (!Array.isArray(tasks)) {
+			return [];
+		}
+
+		let options = tasks
+			.filter((task) => task && task.id && task.title)
+			.map((task) => ({
+				name: task.title as string,
+				value: String(task.id),
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
 	} catch (error) {
 		return [];
 	}
@@ -179,6 +290,50 @@ export async function getTags(
 				name: tag.label || tag.name,
 				value: tag.name,
 			}));
+	} catch (error) {
+		return [];
+	}
+}
+
+/**
+ * Search tags for resource locator
+ */
+export async function searchTags(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const response =
+			(await tickTickApiRequestV2.call(this, "GET", "/batch/check/0")) as {
+				tags?: Array<{ name: string; label?: string }>;
+			};
+
+		const tags = response.tags || [];
+
+		if (!Array.isArray(tags)) {
+			return [];
+		}
+
+		let options = tags
+			.filter((tag) => tag && tag.name)
+			.map((tag) => ({
+				name: tag.label || tag.name,
+				value: tag.name,
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
 	} catch (error) {
 		return [];
 	}

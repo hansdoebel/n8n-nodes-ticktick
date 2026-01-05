@@ -23,12 +23,15 @@ describe("TickTick V2 Tags Resource", () => {
 		client?.disconnect();
 	});
 
-	test("GET /tags - list all tags", async () => {
-		const response = await client.get("/tags");
+	test("GET /batch/check/0 - list all tags", async () => {
+		const response = await client.get("/batch/check/0");
 
 		expect(response.statusCode).toBe(200);
 		expect(response.data).toBeDefined();
-		expect(Array.isArray(response.data) || typeof response.data === "object")
+		expect(typeof response.data).toBe("object");
+		expect(
+			Array.isArray(response.data.tags) || response.data.tags === undefined,
+		)
 			.toBe(true);
 	}, 10000);
 

@@ -22,15 +22,30 @@ export const taskSetParentFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: "Project Name or ID",
+		displayName: "Project",
 		name: "projectId",
-		type: "options",
-		typeOptions: {
-			loadOptionsMethod: "getProjects",
-		},
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		default: "",
-		description: 'The project containing the task. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description: "The project containing the task",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchProjects",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -59,8 +74,18 @@ export async function taskSetParentExecute(
 	index: number,
 ): Promise<INodeExecutionData[]> {
 	const taskId = this.getNodeParameter("taskId", index) as string;
-	const projectId = this.getNodeParameter("projectId", index) as string;
+	const projectIdValue = this.getNodeParameter("projectId", index) as
+		| string
+		| { mode: string; value: string };
 	const parentId = this.getNodeParameter("parentId", index, "") as string;
+
+	let projectId: string;
+
+	if (typeof projectIdValue === "object" && projectIdValue !== null) {
+		projectId = projectIdValue.value || "";
+	} else {
+		projectId = projectIdValue || "";
+	}
 
 	// First get the current task data
 	const currentTask = await tickTickApiRequestV2.call(

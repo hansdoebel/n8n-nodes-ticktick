@@ -2,6 +2,7 @@ import type {
 	IExecuteFunctions,
 	ILoadOptionsFunctions,
 	INodeExecutionData,
+	INodeListSearchResult,
 	INodeType,
 	INodeTypeDescription,
 } from "n8n-workflow";
@@ -43,6 +44,9 @@ import {
 	getProjects,
 	getTags,
 	getTasks,
+	searchProjects,
+	searchTags,
+	searchTasks,
 } from "@ticktick/GenericFunctions";
 
 export class TickTick implements INodeType {
@@ -101,24 +105,12 @@ export class TickTick implements INodeType {
 				noDataExpression: true,
 				options: [
 					{ name: "Project", value: "project" },
+					{ name: "Sync", value: "sync" },
 					{ name: "Tag", value: "tag" },
 					{ name: "Task", value: "task" },
 					{ name: "User", value: "user" },
 				],
 				default: "task",
-			},
-			{
-				displayName:
-					"This resource requires V2 API authentication (Email/Password)",
-				name: "v2Notice",
-				type: "notice",
-				default: "",
-				displayOptions: {
-					show: {
-						resource: ["tag", "user"],
-						authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
-					},
-				},
 			},
 			...taskOperations,
 			...taskFields,
@@ -156,6 +148,29 @@ export class TickTick implements INodeType {
 			},
 			async getProjectGroups(this: ILoadOptionsFunctions) {
 				return await getProjectGroups.call(this);
+			},
+		},
+		listSearch: {
+			async searchProjects(
+				this: ILoadOptionsFunctions,
+				filter?: string,
+			): Promise<INodeListSearchResult> {
+				const results = await searchProjects.call(this, filter);
+				return { results };
+			},
+			async searchTags(
+				this: ILoadOptionsFunctions,
+				filter?: string,
+			): Promise<INodeListSearchResult> {
+				const results = await searchTags.call(this, filter);
+				return { results };
+			},
+			async searchTasks(
+				this: ILoadOptionsFunctions,
+				filter?: string,
+			): Promise<INodeListSearchResult> {
+				const results = await searchTasks.call(this, filter);
+				return { results };
 			},
 		},
 	};

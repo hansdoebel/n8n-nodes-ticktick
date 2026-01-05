@@ -22,15 +22,30 @@ export const taskMoveFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: "From Project Name or ID",
+		displayName: "From Project",
 		name: "fromProjectId",
-		type: "options",
-		typeOptions: {
-			loadOptionsMethod: "getProjects",
-		},
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		default: "",
-		description: 'The current project containing the task. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description: "The current project containing the task",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchProjects",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -39,15 +54,30 @@ export const taskMoveFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: "To Project Name or ID",
+		displayName: "To Project",
 		name: "toProjectId",
-		type: "options",
-		typeOptions: {
-			loadOptionsMethod: "getProjects",
-		},
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		default: "",
-		description: 'The destination project for the task. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description: "The destination project for the task",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchProjects",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -62,8 +92,27 @@ export async function taskMoveExecute(
 	index: number,
 ): Promise<INodeExecutionData[]> {
 	const taskId = this.getNodeParameter("taskId", index) as string;
-	const fromProjectId = this.getNodeParameter("fromProjectId", index) as string;
-	const toProjectId = this.getNodeParameter("toProjectId", index) as string;
+	const fromProjectIdValue = this.getNodeParameter("fromProjectId", index) as
+		| string
+		| { mode: string; value: string };
+	const toProjectIdValue = this.getNodeParameter("toProjectId", index) as
+		| string
+		| { mode: string; value: string };
+
+	let fromProjectId: string;
+	let toProjectId: string;
+
+	if (typeof fromProjectIdValue === "object" && fromProjectIdValue !== null) {
+		fromProjectId = fromProjectIdValue.value || "";
+	} else {
+		fromProjectId = fromProjectIdValue || "";
+	}
+
+	if (typeof toProjectIdValue === "object" && toProjectIdValue !== null) {
+		toProjectId = toProjectIdValue.value || "";
+	} else {
+		toProjectId = toProjectIdValue || "";
+	}
 
 	const body = {
 		taskId,

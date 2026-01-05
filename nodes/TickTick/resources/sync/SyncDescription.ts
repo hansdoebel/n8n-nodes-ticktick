@@ -16,8 +16,7 @@ export const syncOperations: INodeProperties[] = [
 			{
 				name: "Sync All",
 				value: "syncAll",
-				description:
-					"Get all user data including projects, tasks, tags, habits, and more",
+				description: "Get all user data including projects, tasks, and more",
 				action: "Sync all data",
 			},
 		],

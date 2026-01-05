@@ -2,6 +2,7 @@ import { createTestClient, type TickTickTestClient } from "./utils/testClient";
 
 describe("TickTick V2 Projects Resource", () => {
 	let client: TickTickTestClient;
+	let testProjectId: string;
 
 	beforeAll(async () => {
 		client = await createTestClient();
@@ -11,12 +12,225 @@ describe("TickTick V2 Projects Resource", () => {
 		client?.disconnect();
 	});
 
-	test("GET /projects - list all projects", async () => {
+	test("GET /projects - list all projects (V2 endpoint)", async () => {
 		const response = await client.get("/projects");
 
 		expect(response.statusCode).toBe(200);
 		expect(response.data).toBeDefined();
 		expect(Array.isArray(response.data) || typeof response.data === "object")
 			.toBe(true);
+
+		// Store a project ID for further tests
+		if (Array.isArray(response.data) && response.data.length > 0) {
+			testProjectId = response.data[0].id;
+		}
 	}, 10000);
+
+	test(
+		"V1 API endpoints are NOT compatible with V2 session auth - /open/v1/project/:projectId/data",
+		async () => {
+			// Skip if no projects found
+			if (!testProjectId) {
+				console.warn("Skipping test: no projects available");
+				return;
+			}
+
+			// IMPORTANT FINDING: V1 endpoints (/open/v1/*) do NOT work with V2 session authentication
+			// This test documents that V1 and V2 APIs are separate and incompatible
+			// The ProjectGet operation will need to use different endpoints based on auth type
+			const response = await client.request(
+				"GET",
+				`/open/v1/project/${testProjectId}/data`,
+			);
+
+			// V1 endpoints return 404 when using V2 session credentials
+			expect(response.statusCode).toBe(404);
+
+			console.log(
+				"✓ Confirmed: V1 project data endpoint does not work with V2 session auth",
+			);
+		},
+		10000,
+	);
+
+	test(
+		"V1 API endpoints are NOT compatible with V2 session auth - /open/v1/project/inbox/data",
+		async () => {
+			// Test the inbox endpoint which is commonly used
+			const response = await client.request(
+				"GET",
+				"/open/v1/project/inbox/data",
+			);
+
+			// V1 endpoints return 404 when using V2 session credentials
+			expect(response.statusCode).toBe(404);
+
+			console.log(
+				"✓ Confirmed: V1 inbox endpoint does not work with V2 session auth",
+			);
+		},
+		10000,
+	);
+
+	test(
+		"V1 API endpoints are NOT compatible with V2 session auth - /open/v1/project/:projectId",
+		async () => {
+			// Skip if no projects found
+			if (!testProjectId) {
+				console.warn("Skipping test: no projects available");
+				return;
+			}
+
+			// Test if V1 endpoint for getting a specific project works with V2 auth
+			const response = await client.request(
+				"GET",
+				`/open/v1/project/${testProjectId}`,
+			);
+
+			// V1 endpoints return 404 when using V2 session credentials
+			expect(response.statusCode).toBe(404);
+
+			console.log(
+				"✓ Confirmed: V1 get specific project endpoint does not work with V2 session auth",
+			);
+		},
+		10000,
+	);
+
+	test(
+		"V1 API endpoints are NOT compatible with V2 session auth - /open/v1/project",
+		async () => {
+			// Test if V1 endpoint for listing all projects works with V2 auth
+			const response = await client.request("GET", "/open/v1/project");
+
+			// V1 endpoints return 404 when using V2 session credentials
+			expect(response.statusCode).toBe(404);
+
+			console.log(
+				"✓ Confirmed: V1 list projects endpoint does not work with V2 session auth",
+			);
+		},
+		10000,
+	);
+
+	// Test V2 API equivalents for project operations
+	test(
+		"GET /project/:projectId/data - get project with data (V2 endpoint)",
+		async () => {
+			// Skip if no projects found
+			if (!testProjectId) {
+				console.warn("Skipping test: no projects available");
+				return;
+			}
+
+			// Test V2 equivalent: /api/v2/project/:projectId/data
+			const response = await client.request(
+				"GET",
+				`/project/${testProjectId}/data`,
+			);
+
+			console.log(
+				`Testing V2 endpoint /project/${testProjectId}/data - Status: ${response.statusCode}`,
+			);
+
+			if (response.statusCode === 200) {
+				expect(response.data).toBeDefined();
+				expect(typeof response.data).toBe("object");
+
+				// Verify the response contains expected project data structure
+				if (response.data) {
+					console.log("✓ V2 project data endpoint works!", response.data);
+					expect(response.data).toHaveProperty("tasks");
+					expect(Array.isArray(response.data.tasks)).toBe(true);
+				}
+			} else {
+				console.log(
+					`✗ V2 project data endpoint returned ${response.statusCode}`,
+					response.data,
+				);
+			}
+		},
+		10000,
+	);
+
+	test(
+		"GET /project/:projectId - get specific project (V2 endpoint)",
+		async () => {
+			// Skip if no projects found
+			if (!testProjectId) {
+				console.warn("Skipping test: no projects available");
+				return;
+			}
+
+			// Test V2 equivalent: /api/v2/project/:projectId
+			const response = await client.request("GET", `/project/${testProjectId}`);
+
+			console.log(
+				`Testing V2 endpoint /project/${testProjectId} - Status: ${response.statusCode}`,
+			);
+
+			if (response.statusCode === 200) {
+				expect(response.data).toBeDefined();
+				expect(typeof response.data).toBe("object");
+
+				// Verify project structure
+				if (response.data) {
+					console.log(
+						"✓ V2 get specific project endpoint works!",
+						response.data,
+					);
+					expect(response.data).toHaveProperty("id");
+					expect(response.data).toHaveProperty("name");
+				}
+			} else {
+				console.log(
+					`✗ V2 get specific project endpoint returned ${response.statusCode}`,
+					response.data,
+				);
+			}
+		},
+		10000,
+	);
+
+	test(
+		"GET /batch/check/0 - comprehensive data including projects",
+		async () => {
+			// The /batch/check/0 endpoint returns all user data including projects
+			const response = await client.request("GET", "/batch/check/0");
+
+			console.log(
+				`Testing V2 endpoint /batch/check/0 - Status: ${response.statusCode}`,
+			);
+
+			if (response.statusCode === 200) {
+				expect(response.data).toBeDefined();
+				expect(typeof response.data).toBe("object");
+
+				// This endpoint should return comprehensive data
+				if (response.data) {
+					console.log(
+						"✓ V2 batch/check endpoint works! Keys:",
+						Object.keys(response.data),
+					);
+
+					// Check if projects are included
+					if (response.data.projectProfiles) {
+						console.log(
+							"  - Found projectProfiles:",
+							response.data.projectProfiles.length,
+						);
+					}
+					if (response.data.syncTaskBean?.update) {
+						console.log("  - Found tasks in syncTaskBean");
+					}
+				}
+			} else {
+				console.log(
+					`✗ V2 batch/check endpoint returned ${response.statusCode}`,
+					response.data,
+				);
+			}
+		},
+		10000,
+	);
 });

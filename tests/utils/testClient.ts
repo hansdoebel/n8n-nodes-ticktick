@@ -193,10 +193,16 @@ export class TickTickTestClient {
 			headers["Content-Length"] = Buffer.byteLength(bodyJson);
 		}
 
+		// Determine the path based on whether it's a V1 or V2 endpoint
+		// V1 endpoints start with /open/v1, others are V2
+		const path = endpoint.startsWith("/open/v1")
+			? `/api${endpoint}`
+			: `/api/v2${endpoint}`;
+
 		const response = await makeRawRequest(
 			{
 				hostname: "api.ticktick.com",
-				path: `/api/v2${endpoint}`,
+				path,
 				method,
 				headers,
 			},
