@@ -12,10 +12,10 @@ export const taskListAllFields: INodeProperties[] = [
 		name: "limit",
 		type: "number",
 		typeOptions: {
-			minValue: 0,
+			minValue: 1,
 		},
-		default: 0,
-		description: "Max number of tasks to return. Use 0 for all.",
+		default: 50,
+		description: "Max number of results to return",
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -37,14 +37,29 @@ export const taskListAllFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: "Project Name or ID",
+				displayName: "Project",
 				name: "projectId",
-				type: "options",
-				typeOptions: {
-					loadOptionsMethod: "getProjects",
-				},
-				default: "",
+				type: "resourceLocator",
+				default: { mode: "list", value: "" },
 				description: "Filter tasks by project (leave empty for all)",
+				modes: [
+					{
+						displayName: "From List",
+						name: "list",
+						type: "list",
+						typeOptions: {
+							searchListMethod: "searchProjects",
+							searchable: true,
+							searchFilterRequired: false,
+						},
+					},
+					{
+						displayName: "By ID",
+						name: "id",
+						type: "string",
+						placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+					},
+				],
 			},
 			{
 				displayName: "Status",
@@ -63,7 +78,7 @@ export const taskListAllFields: INodeProperties[] = [
 				name: "includeDeleted",
 				type: "boolean",
 				default: false,
-				description: "Include tasks that are marked as deleted",
+				description: "Whether to include tasks that are marked as deleted",
 			},
 		],
 	},
@@ -75,10 +90,20 @@ export async function taskListAllExecute(
 ): Promise<INodeExecutionData[]> {
 	const limit = this.getNodeParameter("limit", index, 0) as number;
 	const filters = this.getNodeParameter("filters", index, {}) as {
-		projectId?: string;
+		projectId?: string | { mode: string; value: string };
 		status?: "all" | "active" | "completed";
 		includeDeleted?: boolean;
 	};
+
+	// Handle resource locator format for projectId
+	let projectId: string | undefined;
+	if (filters.projectId) {
+		if (typeof filters.projectId === "object" && filters.projectId !== null) {
+			projectId = filters.projectId.value || undefined;
+		} else {
+			projectId = filters.projectId || undefined;
+		}
+	}
 
 	const response = await tickTickApiRequestV2.call(
 		this,
@@ -99,7 +124,7 @@ export async function taskListAllExecute(
 
 	if (tasks.length) {
 		const filtered = tasks.filter((task) => {
-			if (filters.projectId && task.projectId !== filters.projectId) {
+			if (projectId && task.projectId !== projectId) {
 				return false;
 			}
 

@@ -52,13 +52,6 @@ export const tagUpdateFields: INodeProperties[] = [
 		},
 		options: [
 			{
-				displayName: "Label",
-				name: "label",
-				type: "string",
-				default: "",
-				description: "The display name of the tag",
-			},
-			{
 				displayName: "Color",
 				name: "color",
 				type: "color",
@@ -66,16 +59,11 @@ export const tagUpdateFields: INodeProperties[] = [
 				description: "The color of the tag in hex format",
 			},
 			{
-				displayName: "Sort Type",
-				name: "sortType",
-				type: "options",
-				options: [
-					{ name: "None", value: "NONE" },
-					{ name: "Manual", value: "MANUAL" },
-					{ name: "Alphabetical", value: "ALPHABETICAL" },
-				],
-				default: "NONE",
-				description: "How the tag is sorted within its group",
+				displayName: "Label",
+				name: "label",
+				type: "string",
+				default: "",
+				description: "The display name of the tag",
 			},
 			{
 				displayName: "Parent Tag",
@@ -90,6 +78,18 @@ export const tagUpdateFields: INodeProperties[] = [
 				type: "number",
 				default: 0,
 				description: "The sort order of the tag",
+			},
+			{
+				displayName: "Sort Type",
+				name: "sortType",
+				type: "options",
+				options: [
+					{ name: "None", value: "NONE" },
+					{ name: "Manual", value: "MANUAL" },
+					{ name: "Alphabetical", value: "ALPHABETICAL" },
+				],
+				default: "NONE",
+				description: "How the tag is sorted within its group",
 			},
 		],
 	},

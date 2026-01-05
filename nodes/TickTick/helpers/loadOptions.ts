@@ -85,15 +85,21 @@ export async function getProjects(
 }
 
 /**
- * Search projects for resource locator
+ * Search projects for resource locator (V1 API)
  * This method is specifically for resource locator fields that need search capability
  */
 export async function searchProjects(
 	this: ILoadOptionsFunctions,
 	filter?: string,
 ): Promise<{ name: string; value: string }[]> {
-	const endpoint = "/open/v1/project";
 	try {
+		const authType = getAuthenticationType(this);
+
+		if (authType === "tickTickSessionApi") {
+			return await searchProjectsV2.call(this, filter);
+		}
+
+		const endpoint = "/open/v1/project";
 		const responseData = (await tickTickApiRequest.call(
 			this,
 			"GET",
@@ -141,6 +147,65 @@ export async function searchProjects(
 	}
 }
 
+/**
+ * Search projects for resource locator (V2 API using sync endpoint)
+ */
+export async function searchProjectsV2(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const response = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/batch/check/0",
+		)) as IDataObject;
+
+		const projects = response.projectProfiles as Array<
+			{ id: string; name: string }
+		>;
+
+		if (!Array.isArray(projects)) {
+			return [];
+		}
+
+		let options = projects
+			.filter((project) => project && project.id && project.name)
+			.map((project) => ({
+				name: project.name,
+				value: project.id,
+			}));
+
+		try {
+			const operation = this.getCurrentNodeParameter("operation") as string;
+
+			if (operation !== "delete") {
+				const inboxId = response.inboxId as string;
+				options.unshift({ name: "Inbox", value: inboxId || "" });
+			}
+		} catch (paramError) {
+			const inboxId = response.inboxId as string;
+			options.unshift({ name: "Inbox", value: inboxId || "" });
+		}
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}
+
 export async function getTasks(
 	this: ILoadOptionsFunctions,
 	projectId?: string,
@@ -174,13 +239,19 @@ export async function getTasks(
 }
 
 /**
- * Search tasks for resource locator
+ * Search tasks for resource locator (V1 API)
  */
 export async function searchTasks(
 	this: ILoadOptionsFunctions,
 	filter?: string,
 ): Promise<{ name: string; value: string }[]> {
 	try {
+		const authType = getAuthenticationType(this);
+
+		if (authType === "tickTickSessionApi") {
+			return await searchTasksV2.call(this, filter);
+		}
+
 		const projectIdParam = this.getCurrentNodeParameter("projectId");
 		let projectId = "";
 
@@ -209,6 +280,67 @@ export async function searchTasks(
 
 		let options = tasks
 			.filter((task) => task && task.id && task.title)
+			.map((task) => ({
+				name: task.title as string,
+				value: String(task.id),
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}
+
+/**
+ * Search tasks for resource locator (V2 API using sync endpoint)
+ */
+export async function searchTasksV2(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const projectIdParam = this.getCurrentNodeParameter("projectId");
+		let projectId = "";
+
+		if (typeof projectIdParam === "object" && projectIdParam !== null) {
+			projectId = (projectIdParam as { value: string }).value || "";
+		} else {
+			projectId = (projectIdParam as string) || "";
+		}
+
+		const response = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/batch/check/0",
+		)) as IDataObject;
+
+		const tasks = (response.syncTaskBean as IDataObject)
+			?.update as IDataObject[];
+
+		if (!Array.isArray(tasks)) {
+			return [];
+		}
+
+		let options = tasks
+			.filter((task) => task && task.id && task.title)
+			.filter((task) => {
+				if (!projectId || projectId === "") {
+					return true;
+				}
+				return task.projectId === projectId;
+			})
 			.map((task) => ({
 				name: task.title as string,
 				value: String(task.id),

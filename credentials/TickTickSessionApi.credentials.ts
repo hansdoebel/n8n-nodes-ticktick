@@ -2,7 +2,7 @@ import type { Icon, ICredentialType, INodeProperties } from "n8n-workflow";
 
 export class TickTickSessionApi implements ICredentialType {
 	name = "tickTickSessionApi";
-	displayName = "TickTick Session API (V2)";
+	displayName = "TickTick (V2) Session API";
 	documentationUrl = "https://github.com/hansdoebel/n8n-nodes-ticktick";
 	icon: Icon = "file:../icons/ticktick.svg";
 	properties: INodeProperties[] = [

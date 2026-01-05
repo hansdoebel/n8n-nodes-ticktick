@@ -158,6 +158,59 @@ export class TickTick implements INodeType {
 				const results = await searchProjects.call(this, filter);
 				return { results };
 			},
+			async searchProjectsForMove(
+				this: ILoadOptionsFunctions,
+				filter?: string,
+			): Promise<INodeListSearchResult> {
+				const results = await searchProjects.call(this, filter);
+
+				// Get the current task's project ID to exclude it
+				try {
+					const taskIdValue = this.getCurrentNodeParameter("taskId") as
+						| string
+						| { mode: string; value: string };
+
+					let taskId: string;
+					if (typeof taskIdValue === "object" && taskIdValue !== null) {
+						taskId = taskIdValue.value || "";
+					} else {
+						taskId = taskIdValue || "";
+					}
+
+					if (taskId) {
+						// We need to get the task's current project from context
+						// For now, we'll fetch it using the same approach as in TaskMove
+						const authType = this.getCurrentNodeParameter(
+							"authentication",
+						) as string;
+
+						if (authType === "tickTickSessionApi") {
+							const { tickTickApiRequestV2 } = await import(
+								"./helpers/apiRequest"
+							);
+							const syncResponse = (await tickTickApiRequestV2.call(
+								this,
+								"GET",
+								"/batch/check/0",
+							)) as any;
+
+							const tasks = syncResponse?.syncTaskBean?.update || [];
+							const task = tasks.find((t: any) => String(t.id) === taskId);
+
+							if (task && task.projectId) {
+								// Exclude the current project
+								return {
+									results: results.filter((r) => r.value !== task.projectId),
+								};
+							}
+						}
+					}
+				} catch (error) {
+					// If we can't determine the current project, return all projects
+				}
+
+				return { results };
+			},
 			async searchTags(
 				this: ILoadOptionsFunctions,
 				filter?: string,
