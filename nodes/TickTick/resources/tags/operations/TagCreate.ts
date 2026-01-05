@@ -42,31 +42,12 @@ export const tagCreateFields: INodeProperties[] = [
 				description: "The color of the tag in hex format",
 			},
 			{
-				displayName: "Sort Type",
-				name: "sortType",
-				type: "options",
-				options: [
-					{ name: "None", value: "NONE" },
-					{ name: "Manual", value: "MANUAL" },
-					{ name: "Alphabetical", value: "ALPHABETICAL" },
-				],
-				default: "NONE",
-				description: "How the tag is sorted within its group",
-			},
-			{
 				displayName: "Parent Tag",
 				name: "parent",
 				type: "string",
 				default: "",
 				placeholder: "e.g. Projects",
 				description: "The name of the parent tag for nested tags",
-			},
-			{
-				displayName: "Sort Order",
-				name: "sortOrder",
-				type: "number",
-				default: 0,
-				description: "The sort order of the tag",
 			},
 		],
 	},
@@ -79,9 +60,7 @@ export async function tagCreateExecute(
 	const name = this.getNodeParameter("name", index) as string;
 	const additionalFields = this.getNodeParameter("additionalFields", index) as {
 		color?: string;
-		sortType?: string;
 		parent?: string;
-		sortOrder?: number;
 	};
 
 	const normalizedName = name.toLowerCase().replace(/\s+/g, "");
@@ -96,12 +75,6 @@ export async function tagCreateExecute(
 	}
 	if (additionalFields.parent) {
 		tag.parent = additionalFields.parent;
-	}
-	if (additionalFields.sortType && additionalFields.sortType !== "NONE") {
-		tag.sortType = additionalFields.sortType;
-	}
-	if (typeof additionalFields.sortOrder === "number") {
-		tag.sortOrder = additionalFields.sortOrder;
 	}
 
 	const body = {

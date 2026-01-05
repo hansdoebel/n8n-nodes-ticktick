@@ -100,11 +100,7 @@ export class TickTick implements INodeType {
 				type: "options",
 				noDataExpression: true,
 				options: [
-					{ name: "Focus", value: "focus" },
-					{ name: "Habit", value: "habit" },
 					{ name: "Project", value: "project" },
-					{ name: "Project Group", value: "projectGroup" },
-					{ name: "Sync", value: "sync" },
 					{ name: "Tag", value: "tag" },
 					{ name: "Task", value: "task" },
 					{ name: "User", value: "user" },
@@ -119,7 +115,7 @@ export class TickTick implements INodeType {
 				default: "",
 				displayOptions: {
 					show: {
-						resource: ["tag", "habit", "focus", "projectGroup", "user", "sync"],
+						resource: ["tag", "user"],
 						authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
 					},
 				},
