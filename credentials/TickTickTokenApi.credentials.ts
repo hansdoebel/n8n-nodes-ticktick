@@ -1,5 +1,6 @@
 import {
 	IAuthenticateGeneric,
+	Icon,
 	ICredentialTestRequest,
 	ICredentialType,
 	INodeProperties,
@@ -9,6 +10,7 @@ export class TickTickTokenApi implements ICredentialType {
 	name = "tickTickTokenApi";
 	displayName = "TickTick API";
 	documentationUrl = "https://developer.ticktick.com/docs#/openapi";
+	icon: Icon = "file:../icons/ticktick.svg";
 	properties: INodeProperties[] = [
 		{
 			displayName: "API Token",

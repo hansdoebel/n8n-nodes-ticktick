@@ -51,8 +51,7 @@ export const taskOperations: INodeProperties[] = [
 
 // Notice for V2-only task operations
 export const taskV2Notice: INodeProperties = {
-	displayName:
-		"This operation requires V2 API authentication (Username/Password)",
+	displayName: "This operation requires V2 API authentication (Email/Password)",
 	name: "taskV2Notice",
 	type: "notice",
 	default: "",

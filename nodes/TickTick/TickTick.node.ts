@@ -49,7 +49,7 @@ export class TickTick implements INodeType {
 	description: INodeTypeDescription = {
 		displayName: "TickTick",
 		name: "tickTick",
-		icon: "file:ticktick.svg",
+		icon: "file:../../icons/ticktick.svg",
 		group: ["transform"],
 		subtitle: '={{ $parameter["operation"] + ": " + $parameter["resource"] }}',
 		version: 1,
@@ -90,7 +90,7 @@ export class TickTick implements INodeType {
 				options: [
 					{ name: "Access Token (V1 API)", value: "tickTickTokenApi" },
 					{ name: "OAuth2 (V1 API)", value: "tickTickOAuth2Api" },
-					{ name: "Username/Password (V2 API)", value: "tickTickSessionApi" },
+					{ name: "Email/Password (V2 API)", value: "tickTickSessionApi" },
 				],
 				default: "tickTickTokenApi",
 			},
@@ -109,7 +109,7 @@ export class TickTick implements INodeType {
 			},
 			{
 				displayName:
-					"This resource requires V2 API authentication (Username/Password)",
+					"This resource requires V2 API authentication (Email/Password)",
 				name: "v2Notice",
 				type: "notice",
 				default: "",
