@@ -69,11 +69,7 @@ export async function getProjects(
 			}));
 
 		try {
-			const operation = this.getCurrentNodeParameter("operation") as string;
-
-			if (operation !== "delete") {
-				options.unshift({ name: "Inbox", value: "" });
-			}
+			options.unshift({ name: "Inbox", value: "" });
 		} catch (paramError) {
 			options.unshift({ name: "Inbox", value: "" });
 		}
@@ -81,10 +77,7 @@ export async function getProjects(
 		return options;
 	} catch (error) {
 		try {
-			const operation = this.getCurrentNodeParameter("operation") as string;
-			if (operation !== "delete") {
-				return [{ name: "Inbox", value: "" }];
-			}
+			return [{ name: "Inbox", value: "" }];
 		} catch (e) {}
 		return [];
 	}
@@ -125,10 +118,7 @@ export async function searchProjects(
 
 		// Add Inbox option (check if operation is not delete)
 		try {
-			const operation = this.getCurrentNodeParameter("operation") as string;
-			if (operation !== "delete") {
-				options.unshift({ name: "Inbox", value: "" });
-			}
+			options.unshift({ name: "Inbox", value: "" });
 		} catch (paramError) {
 			options.unshift({ name: "Inbox", value: "" });
 		}
@@ -144,10 +134,7 @@ export async function searchProjects(
 		return options;
 	} catch (error) {
 		try {
-			const operation = this.getCurrentNodeParameter("operation") as string;
-			if (operation !== "delete") {
-				return [{ name: "Inbox", value: "" }];
-			}
+			return [{ name: "Inbox", value: "" }];
 		} catch (e) {}
 		return [];
 	}
@@ -188,12 +175,8 @@ export async function searchProjectsV2(
 			}));
 
 		try {
-			const operation = this.getCurrentNodeParameter("operation") as string;
-
-			if (operation !== "delete") {
-				const inboxId = response.inboxId as string;
-				options.unshift({ name: "Inbox", value: inboxId || "" });
-			}
+			const inboxId = response.inboxId as string;
+			options.unshift({ name: "Inbox", value: inboxId || "" });
 		} catch (paramError) {
 			const inboxId = response.inboxId as string;
 			options.unshift({ name: "Inbox", value: inboxId || "" });

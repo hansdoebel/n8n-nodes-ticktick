@@ -133,7 +133,6 @@ async function projectGetExecuteV2(
 	index: number,
 	mode: string,
 ) {
-	// V2 API uses /batch/check/0 to get all data, then we filter it
 	const response = (await tickTickApiRequestV2.call(
 		this,
 		"GET",
@@ -165,22 +164,19 @@ async function projectGetExecuteV2(
 	const tasks =
 		((response.syncTaskBean as IDataObject)?.update as IDataObject[]) || [];
 
-	// Find the specific project
 	const project = projects.find((p) => String(p.id) === projectId);
 
 	if (mode === "getWithData") {
-		// Filter tasks for this project
 		const projectTasks = tasks.filter(
 			(task) => String(task.projectId) === projectId,
 		);
 
-		// Return data in V1 format for compatibility
 		return [
 			{
 				json: {
 					project: project || { id: projectId },
 					tasks: projectTasks,
-					columns: [], // V2 API doesn't return columns in batch/check
+					columns: [],
 				},
 			},
 		];

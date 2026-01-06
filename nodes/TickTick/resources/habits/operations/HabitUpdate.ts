@@ -8,7 +8,7 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const habitUpdateFields: INodeProperties[] = [
 	{
-		displayName: 'Habit Name or ID',
+		displayName: "Habit Name or ID",
 		name: "habitId",
 		type: "options",
 		typeOptions: {
@@ -16,7 +16,8 @@ export const habitUpdateFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description: 'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description:
+			'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -130,7 +131,6 @@ export async function habitUpdateExecute(
 		unit?: string;
 	};
 
-	// First get the current habit data
 	const currentHabit = await tickTickApiRequestV2.call(
 		this,
 		"GET",
@@ -142,7 +142,6 @@ export async function habitUpdateExecute(
 		id: habitId,
 	};
 
-	// Apply updates
 	if (updateFields.name !== undefined) body.name = updateFields.name;
 	if (updateFields.color !== undefined) body.color = updateFields.color;
 	if (updateFields.icon !== undefined) body.icon = updateFields.icon;

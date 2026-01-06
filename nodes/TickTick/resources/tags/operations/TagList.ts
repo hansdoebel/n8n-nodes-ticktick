@@ -11,7 +11,6 @@ export async function tagListExecute(
 	this: IExecuteFunctions,
 	index: number,
 ): Promise<INodeExecutionData[]> {
-	// V2 API returns tags via sync endpoint
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",

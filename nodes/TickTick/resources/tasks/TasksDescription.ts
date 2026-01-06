@@ -37,19 +37,18 @@ export const taskOperations: INodeProperties[] = [
 				action: "Move a task",
 				description: "Move a task to a different project (V2 API)",
 			},
-			{
-				name: "Set Parent",
-				value: "setParent",
-				action: "Set task parent",
-				description: "Make a task a subtask of another task (V2 API)",
-			},
+			// {
+			// 	name: "Set Parent",
+			// 	value: "setParent",
+			// 	action: "Set task parent",
+			// 	description: "Make a task a subtask of another task (V2 API)",
+			// },
 			{ name: "Update", value: "update", action: "Update a task" },
 		],
 		default: "create",
 	},
 ];
 
-// Notice for V2-only task operations
 export const taskV2Notice: INodeProperties = {
 	displayName:
 		"This operation requires TickTick V2 API authentication (Email/Password)",
@@ -64,7 +63,7 @@ export const taskV2Notice: INodeProperties = {
 				"listCompleted",
 				"listDeleted",
 				"move",
-				"setParent",
+				// "setParent",
 			],
 			authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
 		},

@@ -7,7 +7,7 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const habitCheckinFields: INodeProperties[] = [
 	{
-		displayName: 'Habit Name or ID',
+		displayName: "Habit Name or ID",
 		name: "habitId",
 		type: "options",
 		typeOptions: {
@@ -15,7 +15,8 @@ export const habitCheckinFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description: 'The habit to check in. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description:
+			'The habit to check in. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -60,7 +61,6 @@ export async function habitCheckinExecute(
 	const value = this.getNodeParameter("value", index, 1) as number;
 	const checkinDate = this.getNodeParameter("checkinDate", index, "") as string;
 
-	// Format date for checkin - use current date if not provided
 	const date = checkinDate ? new Date(checkinDate) : new Date();
 	const checkinStamp = date.toISOString();
 

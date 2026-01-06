@@ -148,14 +148,12 @@ export async function projectUpdateExecute(
 		false,
 	) as boolean;
 
-	// Get the project ID from the resource locator
 	const projectIdValue = this.getNodeParameter("projectId", index, "") as
 		| string
 		| { mode: string; value: string };
 
 	let projectId: string;
 
-	// Handle both resource locator format and legacy string format
 	if (typeof projectIdValue === "object" && projectIdValue !== null) {
 		projectId = projectIdValue.value || "";
 	} else {

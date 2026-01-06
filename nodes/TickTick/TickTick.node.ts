@@ -268,9 +268,9 @@ export class TickTick implements INodeType {
 						case "move":
 							result = await taskOps.taskMoveExecute.call(this, i);
 							break;
-						case "setParent":
-							result = await taskOps.taskSetParentExecute.call(this, i);
-							break;
+						// case "setParent":
+						// 	result = await taskOps.taskSetParentExecute.call(this, i);
+						// 	break;
 						default:
 							throw new NodeOperationError(
 								this.getNode(),

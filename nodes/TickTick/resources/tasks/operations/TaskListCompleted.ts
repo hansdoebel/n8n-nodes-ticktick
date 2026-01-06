@@ -43,7 +43,7 @@ export const taskListCompletedFields: INodeProperties[] = [
 			minValue: 1,
 		},
 		default: 50,
-		description: 'Max number of results to return',
+		description: "Max number of results to return",
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -61,7 +61,6 @@ export async function taskListCompletedExecute(
 	const endDate = this.getNodeParameter("endDate", index) as string;
 	const limit = this.getNodeParameter("limit", index, 100) as number;
 
-	// Format dates for query
 	const formatDateTime = (dateStr: string): string => {
 		const date = new Date(dateStr);
 		return date.toISOString().replace("T", " ").slice(0, 19);

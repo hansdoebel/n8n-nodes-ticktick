@@ -11,7 +11,6 @@ export async function projectGroupListExecute(
 	this: IExecuteFunctions,
 	index: number,
 ): Promise<INodeExecutionData[]> {
-	// V2 API returns project groups via sync endpoint
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",

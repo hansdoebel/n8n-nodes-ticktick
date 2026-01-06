@@ -95,7 +95,6 @@ export async function taskListAllExecute(
 		includeDeleted?: boolean;
 	};
 
-	// Handle resource locator format for projectId
 	let projectId: string | undefined;
 	if (filters.projectId) {
 		if (typeof filters.projectId === "object" && filters.projectId !== null) {
@@ -105,9 +104,7 @@ export async function taskListAllExecute(
 		}
 	}
 
-	// If filtering for completed tasks, use the dedicated /project/all/closed endpoint
 	if (filters.status === "completed") {
-		// Get date range for the last 30 days (or adjust as needed)
 		const now = new Date();
 		const thirtyDaysAgo = new Date(now);
 		thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -122,7 +119,6 @@ export async function taskListAllExecute(
 			from: fromStr,
 			to: toStr,
 			status: "Completed",
-			// Request a large batch since we'll filter by project client-side
 			limit: String(1000),
 		};
 
@@ -134,18 +130,47 @@ export async function taskListAllExecute(
 			qs,
 		)) as IDataObject[];
 
-		// Filter by project if specified
-		let filtered = Array.isArray(completedTasks) ? completedTasks : [];
-		if (projectId) {
-			filtered = filtered.filter((task) => task.projectId === projectId);
+		let allTasks = Array.isArray(completedTasks) ? completedTasks : [];
+
+		if (filters.includeDeleted) {
+			const deletedQs = {
+				start: 0,
+				limit: 1000,
+			};
+
+			const deletedResponse = await tickTickApiRequestV2.call(
+				this,
+				"GET",
+				"/project/all/trash/pagination",
+				{},
+				deletedQs,
+			);
+
+			let deletedTasks: IDataObject[] = [];
+			if (Array.isArray(deletedResponse)) {
+				deletedTasks = deletedResponse;
+			} else if (deletedResponse && deletedResponse.tasks) {
+				deletedTasks = deletedResponse.tasks as IDataObject[];
+			}
+
+			const deletedCompletedTasks = deletedTasks.filter(
+				(task) => task.status === 2,
+			);
+			allTasks.push(...deletedCompletedTasks);
 		}
 
-		// Apply user's limit after filtering by project
+		const filtered = allTasks.filter((task) => {
+			if (projectId && task.projectId !== projectId) {
+				return false;
+			}
+			return true;
+		});
+
+		// Apply user's limit after filtering
 		const limited = limit > 0 ? filtered.slice(0, limit) : filtered;
 		return limited.map((task) => ({ json: task }));
 	}
 
-	// For active or all tasks, use /batch/check/0
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
@@ -163,18 +188,35 @@ export async function taskListAllExecute(
 		tasks.push(...(syncTaskBean.add as IDataObject[]));
 	}
 
+	if (filters.includeDeleted) {
+		const deletedQs = {
+			start: 0,
+			limit: 1000,
+		};
+
+		const deletedResponse = await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/project/all/trash/pagination",
+			{},
+			deletedQs,
+		);
+
+		let deletedTasks: IDataObject[] = [];
+		if (Array.isArray(deletedResponse)) {
+			deletedTasks = deletedResponse;
+		} else if (deletedResponse && deletedResponse.tasks) {
+			deletedTasks = deletedResponse.tasks as IDataObject[];
+		}
+
+		tasks.push(...deletedTasks);
+	}
+
 	if (tasks.length) {
 		const filtered = tasks.filter((task) => {
 			if (projectId && task.projectId !== projectId) {
 				return false;
 			}
-
-			if (!filters.includeDeleted && task.deleted === 1) {
-				return false;
-			}
-
-			// Note: /batch/check/0 only returns active tasks (status 0)
-			// Completed tasks (status 2) are only available via /project/all/closed
 
 			return true;
 		});

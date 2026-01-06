@@ -91,7 +91,6 @@ export async function taskDeleteExecute(
 	const useV2 = isV2Auth(this, index);
 
 	if (useV2) {
-		// Fetch the task details from sync endpoint
 		const syncResponse = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
@@ -106,8 +105,6 @@ export async function taskDeleteExecute(
 			throw new Error(`Task with ID ${taskId} not found`);
 		}
 
-		// Use batch/task endpoint with delete operation
-		// The delete array requires objects with projectId and taskId only
 		const taskProjectId = task.projectId as string;
 		const body = {
 			add: [],

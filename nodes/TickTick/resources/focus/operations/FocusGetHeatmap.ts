@@ -44,7 +44,6 @@ export async function focusGetHeatmapExecute(
 	const startDate = this.getNodeParameter("startDate", index) as string;
 	const endDate = this.getNodeParameter("endDate", index) as string;
 
-	// Format dates as YYYYMMDD
 	const formatDate = (dateStr: string): string => {
 		const date = new Date(dateStr);
 		const year = date.getFullYear();
