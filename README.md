@@ -112,11 +112,11 @@ The following operations require **TickTick Session API** (Email/Password) crede
 
 ## Compatibility
 
-Tested successfully on 2025-12-07 with:
+Tested successfully on 2026-01-06 with:
 
-- n8n Version: 1.121.3
+- n8n Version: 2.2.3
 - Node Version: 22.11.0
-- pnpm Version: 9.1.4
+- pnpm Version: 10.27.0
 - No extra packages required (Luxon is bundled)
 
 ## Known Issues

@@ -83,10 +83,6 @@ export async function getProjects(
 	}
 }
 
-/**
- * Search projects for resource locator (V1 API)
- * This method is specifically for resource locator fields that need search capability
- */
 export async function searchProjects(
 	this: ILoadOptionsFunctions,
 	filter?: string,
@@ -116,14 +112,12 @@ export async function searchProjects(
 				value: project.id,
 			}));
 
-		// Add Inbox option (check if operation is not delete)
 		try {
 			options.unshift({ name: "Inbox", value: "" });
 		} catch (paramError) {
 			options.unshift({ name: "Inbox", value: "" });
 		}
 
-		// Filter results based on search query
 		if (filter) {
 			const searchTerm = filter.toLowerCase();
 			options = options.filter((option) =>
@@ -140,9 +134,6 @@ export async function searchProjects(
 	}
 }
 
-/**
- * Search projects for resource locator (V2 API using sync endpoint)
- */
 export async function searchProjectsV2(
 	this: ILoadOptionsFunctions,
 	filter?: string,
@@ -233,9 +224,6 @@ export async function getTasks(
 	}
 }
 
-/**
- * Search tasks for resource locator (V1 API)
- */
 export async function searchTasks(
 	this: ILoadOptionsFunctions,
 	filter?: string,
@@ -293,9 +281,6 @@ export async function searchTasks(
 	}
 }
 
-/**
- * Search tasks for resource locator (V2 API using sync endpoint)
- */
 export async function searchTasksV2(
 	this: ILoadOptionsFunctions,
 	filter?: string,
@@ -354,9 +339,6 @@ export async function searchTasksV2(
 	}
 }
 
-/**
- * Get all habits (V2 API only)
- */
 export async function getHabits(
 	this: ILoadOptionsFunctions,
 ): Promise<{ name: string; value: string }[]> {
@@ -388,9 +370,6 @@ export async function getHabits(
 	}
 }
 
-/**
- * Get all tags (V2 API only)
- */
 export async function getTags(
 	this: ILoadOptionsFunctions,
 ): Promise<{ name: string; value: string }[]> {
@@ -422,9 +401,6 @@ export async function getTags(
 	}
 }
 
-/**
- * Search tags for resource locator
- */
 export async function searchTags(
 	this: ILoadOptionsFunctions,
 	filter?: string,
@@ -466,9 +442,6 @@ export async function searchTags(
 	}
 }
 
-/**
- * Get all project groups/folders (V2 API only)
- */
 export async function getProjectGroups(
 	this: ILoadOptionsFunctions,
 ): Promise<{ name: string; value: string }[]> {

@@ -23,29 +23,23 @@ export async function tickTickApiRequest(
 ) {
 	let authentication: string;
 
-	// FIX: Robustly determine authentication method based on context
 	try {
-		// 1. Try LoadOptions context first (for dropdowns)
 		if ("getCurrentNodeParameter" in this) {
 			authentication = (this as ILoadOptionsFunctions).getCurrentNodeParameter(
 				"authentication",
 			) as string;
-		} // 2. Try Execute/Hook context (for running the node)
-		else if ("getNodeParameter" in this) {
+		} else if ("getNodeParameter" in this) {
 			authentication = (this as IExecuteFunctions).getNodeParameter(
 				"authentication",
 				0,
 			) as string;
-		} // 3. Fallback
-		else {
+		} else {
 			authentication = "tickTickTokenApi";
 		}
 	} catch (error) {
-		// If getting the parameter fails (e.g. during certain lifecycle events), default to Token
 		authentication = "tickTickTokenApi";
 	}
 
-	// V1 API endpoints don't work with V2 session auth, so V1 requests are not supported for V2 auth
 	if (authentication === "tickTickSessionApi") {
 		throw new NodeApiError(this.getNode(), {
 			message:
@@ -56,9 +50,6 @@ export async function tickTickApiRequest(
 		});
 	}
 
-	// Use the official API domain.
-	// If your previous code used ticktick.com and it worked, you can switch this back,
-	// but api.ticktick.com is the documented standard.
 	const baseUrl = "https://api.ticktick.com";
 
 	const options: IHttpRequestOptions = {
@@ -76,7 +67,6 @@ export async function tickTickApiRequest(
 		let response;
 
 		if (authentication === "tickTickOAuth2Api") {
-			// Type guard for helpers
 			if (!this.helpers.requestOAuth2) {
 				throw new Error("OAuth2 helper is not available");
 			}
@@ -86,7 +76,6 @@ export async function tickTickApiRequest(
 				options,
 			);
 		} else if (authentication === "tickTickTokenApi") {
-			// Type guard for helpers
 			if (!this.helpers.requestWithAuthentication) {
 				throw new Error("Auth helper is not available");
 			}
@@ -107,9 +96,6 @@ export async function tickTickApiRequest(
 	}
 }
 
-/**
- * Make a request to TickTick V2 API using session-based authentication
- */
 export async function tickTickApiRequestV2(
 	this: IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions,
 	method: IHttpRequestMethods,
@@ -118,7 +104,6 @@ export async function tickTickApiRequestV2(
 	qs: IDataObject = {},
 ) {
 	try {
-		// Get session token and device ID
 		const { token, deviceId, userAgent, deviceVersion } = await getV2Session(
 			this,
 		);
@@ -143,7 +128,6 @@ export async function tickTickApiRequestV2(
 		const response = await this.helpers.httpRequest(options);
 		return response;
 	} catch (error) {
-		// If authentication failed, clear the cached session
 		const statusCode = error.statusCode || error.response?.status ||
 			error.httpCode;
 		if (statusCode === 401 || statusCode === 403) {
@@ -151,16 +135,12 @@ export async function tickTickApiRequestV2(
 				const credentials = await this.getCredentials("tickTickSessionApi");
 				clearV2Session(credentials.username as string);
 			} catch {
-				// Ignore errors when clearing session
 			}
 		}
 		throw new NodeApiError(this.getNode(), error);
 	}
 }
 
-/**
- * Get the current authentication method from node parameters
- */
 export function getAuthenticationType(
 	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
 	itemIndex = 0,
@@ -177,14 +157,10 @@ export function getAuthenticationType(
 			) as string;
 		}
 	} catch {
-		// Fallback to token auth
 	}
 	return "tickTickTokenApi";
 }
 
-/**
- * Check if the current authentication is V2 (session-based)
- */
 export function isV2Auth(
 	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
 	itemIndex = 0,
