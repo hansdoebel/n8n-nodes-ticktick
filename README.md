@@ -135,6 +135,18 @@ Tested successfully on 2026-01-06 with:
 ### General
 - **Unofficial Node**: Community-maintained node. Not affiliated with or endorsed by TickTick or n8n.
 
+## How to publish new release
+
+```
+# Bump the version
+npm version patch|minor|major
+```
+
+```
+# push the tag to GitHub
+git push origin v1.2.3
+```
+
 ## Resources
 
 - [n8n Website](https://n8n.io/)
