@@ -103,8 +103,32 @@ export class TickTick implements INodeType {
 				name: "resource",
 				type: "options",
 				noDataExpression: true,
+				displayOptions: {
+					show: {
+						authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
+					},
+				},
 				options: [
 					{ name: "Project", value: "project" },
+					{ name: "Task", value: "task" },
+				],
+				default: "task",
+			},
+			{
+				displayName: "Resource",
+				name: "resource",
+				type: "options",
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						authentication: ["tickTickSessionApi"],
+					},
+				},
+				options: [
+					// { name: "Focus", value: "focus" },
+					// { name: "Habit", value: "habit" },
+					{ name: "Project", value: "project" },
+					// { name: "Project Group", value: "projectGroup" },
 					{ name: "Sync", value: "sync" },
 					{ name: "Tag", value: "tag" },
 					{ name: "Task", value: "task" },
@@ -164,7 +188,6 @@ export class TickTick implements INodeType {
 			): Promise<INodeListSearchResult> {
 				const results = await searchProjects.call(this, filter);
 
-				// Get the current task's project ID to exclude it
 				try {
 					const taskIdValue = this.getCurrentNodeParameter("taskId") as
 						| string
@@ -178,8 +201,6 @@ export class TickTick implements INodeType {
 					}
 
 					if (taskId) {
-						// We need to get the task's current project from context
-						// For now, we'll fetch it using the same approach as in TaskMove
 						const authType = this.getCurrentNodeParameter(
 							"authentication",
 						) as string;
@@ -198,7 +219,6 @@ export class TickTick implements INodeType {
 							const task = tasks.find((t: any) => String(t.id) === taskId);
 
 							if (task && task.projectId) {
-								// Exclude the current project
 								return {
 									results: results.filter((r) => r.value !== task.projectId),
 								};
@@ -206,7 +226,6 @@ export class TickTick implements INodeType {
 						}
 					}
 				} catch (error) {
-					// If we can't determine the current project, return all projects
 				}
 
 				return { results };
