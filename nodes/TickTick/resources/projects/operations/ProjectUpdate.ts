@@ -1,5 +1,9 @@
 import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
-import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import {
+	isV2Auth,
+	tickTickApiRequest,
+	tickTickApiRequestV2,
+} from "@helpers/apiRequest";
 
 export const projectUpdateFields: INodeProperties[] = [
 	{
@@ -191,6 +195,26 @@ export async function projectUpdateExecute(
 
 	if (!projectId) {
 		throw new Error("Project ID is required for update operation.");
+	}
+
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		const batchBody = {
+			update: [
+				{
+					id: projectId,
+					...body,
+				},
+			],
+		};
+		const response = await tickTickApiRequestV2.call(
+			this,
+			"POST",
+			"/batch/project",
+			batchBody,
+		);
+		return [{ json: response }];
 	}
 
 	const response = await tickTickApiRequest.call(

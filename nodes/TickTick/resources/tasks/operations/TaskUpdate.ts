@@ -1,9 +1,14 @@
-import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	INodeProperties,
+} from "n8n-workflow";
 import {
 	formatTickTickDate,
 	tickTickApiRequest,
 	TimeZones,
 } from "@ticktick/GenericFunctions";
+import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const taskUpdateFields: INodeProperties[] = [
 	{
@@ -308,13 +313,29 @@ export async function taskUpdateExecute(
 	let body: Record<string, any> = {};
 
 	let currentTask: any = {};
-	try {
-		currentTask = await tickTickApiRequest.call(
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		const response = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			`/open/v1/project/all/task/${taskId}`,
-		);
-	} catch (error) {}
+			"/batch/check/0",
+		)) as IDataObject;
+		const tasks =
+			((response.syncTaskBean as IDataObject)?.update || []) as IDataObject[];
+		const task = tasks.find((t) => String(t.id) === taskId);
+		if (task) {
+			currentTask = task;
+		}
+	} else {
+		try {
+			currentTask = await tickTickApiRequest.call(
+				this,
+				"GET",
+				`/open/v1/project/all/task/${taskId}`,
+			);
+		} catch (error) {}
+	}
 
 	if (useJson) {
 		const jsonString = this.getNodeParameter(
@@ -425,6 +446,19 @@ export async function taskUpdateExecute(
 	}
 	if (!body.title && currentTask.title) {
 		body.title = currentTask.title;
+	}
+
+	if (useV2) {
+		const batchBody = {
+			update: [body],
+		};
+		const response = await tickTickApiRequestV2.call(
+			this,
+			"POST",
+			"/batch/task",
+			batchBody,
+		);
+		return [{ json: response }];
 	}
 
 	const endpoint = `/open/v1/task/${taskId}`;

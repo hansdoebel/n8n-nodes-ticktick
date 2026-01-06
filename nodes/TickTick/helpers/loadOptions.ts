@@ -43,6 +43,12 @@ export async function getInboxProjectId(
 export async function getProjects(
 	this: ILoadOptionsFunctions,
 ): Promise<{ name: string; value: string }[]> {
+	const authType = getAuthenticationType(this);
+
+	if (authType === "tickTickSessionApi") {
+		return await searchProjectsV2.call(this);
+	}
+
 	const endpoint = "/open/v1/project";
 	try {
 		const responseData = (await tickTickApiRequest.call(
@@ -210,6 +216,12 @@ export async function getTasks(
 	this: ILoadOptionsFunctions,
 	projectId?: string,
 ): Promise<{ name: string; value: string }[]> {
+	const authType = getAuthenticationType(this);
+
+	if (authType === "tickTickSessionApi") {
+		return await searchTasksV2.call(this);
+	}
+
 	const actualProjectId = !projectId || projectId === "" ? "inbox" : projectId;
 
 	const endpoint = `/open/v1/project/${actualProjectId}/data`;

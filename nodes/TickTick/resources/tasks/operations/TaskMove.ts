@@ -99,7 +99,7 @@ export async function taskMoveExecute(
 		toProjectId = toProjectIdValue || "";
 	}
 
-	// Fetch the task details from sync endpoint to get current projectId
+	// Fetch the task details from sync endpoint to get the current project
 	const syncResponse = (await tickTickApiRequestV2.call(
 		this,
 		"GET",
@@ -116,21 +116,20 @@ export async function taskMoveExecute(
 
 	const fromProjectId = task.projectId as string;
 
-	// Use batch/task endpoint to update the task's project
-	const body = {
-		update: [
-			{
-				...task,
-				projectId: toProjectId,
-			},
-		],
-	};
+	// Use the dedicated /batch/taskProject endpoint for moving tasks
+	const moves = [
+		{
+			taskId: taskId,
+			fromProjectId: fromProjectId,
+			toProjectId: toProjectId,
+		},
+	];
 
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/batch/task",
-		body,
+		"/batch/taskProject",
+		moves as unknown as IDataObject,
 	);
 
 	return [

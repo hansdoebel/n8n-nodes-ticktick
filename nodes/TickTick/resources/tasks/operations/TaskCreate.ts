@@ -4,6 +4,7 @@ import {
 	tickTickApiRequest,
 	TimeZones,
 } from "@ticktick/GenericFunctions";
+import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const taskCreateFields: INodeProperties[] = [
 	{
@@ -384,6 +385,21 @@ export async function taskCreateExecute(
 	}
 
 	try {
+		const useV2 = isV2Auth(this, index);
+
+		if (useV2) {
+			const batchBody = {
+				add: [body],
+			};
+			const response = await tickTickApiRequestV2.call(
+				this,
+				"POST",
+				"/batch/task",
+				batchBody,
+			);
+			return [{ json: response }];
+		}
+
 		const response = await tickTickApiRequest.call(
 			this,
 			"POST",

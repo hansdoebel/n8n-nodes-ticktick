@@ -1,5 +1,13 @@
-import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
-import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	INodeProperties,
+} from "n8n-workflow";
+import {
+	isV2Auth,
+	tickTickApiRequest,
+	tickTickApiRequestV2,
+} from "@helpers/apiRequest";
 
 export const taskGetFields: INodeProperties[] = [
 	{
@@ -78,6 +86,26 @@ export async function taskGetExecute(this: IExecuteFunctions, index: number) {
 		taskId = taskIdValue.value || "";
 	} else {
 		taskId = taskIdValue || "";
+	}
+
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		const response = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/batch/check/0",
+		)) as IDataObject;
+
+		const tasks =
+			((response.syncTaskBean as IDataObject)?.update || []) as IDataObject[];
+		const task = tasks.find((t) => String(t.id) === taskId);
+
+		if (!task) {
+			throw new Error(`Task with ID ${taskId} not found`);
+		}
+
+		return [{ json: task }];
 	}
 
 	const endpoint = `/open/v1/project/${projectId || "inbox"}/task/${taskId}`;

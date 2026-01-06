@@ -1,5 +1,9 @@
 import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
-import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import {
+	isV2Auth,
+	tickTickApiRequest,
+	tickTickApiRequestV2,
+} from "@helpers/apiRequest";
 
 export const projectCreateFields: INodeProperties[] = [
 	{
@@ -139,6 +143,21 @@ export async function projectCreateExecute(
 		setIfDefined(cleaned, "viewMode", additional.viewMode);
 
 		body = cleaned;
+	}
+
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		const batchBody = {
+			add: [body],
+		};
+		const response = await tickTickApiRequestV2.call(
+			this,
+			"POST",
+			"/batch/project",
+			batchBody,
+		);
+		return [{ json: response }];
 	}
 
 	const response = await tickTickApiRequest.call(

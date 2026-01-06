@@ -105,6 +105,47 @@ export async function taskListAllExecute(
 		}
 	}
 
+	// If filtering for completed tasks, use the dedicated /project/all/closed endpoint
+	if (filters.status === "completed") {
+		// Get date range for the last 30 days (or adjust as needed)
+		const now = new Date();
+		const thirtyDaysAgo = new Date(now);
+		thirtyDaysAgo.setDate(now.getDate() - 30);
+
+		const fromStr = thirtyDaysAgo.toISOString().replace("T", " ").substring(
+			0,
+			19,
+		);
+		const toStr = now.toISOString().replace("T", " ").substring(0, 19);
+
+		const qs = {
+			from: fromStr,
+			to: toStr,
+			status: "Completed",
+			// Request a large batch since we'll filter by project client-side
+			limit: String(1000),
+		};
+
+		const completedTasks = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/project/all/closed",
+			{},
+			qs,
+		)) as IDataObject[];
+
+		// Filter by project if specified
+		let filtered = Array.isArray(completedTasks) ? completedTasks : [];
+		if (projectId) {
+			filtered = filtered.filter((task) => task.projectId === projectId);
+		}
+
+		// Apply user's limit after filtering by project
+		const limited = limit > 0 ? filtered.slice(0, limit) : filtered;
+		return limited.map((task) => ({ json: task }));
+	}
+
+	// For active or all tasks, use /batch/check/0
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
@@ -132,13 +173,8 @@ export async function taskListAllExecute(
 				return false;
 			}
 
-			if (filters.status === "completed") {
-				return task.status === 1;
-			}
-
-			if (filters.status === "active") {
-				return task.status !== 1;
-			}
+			// Note: /batch/check/0 only returns active tasks (status 0)
+			// Completed tasks (status 2) are only available via /project/all/closed
 
 			return true;
 		});

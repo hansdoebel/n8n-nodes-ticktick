@@ -1,5 +1,10 @@
-import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	INodeProperties,
+} from "n8n-workflow";
 import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const taskCompleteFields: INodeProperties[] = [
 	{
@@ -83,10 +88,40 @@ export async function taskCompleteExecute(
 		taskId = taskIdValue || "";
 	}
 
-	const endpoint = `/open/v1/project/${
-		projectId || "inbox"
-	}/task/${taskId}/complete`;
-	await tickTickApiRequest.call(this, "POST", endpoint);
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		const response = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/batch/check/0",
+		)) as IDataObject;
+
+		const tasks =
+			((response.syncTaskBean as IDataObject)?.update || []) as IDataObject[];
+		const task = tasks.find((t) => String(t.id) === taskId);
+
+		if (!task) {
+			throw new Error(`Task with ID ${taskId} not found`);
+		}
+
+		const body = {
+			update: [
+				{
+					...task,
+					status: 2,
+				},
+			],
+		};
+
+		await tickTickApiRequestV2.call(this, "POST", "/batch/task", body);
+	} else {
+		const endpoint = `/open/v1/project/${
+			projectId || "inbox"
+		}/task/${taskId}/complete`;
+		await tickTickApiRequest.call(this, "POST", endpoint);
+	}
+
 	return [
 		{
 			json: {

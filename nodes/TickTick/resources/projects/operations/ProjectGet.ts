@@ -1,5 +1,13 @@
-import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
-import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	INodeProperties,
+} from "n8n-workflow";
+import {
+	isV2Auth,
+	tickTickApiRequest,
+	tickTickApiRequestV2,
+} from "@helpers/apiRequest";
 
 export const projectGetFields: INodeProperties[] = [
 	{
@@ -77,6 +85,12 @@ export async function projectGetExecute(
 	index: number,
 ) {
 	const mode = this.getNodeParameter("mode", index) as string;
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		return projectGetExecuteV2.call(this, index, mode);
+	}
+
 	let endpoint = "/open/v1/project";
 
 	if (mode === "getAll") {
@@ -112,4 +126,75 @@ export async function projectGetExecute(
 
 	const response = await tickTickApiRequest.call(this, "GET", endpoint);
 	return [{ json: response }];
+}
+
+async function projectGetExecuteV2(
+	this: IExecuteFunctions,
+	index: number,
+	mode: string,
+) {
+	// V2 API uses /batch/check/0 to get all data, then we filter it
+	const response = (await tickTickApiRequestV2.call(
+		this,
+		"GET",
+		"/batch/check/0",
+	)) as IDataObject;
+
+	if (mode === "getAll") {
+		const projects = (response.projectProfiles as IDataObject[]) || [];
+		return [{ json: projects }];
+	}
+
+	const projectIdValue = this.getNodeParameter("projectId", index, "") as
+		| string
+		| { mode: string; value: string };
+
+	let projectId: string;
+
+	if (typeof projectIdValue === "object" && projectIdValue !== null) {
+		projectId = projectIdValue.value || "";
+	} else {
+		projectId = projectIdValue || "";
+	}
+
+	if (!projectId) {
+		projectId = "inbox";
+	}
+
+	const projects = (response.projectProfiles as IDataObject[]) || [];
+	const tasks =
+		((response.syncTaskBean as IDataObject)?.update as IDataObject[]) || [];
+
+	// Find the specific project
+	const project = projects.find((p) => String(p.id) === projectId);
+
+	if (mode === "getWithData") {
+		// Filter tasks for this project
+		const projectTasks = tasks.filter(
+			(task) => String(task.projectId) === projectId,
+		);
+
+		// Return data in V1 format for compatibility
+		return [
+			{
+				json: {
+					project: project || { id: projectId },
+					tasks: projectTasks,
+					columns: [], // V2 API doesn't return columns in batch/check
+				},
+			},
+		];
+	}
+
+	if (projectId === "inbox") {
+		throw new Error(
+			"The 'Get Specific Project' mode does not support the Inbox. Please use 'Get Project With Data' to see Inbox tasks, or select a custom project.",
+		);
+	}
+
+	if (!project) {
+		throw new Error(`Project with ID ${projectId} not found`);
+	}
+
+	return [{ json: project }];
 }

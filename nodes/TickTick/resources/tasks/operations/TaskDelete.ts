@@ -1,5 +1,10 @@
-import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	INodeProperties,
+} from "n8n-workflow";
 import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const taskDeleteFields: INodeProperties[] = [
 	{
@@ -83,8 +88,46 @@ export async function taskDeleteExecute(
 		taskId = taskIdValue || "";
 	}
 
-	const endpoint = `/open/v1/project/${projectId || "inbox"}/task/${taskId}`;
-	await tickTickApiRequest.call(this, "DELETE", endpoint);
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		// Fetch the task details from sync endpoint
+		const syncResponse = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/batch/check/0",
+		)) as IDataObject;
+
+		const tasks = ((syncResponse.syncTaskBean as IDataObject)?.update ||
+			[]) as IDataObject[];
+		const task = tasks.find((t) => String(t.id) === taskId);
+
+		if (!task) {
+			throw new Error(`Task with ID ${taskId} not found`);
+		}
+
+		// Use batch/task endpoint with delete operation
+		// The delete array requires objects with projectId and taskId only
+		const taskProjectId = task.projectId as string;
+		const body = {
+			add: [],
+			update: [],
+			delete: [
+				{
+					projectId: taskProjectId,
+					taskId: taskId,
+				},
+			],
+			addAttachments: [],
+			updateAttachments: [],
+			deleteAttachments: [],
+		};
+		await tickTickApiRequestV2.call(this, "POST", "/batch/task", body);
+	} else {
+		const endpoint = `/open/v1/project/${projectId || "inbox"}/task/${taskId}`;
+		await tickTickApiRequest.call(this, "DELETE", endpoint);
+	}
+
 	return [
 		{
 			json: {

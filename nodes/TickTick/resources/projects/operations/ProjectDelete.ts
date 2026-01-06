@@ -1,5 +1,9 @@
 import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
-import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import {
+	isV2Auth,
+	tickTickApiRequest,
+	tickTickApiRequestV2,
+} from "@helpers/apiRequest";
 
 export const projectDeleteFields: INodeProperties[] = [
 	{
@@ -60,8 +64,17 @@ export async function projectDeleteExecute(
 		throw new Error("Project ID is required for delete operation.");
 	}
 
-	const endpoint = `/open/v1/project/${projectId}`;
-	await tickTickApiRequest.call(this, "DELETE", endpoint);
+	const useV2 = isV2Auth(this, index);
+
+	if (useV2) {
+		const body = {
+			delete: [projectId],
+		};
+		await tickTickApiRequestV2.call(this, "POST", "/batch/project", body);
+	} else {
+		const endpoint = `/open/v1/project/${projectId}`;
+		await tickTickApiRequest.call(this, "DELETE", endpoint);
+	}
 
 	return [
 		{

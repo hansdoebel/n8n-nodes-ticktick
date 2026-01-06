@@ -45,6 +45,17 @@ export async function tickTickApiRequest(
 		authentication = "tickTickTokenApi";
 	}
 
+	// V1 API endpoints don't work with V2 session auth, so V1 requests are not supported for V2 auth
+	if (authentication === "tickTickSessionApi") {
+		throw new NodeApiError(this.getNode(), {
+			message:
+				"V1 API endpoints are not compatible with V2 Session authentication. Please use the V2 API endpoints or switch to Token/OAuth2 authentication.",
+			description: "The endpoint " +
+				endpoint +
+				" requires Token API or OAuth2 authentication.",
+		});
+	}
+
 	// Use the official API domain.
 	// If your previous code used ticktick.com and it worked, you can switch this back,
 	// but api.ticktick.com is the documented standard.
@@ -108,7 +119,9 @@ export async function tickTickApiRequestV2(
 ) {
 	try {
 		// Get session token and device ID
-		const { token, deviceId, userAgent, deviceVersion } = await getV2Session(this);
+		const { token, deviceId, userAgent, deviceVersion } = await getV2Session(
+			this,
+		);
 
 		const options: IHttpRequestOptions = {
 			method,
