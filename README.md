@@ -246,7 +246,7 @@ Available Tools:
 
 ## Version History
 
-- `2.1.0` – **Major Refactor & New Resources**: Complete codebase restructure with resource registry pattern, barrel exports, TypeScript types, centralized constants. New resources: Habits (with check-ins), Focus (heatmap & distribution), Project Groups, User (profile/status/preferences). Enhanced tag operations (rename, merge). Improved API implementations matching Python SDK reference. Comprehensive test suite with 34+ tests.
+- `2.0.3` – **Major Refactor & New Resources**: Complete codebase restructure with resource registry pattern, barrel exports, TypeScript types, centralized constants. New resources: Habits (with check-ins), Focus (heatmap & distribution), Project Groups, User (profile/status/preferences). Enhanced tag operations (rename, merge). Improved API implementations matching Python SDK reference. Comprehensive test suite with 34+ tests.
 - `2.0.0` – **V2 API Support**: Added TickTick Session API (email/password) authentication with support for undocumented V2 endpoints. New resources: Tags, Sync. New V2-only task operations: List All, List Completed, List Deleted, Move. All V1 operations now support both V1 and V2 authentication methods.
 - `1.3.0` – Major refactor: Fixed API request context, added Inbox support, expanded Task/Project fields, added Subtask support, improved Project Get modes.
 - `1.2.2` – Documentation and metadata update only
