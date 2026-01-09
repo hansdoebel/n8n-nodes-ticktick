@@ -1,24 +1,12 @@
 import type {
 	IExecuteFunctions,
-	ILoadOptionsFunctions,
 	INodeExecutionData,
-	INodeListSearchResult,
 	INodeType,
 	INodeTypeDescription,
 } from "n8n-workflow";
 import { NodeApiError, NodeOperationError } from "n8n-workflow";
 
-import { registry } from "./resources";
-import {
-	getHabits,
-	getProjectGroups,
-	getProjects,
-	getTags,
-	getTasks,
-	searchProjects,
-	searchTags,
-	searchTasks,
-} from "@ticktick/GenericFunctions";
+import { registry, sharedMethods } from "./resources";
 
 export class TickTick implements INodeType {
 	description: INodeTypeDescription = {
@@ -97,10 +85,7 @@ export class TickTick implements INodeType {
 					},
 				},
 				options: [
-					// { name: "Focus", value: "focus" },
-					// { name: "Habit", value: "habit" },
 					{ name: "Project", value: "project" },
-					// { name: "Project Group", value: "projectGroup" },
 					{ name: "Sync", value: "sync" },
 					{ name: "Tag", value: "tag" },
 					{ name: "Task", value: "task" },
@@ -114,95 +99,10 @@ export class TickTick implements INodeType {
 	};
 
 	methods = {
-		loadOptions: {
-			async getProjects(this: ILoadOptionsFunctions) {
-				return await getProjects.call(this);
-			},
-			async getTasks(this: ILoadOptionsFunctions) {
-				const projectId = this.getCurrentNodeParameter("projectId") as string;
-				return await getTasks.call(this, projectId);
-			},
-			async getHabits(this: ILoadOptionsFunctions) {
-				return await getHabits.call(this);
-			},
-			async getTags(this: ILoadOptionsFunctions) {
-				return await getTags.call(this);
-			},
-			async getProjectGroups(this: ILoadOptionsFunctions) {
-				return await getProjectGroups.call(this);
-			},
-		},
+		loadOptions: registry.getAllLoadOptions(),
 		listSearch: {
-			async searchProjects(
-				this: ILoadOptionsFunctions,
-				filter?: string,
-			): Promise<INodeListSearchResult> {
-				const results = await searchProjects.call(this, filter);
-				return { results };
-			},
-			async searchProjectsForMove(
-				this: ILoadOptionsFunctions,
-				filter?: string,
-			): Promise<INodeListSearchResult> {
-				const results = await searchProjects.call(this, filter);
-
-				try {
-					const taskIdValue = this.getCurrentNodeParameter("taskId") as
-						| string
-						| { mode: string; value: string };
-
-					let taskId: string;
-					if (typeof taskIdValue === "object" && taskIdValue !== null) {
-						taskId = taskIdValue.value || "";
-					} else {
-						taskId = taskIdValue || "";
-					}
-
-					if (taskId) {
-						const authType = this.getCurrentNodeParameter(
-							"authentication",
-						) as string;
-
-						if (authType === "tickTickSessionApi") {
-							const { tickTickApiRequestV2 } = await import(
-								"./helpers/apiRequest"
-							);
-							const syncResponse = (await tickTickApiRequestV2.call(
-								this,
-								"GET",
-								"/batch/check/0",
-							)) as any;
-
-							const tasks = syncResponse?.syncTaskBean?.update || [];
-							const task = tasks.find((t: any) => String(t.id) === taskId);
-
-							if (task && task.projectId) {
-								return {
-									results: results.filter((r) => r.value !== task.projectId),
-								};
-							}
-						}
-					}
-				} catch (error) {
-					// Silently ignore errors - just return all projects
-				}
-
-				return { results };
-			},
-			async searchTags(
-				this: ILoadOptionsFunctions,
-				filter?: string,
-			): Promise<INodeListSearchResult> {
-				const results = await searchTags.call(this, filter);
-				return { results };
-			},
-			async searchTasks(
-				this: ILoadOptionsFunctions,
-				filter?: string,
-			): Promise<INodeListSearchResult> {
-				const results = await searchTasks.call(this, filter);
-				return { results };
-			},
+			...registry.getAllListSearch(),
+			...sharedMethods.listSearch,
 		},
 	};
 

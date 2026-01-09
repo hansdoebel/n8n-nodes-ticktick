@@ -1,6 +1,7 @@
 import type { ResourceDefinition } from "../../types/registry";
 import { taskFields, taskOperations } from "./TasksDescription";
 import * as operations from "./operations";
+import { taskMethods } from "./methods";
 
 export const taskResource: ResourceDefinition = {
 	name: "task",
@@ -16,8 +17,8 @@ export const taskResource: ResourceDefinition = {
 		listCompleted: operations.taskListCompletedExecute,
 		listDeleted: operations.taskListDeletedExecute,
 		move: operations.taskMoveExecute,
-		// setParent: operations.taskSetParentExecute,
 	},
+	methods: taskMethods,
 };
 
 export * from "./TasksDescription";

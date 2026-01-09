@@ -7,6 +7,7 @@ import { focusResource } from "./focus";
 import { projectGroupResource } from "./projectGroups";
 import { userResource } from "./user";
 import { syncResource } from "./sync";
+import { sharedMethods } from "./shared/methods";
 
 export const registry = new ResourceRegistry();
 
@@ -19,6 +20,7 @@ registry.register(projectGroupResource);
 registry.register(userResource);
 registry.register(syncResource);
 
+export { sharedMethods };
 export { taskResource } from "./tasks";
 export { projectResource } from "./projects";
 export { tagResource } from "./tags";

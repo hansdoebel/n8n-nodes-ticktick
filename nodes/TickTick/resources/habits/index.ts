@@ -1,6 +1,7 @@
 import type { ResourceDefinition } from "../../types/registry";
 import { habitFields, habitOperations } from "./HabitsDescription";
 import * as operations from "./operations";
+import { habitMethods } from "./methods";
 
 export const habitResource: ResourceDefinition = {
 	name: "habit",
@@ -16,6 +17,7 @@ export const habitResource: ResourceDefinition = {
 		archive: operations.habitArchiveExecute,
 		unarchive: operations.habitUnarchiveExecute,
 	},
+	methods: habitMethods,
 };
 
 export * from "./HabitsDescription";

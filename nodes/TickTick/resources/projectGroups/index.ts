@@ -4,6 +4,7 @@ import {
 	projectGroupOperations,
 } from "./ProjectGroupsDescription";
 import * as operations from "./operations";
+import { projectGroupMethods } from "./methods";
 
 export const projectGroupResource: ResourceDefinition = {
 	name: "projectGroup",
@@ -15,6 +16,7 @@ export const projectGroupResource: ResourceDefinition = {
 		update: operations.projectGroupUpdateExecute,
 		delete: operations.projectGroupDeleteExecute,
 	},
+	methods: projectGroupMethods,
 };
 
 export * from "./ProjectGroupsDescription";
