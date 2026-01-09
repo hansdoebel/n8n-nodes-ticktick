@@ -8,6 +8,7 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const projectGetFields: INodeProperties[] = [
 	{
@@ -91,10 +92,10 @@ export async function projectGetExecute(
 		return projectGetExecuteV2.call(this, index, mode);
 	}
 
-	let endpoint = "/open/v1/project";
+	let endpoint: string = ENDPOINTS.OPEN_V1_PROJECT;
 
 	if (mode === "getAll") {
-		endpoint = "/open/v1/project";
+		endpoint = ENDPOINTS.OPEN_V1_PROJECT;
 	} else {
 		const projectIdValue = this.getNodeParameter("projectId", index, "") as
 			| string
@@ -113,14 +114,14 @@ export async function projectGetExecute(
 		}
 
 		if (mode === "getWithData") {
-			endpoint = `/open/v1/project/${projectId}/data`;
+			endpoint = `${ENDPOINTS.OPEN_V1_PROJECT}/${projectId}/data`;
 		} else {
 			if (projectId === "inbox") {
 				throw new Error(
 					"The 'Get Specific Project' mode does not support the Inbox. Please use 'Get Project With Data' to see Inbox tasks, or select a custom project.",
 				);
 			}
-			endpoint = `/open/v1/project/${projectId}`;
+			endpoint = `${ENDPOINTS.OPEN_V1_PROJECT}/${projectId}`;
 		}
 	}
 
@@ -136,7 +137,7 @@ async function projectGetExecuteV2(
 	const response = (await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/batch/check/0",
+		ENDPOINTS.SYNC,
 	)) as IDataObject;
 
 	if (mode === "getAll") {

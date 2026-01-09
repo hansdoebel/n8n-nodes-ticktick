@@ -3,6 +3,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagRenameFields: INodeProperties[] = [
@@ -80,7 +81,7 @@ export async function tagRenameExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"PUT",
-		"/tag/rename",
+		ENDPOINTS.TAG_RENAME,
 		body,
 	);
 

@@ -5,6 +5,7 @@ import type {
 } from "n8n-workflow";
 import { tickTickApiRequest } from "@ticktick/GenericFunctions";
 import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const taskDeleteFields: INodeProperties[] = [
 	{
@@ -94,7 +95,7 @@ export async function taskDeleteExecute(
 		const syncResponse = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/batch/check/0",
+			ENDPOINTS.SYNC,
 		)) as IDataObject;
 
 		const tasks = ((syncResponse.syncTaskBean as IDataObject)?.update ||
@@ -119,7 +120,7 @@ export async function taskDeleteExecute(
 			updateAttachments: [],
 			deleteAttachments: [],
 		};
-		await tickTickApiRequestV2.call(this, "POST", "/batch/task", body);
+		await tickTickApiRequestV2.call(this, "POST", ENDPOINTS.TASKS_BATCH, body);
 	} else {
 		const endpoint = `/open/v1/project/${projectId || "inbox"}/task/${taskId}`;
 		await tickTickApiRequest.call(this, "DELETE", endpoint);

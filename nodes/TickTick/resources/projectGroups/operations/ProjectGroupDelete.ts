@@ -4,6 +4,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const projectGroupDeleteFields: INodeProperties[] = [
 	{
@@ -41,7 +42,7 @@ export async function projectGroupDeleteExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/batch/projectGroup",
+		ENDPOINTS.PROJECT_GROUPS_BATCH,
 		body,
 	);
 

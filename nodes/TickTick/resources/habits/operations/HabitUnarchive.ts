@@ -7,6 +7,7 @@ import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { NodeOperationError } from "n8n-workflow";
 import type { BatchResponse, Habit } from "@ticktick/types/api";
 import { HABIT_STATUS } from "@ticktick/constants/defaults";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const habitUnarchiveFields: INodeProperties[] = [
 	{
@@ -18,8 +19,7 @@ export const habitUnarchiveFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description:
-			'The habit to unarchive. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description: 'The habit to unarchive. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -38,7 +38,7 @@ export async function habitUnarchiveExecute(
 	const habitsResponse = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/habits",
+		ENDPOINTS.HABITS,
 	) as Habit[];
 
 	const habits = Array.isArray(habitsResponse) ? habitsResponse : [];
@@ -60,7 +60,7 @@ export async function habitUnarchiveExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/habits/batch",
+		ENDPOINTS.HABITS_BATCH,
 		body,
 	) as BatchResponse;
 

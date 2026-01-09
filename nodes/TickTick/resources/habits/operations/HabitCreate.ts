@@ -17,6 +17,7 @@ import {
 	DEFAULT_HABIT_TYPE,
 	DEFAULT_HABIT_UNIT,
 } from "@ticktick/constants/defaults";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const habitCreateFields: INodeProperties[] = [
 	{
@@ -176,7 +177,7 @@ export async function habitCreateExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/habits/batch",
+		ENDPOINTS.HABITS_BATCH,
 		body,
 	) as BatchResponse;
 

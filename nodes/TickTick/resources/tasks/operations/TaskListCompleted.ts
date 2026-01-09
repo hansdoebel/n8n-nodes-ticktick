@@ -4,6 +4,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const taskListCompletedFields: INodeProperties[] = [
@@ -75,7 +76,7 @@ export async function taskListCompletedExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/project/all/completed",
+		ENDPOINTS.PROJECT_ALL_COMPLETED,
 		{},
 		qs,
 	);

@@ -11,6 +11,7 @@ import {
 } from "@helpers/dates";
 import type { BatchResponse } from "@ticktick/types/api";
 import { CHECKIN_STATUS } from "@ticktick/constants/defaults";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const habitCheckinFields: INodeProperties[] = [
 	{
@@ -22,8 +23,7 @@ export const habitCheckinFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description:
-			'The habit to check in. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description: 'The habit to check in. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -106,7 +106,7 @@ export async function habitCheckinExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/habitCheckins/batch",
+		ENDPOINTS.HABIT_CHECKINS_BATCH,
 		body,
 	) as BatchResponse;
 

@@ -4,6 +4,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const taskListDeletedFields: INodeProperties[] = [
@@ -39,7 +40,7 @@ export async function taskListDeletedExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/project/all/trash/pagination",
+		ENDPOINTS.PROJECT_ALL_TRASH_PAGINATION,
 		{},
 		qs,
 	);

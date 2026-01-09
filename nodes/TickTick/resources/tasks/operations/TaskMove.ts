@@ -5,6 +5,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const taskMoveFields: INodeProperties[] = [
 	{
@@ -102,7 +103,7 @@ export async function taskMoveExecute(
 	const syncResponse = (await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/batch/check/0",
+		ENDPOINTS.SYNC,
 	)) as IDataObject;
 
 	const tasks =

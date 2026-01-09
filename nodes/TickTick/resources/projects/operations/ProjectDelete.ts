@@ -4,6 +4,7 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const projectDeleteFields: INodeProperties[] = [
 	{
@@ -70,7 +71,7 @@ export async function projectDeleteExecute(
 		const body = {
 			delete: [projectId],
 		};
-		await tickTickApiRequestV2.call(this, "POST", "/batch/project", body);
+		await tickTickApiRequestV2.call(this, "POST", ENDPOINTS.PROJECTS_BATCH, body);
 	} else {
 		const endpoint = `/open/v1/project/${projectId}`;
 		await tickTickApiRequest.call(this, "DELETE", endpoint);

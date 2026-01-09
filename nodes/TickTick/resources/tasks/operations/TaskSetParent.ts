@@ -5,6 +5,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const taskSetParentFields: INodeProperties[] = [
 	{
@@ -145,7 +146,7 @@ export async function taskSetParentExecute(
 	const syncResponse = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/batch/check/0",
+		ENDPOINTS.SYNC,
 	);
 
 	const tasks = ((syncResponse.syncTaskBean as IDataObject)?.update ||
@@ -173,7 +174,7 @@ export async function taskSetParentExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/batch/task",
+		ENDPOINTS.TASKS_BATCH,
 		body,
 	);
 

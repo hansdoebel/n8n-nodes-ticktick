@@ -3,6 +3,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagDeleteFields: INodeProperties[] = [
@@ -59,7 +60,7 @@ export async function tagDeleteExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"DELETE",
-		"/tag",
+		ENDPOINTS.TAG,
 		{},
 		{ name: tagName },
 	);

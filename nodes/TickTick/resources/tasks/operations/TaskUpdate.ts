@@ -9,6 +9,7 @@ import {
 	TimeZones,
 } from "@ticktick/GenericFunctions";
 import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const taskUpdateFields: INodeProperties[] = [
 	{
@@ -319,7 +320,7 @@ export async function taskUpdateExecute(
 		const response = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/batch/check/0",
+			ENDPOINTS.SYNC,
 		)) as IDataObject;
 		const tasks =
 			((response.syncTaskBean as IDataObject)?.update || []) as IDataObject[];
@@ -455,7 +456,7 @@ export async function taskUpdateExecute(
 		const response = await tickTickApiRequestV2.call(
 			this,
 			"POST",
-			"/batch/task",
+			ENDPOINTS.TASKS_BATCH,
 			batchBody,
 		);
 		return [{ json: response }];

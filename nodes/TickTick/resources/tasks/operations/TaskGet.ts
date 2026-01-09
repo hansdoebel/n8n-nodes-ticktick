@@ -8,6 +8,7 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const taskGetFields: INodeProperties[] = [
 	{
@@ -94,7 +95,7 @@ export async function taskGetExecute(this: IExecuteFunctions, index: number) {
 		const response = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/batch/check/0",
+			ENDPOINTS.SYNC,
 		)) as IDataObject;
 
 		const tasks =

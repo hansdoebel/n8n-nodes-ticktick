@@ -5,6 +5,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const taskListAllFields: INodeProperties[] = [
 	{
@@ -125,7 +126,7 @@ export async function taskListAllExecute(
 		const completedTasks = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/project/all/closed",
+			ENDPOINTS.PROJECT_ALL_CLOSED,
 			{},
 			qs,
 		)) as IDataObject[];
@@ -141,7 +142,7 @@ export async function taskListAllExecute(
 			const deletedResponse = await tickTickApiRequestV2.call(
 				this,
 				"GET",
-				"/project/all/trash/pagination",
+				ENDPOINTS.PROJECT_ALL_TRASH_PAGINATION,
 				{},
 				deletedQs,
 			);
@@ -174,7 +175,7 @@ export async function taskListAllExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/batch/check/0",
+		ENDPOINTS.SYNC,
 	);
 
 	const tasks: IDataObject[] = [];
@@ -197,7 +198,7 @@ export async function taskListAllExecute(
 		const deletedResponse = await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/project/all/trash/pagination",
+			ENDPOINTS.PROJECT_ALL_TRASH_PAGINATION,
 			{},
 			deletedQs,
 		);

@@ -4,6 +4,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const tagUpdateFields: INodeProperties[] = [
 	{
@@ -148,7 +149,7 @@ export async function tagUpdateExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/batch/tag",
+		ENDPOINTS.TAGS_BATCH,
 		body,
 	);
 

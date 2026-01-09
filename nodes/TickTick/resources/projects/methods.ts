@@ -3,6 +3,7 @@ import type {
 	INodeListSearchResult,
 } from "n8n-workflow";
 import { getProjects, searchProjects } from "@ticktick/GenericFunctions";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const projectMethods = {
 	loadOptions: {
@@ -48,7 +49,7 @@ export const projectMethods = {
 						const syncResponse = (await tickTickApiRequestV2.call(
 							this,
 							"GET",
-							"/batch/check/0",
+							ENDPOINTS.SYNC,
 						)) as any;
 
 						const tasks = syncResponse?.syncTaskBean?.update || [];

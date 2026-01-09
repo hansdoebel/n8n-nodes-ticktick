@@ -4,6 +4,7 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const projectUpdateFields: INodeProperties[] = [
 	{
@@ -209,7 +210,7 @@ export async function projectUpdateExecute(
 		const response = await tickTickApiRequestV2.call(
 			this,
 			"POST",
-			"/batch/project",
+			ENDPOINTS.PROJECTS_BATCH,
 			batchBody,
 		);
 		return [{ json: response }];

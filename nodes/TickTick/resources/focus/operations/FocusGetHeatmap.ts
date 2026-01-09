@@ -6,6 +6,7 @@ import type {
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { formatDateYYYYMMDD } from "@helpers/dates";
 import type { FocusHeatmap } from "@ticktick/types/api";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const focusGetHeatmapFields: INodeProperties[] = [
 	{
@@ -51,7 +52,7 @@ export async function focusGetHeatmapExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		`/pomodoros/statistics/heatmap/${start}/${end}`,
+		ENDPOINTS.FOCUS_HEATMAP(start, end),
 	) as FocusHeatmap[];
 
 	if (Array.isArray(response)) {

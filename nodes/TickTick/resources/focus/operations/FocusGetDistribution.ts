@@ -6,6 +6,7 @@ import type {
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { formatDateYYYYMMDD } from "@helpers/dates";
 import type { FocusDistribution } from "@ticktick/types/api";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const focusGetDistributionFields: INodeProperties[] = [
 	{
@@ -51,7 +52,7 @@ export async function focusGetDistributionExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		`/pomodoros/statistics/dist/${start}/${end}`,
+		ENDPOINTS.FOCUS_DISTRIBUTION(start, end),
 	) as FocusDistribution;
 
 	return [{ json: response }];

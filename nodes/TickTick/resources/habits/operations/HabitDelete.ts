@@ -4,6 +4,8 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import type { BatchResponse } from "@ticktick/types/api";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const habitDeleteFields: INodeProperties[] = [
 	{
@@ -15,8 +17,7 @@ export const habitDeleteFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description:
-			'The habit to delete. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description: 'The habit to delete. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -41,9 +42,9 @@ export async function habitDeleteExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/habits/batch",
+		ENDPOINTS.HABITS_BATCH,
 		body,
-	);
+	) as BatchResponse;
 
 	return [{ json: response }];
 }

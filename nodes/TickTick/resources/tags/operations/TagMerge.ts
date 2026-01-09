@@ -3,6 +3,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
 export const tagMergeFields: INodeProperties[] = [
@@ -106,7 +107,7 @@ export async function tagMergeExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"PUT",
-		"/tag/merge",
+		ENDPOINTS.TAG_MERGE,
 		body,
 	);
 

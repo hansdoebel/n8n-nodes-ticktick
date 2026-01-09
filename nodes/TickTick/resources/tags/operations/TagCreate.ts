@@ -4,6 +4,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const tagCreateFields: INodeProperties[] = [
 	{
@@ -84,7 +85,7 @@ export async function tagCreateExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/batch/tag",
+		ENDPOINTS.TAGS_BATCH,
 		body,
 	);
 

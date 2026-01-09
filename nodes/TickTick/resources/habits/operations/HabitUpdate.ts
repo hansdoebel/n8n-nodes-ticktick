@@ -1,11 +1,12 @@
 import type {
-	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { NodeOperationError } from "n8n-workflow";
+import type { BatchResponse, Habit } from "@ticktick/types/api";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const habitUpdateFields: INodeProperties[] = [
 	{
@@ -17,8 +18,7 @@ export const habitUpdateFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description:
-			'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
+		description: 'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -135,10 +135,11 @@ export async function habitUpdateExecute(
 	const habitsResponse = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/habits",
-	);
+		ENDPOINTS.HABITS,
+	) as Habit[];
+
 	const habits = Array.isArray(habitsResponse) ? habitsResponse : [];
-	const currentHabit = habits.find((h: any) => h.id === habitId);
+	const currentHabit = habits.find((h) => h.id === habitId);
 
 	if (!currentHabit) {
 		throw new NodeOperationError(
@@ -147,14 +148,14 @@ export async function habitUpdateExecute(
 		);
 	}
 
-	const body: IDataObject = {
-		...(currentHabit as IDataObject),
+	const body: Habit = {
+		...currentHabit,
 		id: habitId,
 	};
 
 	if (updateFields.name !== undefined) body.name = updateFields.name;
 	if (updateFields.color !== undefined) body.color = updateFields.color;
-	if (updateFields.icon !== undefined) body.icon = updateFields.icon;
+	if (updateFields.icon !== undefined) body.iconRes = updateFields.icon;
 	if (updateFields.goal !== undefined) body.goal = updateFields.goal;
 	if (updateFields.step !== undefined) body.step = updateFields.step;
 	if (updateFields.unit !== undefined) body.unit = updateFields.unit;
@@ -181,9 +182,9 @@ export async function habitUpdateExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/habits/batch",
+		ENDPOINTS.HABITS_BATCH,
 		batchBody,
-	);
+	) as BatchResponse;
 
 	return [{ json: response }];
 }

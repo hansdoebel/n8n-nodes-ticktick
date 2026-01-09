@@ -1,10 +1,12 @@
 import type {
-	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import type { Habit } from "@ticktick/types/api";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import { HABIT_STATUS } from "@ticktick/constants/defaults";
 
 export const habitListFields: INodeProperties[] = [
 	{
@@ -32,13 +34,17 @@ export async function habitListExecute(
 		false,
 	) as boolean;
 
-	const response = await tickTickApiRequestV2.call(this, "GET", "/habits");
+	const response = await tickTickApiRequestV2.call(
+		this,
+		"GET",
+		ENDPOINTS.HABITS,
+	) as Habit[];
 
 	let habits = Array.isArray(response) ? response : [];
 
 	if (!includeArchived) {
-		habits = habits.filter((habit: { status?: number }) => habit.status !== 2);
+		habits = habits.filter((habit) => habit.status !== HABIT_STATUS.ARCHIVED);
 	}
 
-	return habits.map((habit: IDataObject) => ({ json: habit }));
+	return habits.map((habit) => ({ json: habit }));
 }

@@ -4,6 +4,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const userGetPreferencesFields: INodeProperties[] = [];
 
@@ -14,7 +15,7 @@ export async function userGetPreferencesExecute(
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/user/preferences/settings",
+		ENDPOINTS.USER_PREFERENCES_SETTINGS,
 		{},
 		{ includeWeb: "true" },
 	);
