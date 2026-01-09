@@ -5,6 +5,8 @@ import type {
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { NodeOperationError } from "n8n-workflow";
+import type { BatchResponse, Habit } from "@ticktick/types/api";
+import { HABIT_STATUS } from "@ticktick/constants/defaults";
 
 export const habitArchiveFields: INodeProperties[] = [
 	{
@@ -37,9 +39,10 @@ export async function habitArchiveExecute(
 		this,
 		"GET",
 		"/habits",
-	);
+	) as Habit[];
+
 	const habits = Array.isArray(habitsResponse) ? habitsResponse : [];
-	const habit = habits.find((h: any) => h.id === habitId);
+	const habit = habits.find((h) => h.id === habitId);
 
 	if (!habit) {
 		throw new NodeOperationError(
@@ -50,7 +53,7 @@ export async function habitArchiveExecute(
 
 	const body = {
 		add: [],
-		update: [{ ...habit, status: 2 }],
+		update: [{ ...habit, status: HABIT_STATUS.ARCHIVED }],
 		delete: [],
 	};
 
@@ -59,7 +62,7 @@ export async function habitArchiveExecute(
 		"POST",
 		"/habits/batch",
 		body,
-	);
+	) as BatchResponse;
 
 	return [{ json: response }];
 }

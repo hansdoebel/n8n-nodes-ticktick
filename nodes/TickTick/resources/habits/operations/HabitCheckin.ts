@@ -4,13 +4,13 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-
-function generateCheckinId(): string {
-	return Array.from(
-		{ length: 24 },
-		() => Math.floor(Math.random() * 16).toString(16),
-	).join("");
-}
+import { generateCheckinId } from "@helpers/generators";
+import {
+	formatDateStampYYYYMMDD,
+	formatISO8601WithMillis,
+} from "@helpers/dates";
+import type { BatchResponse } from "@ticktick/types/api";
+import { CHECKIN_STATUS } from "@ticktick/constants/defaults";
 
 export const habitCheckinFields: INodeProperties[] = [
 	{
@@ -83,15 +83,8 @@ export async function habitCheckinExecute(
 	const goal = this.getNodeParameter("goal", index, 1) as number;
 
 	const date = checkinDate ? new Date(checkinDate) : new Date();
-	const checkinStamp = Number.parseInt(
-		`${date.getFullYear()}${String(date.getMonth() + 1).padStart(2, "0")}${
-			String(date.getDate()).padStart(2, "0")
-		}`,
-		10,
-	);
-
-	const now = new Date();
-	const timestamp = now.toISOString().replace(/\.\d{3}Z$/, ".000+0000");
+	const checkinStamp = formatDateStampYYYYMMDD(date);
+	const timestamp = formatISO8601WithMillis(new Date());
 
 	const checkin = {
 		id: generateCheckinId(),
@@ -101,7 +94,7 @@ export async function habitCheckinExecute(
 		opTime: timestamp,
 		value,
 		goal,
-		status: 2,
+		status: CHECKIN_STATUS.COMPLETED,
 	};
 
 	const body = {
@@ -115,7 +108,7 @@ export async function habitCheckinExecute(
 		"POST",
 		"/habitCheckins/batch",
 		body,
-	);
+	) as BatchResponse;
 
 	return [{ json: response }];
 }

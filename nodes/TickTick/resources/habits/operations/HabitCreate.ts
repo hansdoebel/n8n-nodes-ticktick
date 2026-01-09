@@ -1,17 +1,22 @@
 import type {
-	IDataObject,
 	IExecuteFunctions,
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-
-function generateHabitId(): string {
-	return Array.from(
-		{ length: 24 },
-		() => Math.floor(Math.random() * 16).toString(16),
-	).join("");
-}
+import { generateHabitId } from "@helpers/generators";
+import type { BatchResponse } from "@ticktick/types/api";
+import {
+	DEFAULT_HABIT_COLOR,
+	DEFAULT_HABIT_ENCOURAGEMENT,
+	DEFAULT_HABIT_GOAL,
+	DEFAULT_HABIT_ICON,
+	DEFAULT_HABIT_REPEAT_RULE,
+	DEFAULT_HABIT_STEP,
+	DEFAULT_HABIT_TARGET_DAYS,
+	DEFAULT_HABIT_TYPE,
+	DEFAULT_HABIT_UNIT,
+} from "@ticktick/constants/defaults";
 
 export const habitCreateFields: INodeProperties[] = [
 	{
@@ -46,7 +51,7 @@ export const habitCreateFields: INodeProperties[] = [
 				displayName: "Color",
 				name: "color",
 				type: "color",
-				default: "#97E38B",
+				default: DEFAULT_HABIT_COLOR,
 				description: "The color of the habit in hex format",
 			},
 			{
@@ -61,14 +66,14 @@ export const habitCreateFields: INodeProperties[] = [
 				displayName: "Goal",
 				name: "goal",
 				type: "number",
-				default: 1,
+				default: DEFAULT_HABIT_GOAL,
 				description: "The target goal value for the habit",
 			},
 			{
 				displayName: "Icon",
 				name: "icon",
 				type: "string",
-				default: "habit_daily_check_in",
+				default: DEFAULT_HABIT_ICON,
 				description: "The icon name for the habit",
 			},
 			{
@@ -84,21 +89,21 @@ export const habitCreateFields: INodeProperties[] = [
 				displayName: "Repeat Rule",
 				name: "repeatRule",
 				type: "string",
-				default: "RRULE:FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA",
+				default: DEFAULT_HABIT_REPEAT_RULE,
 				description: "The RRULE for habit recurrence",
 			},
 			{
 				displayName: "Step",
 				name: "step",
 				type: "number",
-				default: 0,
+				default: DEFAULT_HABIT_STEP,
 				description: "The increment step for numeric habits",
 			},
 			{
 				displayName: "Target Days",
 				name: "targetDays",
 				type: "number",
-				default: 0,
+				default: DEFAULT_HABIT_TARGET_DAYS,
 				description: "The target number of days for the habit",
 			},
 			{
@@ -109,14 +114,14 @@ export const habitCreateFields: INodeProperties[] = [
 					{ name: "Boolean (Yes/No)", value: "Boolean" },
 					{ name: "Numeric (Count)", value: "Real" },
 				],
-				default: "Boolean",
+				default: DEFAULT_HABIT_TYPE,
 				description: "The type of habit tracking",
 			},
 			{
 				displayName: "Unit",
 				name: "unit",
 				type: "string",
-				default: "Count",
+				default: DEFAULT_HABIT_UNIT,
 				placeholder: "e.g. glasses, minutes, pages",
 				description: "The unit of measurement for numeric habits",
 			},
@@ -142,28 +147,25 @@ export async function habitCreateExecute(
 		unit?: string;
 	};
 
-	const habit: IDataObject = {
+	const habit = {
 		id: generateHabitId(),
 		name,
-		type: additionalFields.type || "Boolean",
-		color: additionalFields.color || "#97E38B",
-		icon: additionalFields.icon || "habit_daily_check_in",
-		goal: additionalFields.goal || 1,
-		step: additionalFields.step || 0,
-		unit: additionalFields.unit || "Count",
-		repeatRule: additionalFields.repeatRule ||
-			"RRULE:FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA",
-		targetDays: additionalFields.targetDays || 0,
-		encouragement: additionalFields.encouragement || "",
+		type: additionalFields.type || DEFAULT_HABIT_TYPE,
+		color: additionalFields.color || DEFAULT_HABIT_COLOR,
+		icon: additionalFields.icon || DEFAULT_HABIT_ICON,
+		goal: additionalFields.goal || DEFAULT_HABIT_GOAL,
+		step: additionalFields.step || DEFAULT_HABIT_STEP,
+		unit: additionalFields.unit || DEFAULT_HABIT_UNIT,
+		repeatRule: additionalFields.repeatRule || DEFAULT_HABIT_REPEAT_RULE,
+		targetDays: additionalFields.targetDays || DEFAULT_HABIT_TARGET_DAYS,
+		encouragement: additionalFields.encouragement ||
+			DEFAULT_HABIT_ENCOURAGEMENT,
 		recordEnable: false,
 		sortOrder: 0,
+		...(additionalFields.reminders && {
+			reminders: additionalFields.reminders.split(",").map((r) => r.trim()),
+		}),
 	};
-
-	if (additionalFields.reminders) {
-		habit.reminders = additionalFields.reminders.split(",").map((r) =>
-			r.trim()
-		);
-	}
 
 	const body = {
 		add: [habit],
@@ -176,7 +178,7 @@ export async function habitCreateExecute(
 		"POST",
 		"/habits/batch",
 		body,
-	);
+	) as BatchResponse;
 
 	return [{ json: response }];
 }

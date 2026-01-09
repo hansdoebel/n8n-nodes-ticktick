@@ -4,6 +4,8 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { formatDateYYYYMMDD } from "@helpers/dates";
+import type { FocusDistribution } from "@ticktick/types/api";
 
 export const focusGetDistributionFields: INodeProperties[] = [
 	{
@@ -43,22 +45,14 @@ export async function focusGetDistributionExecute(
 	const startDate = this.getNodeParameter("startDate", index) as string;
 	const endDate = this.getNodeParameter("endDate", index) as string;
 
-	const formatDate = (dateStr: string): string => {
-		const date = new Date(dateStr);
-		const year = date.getFullYear();
-		const month = String(date.getMonth() + 1).padStart(2, "0");
-		const day = String(date.getDate()).padStart(2, "0");
-		return `${year}${month}${day}`;
-	};
-
-	const start = formatDate(startDate);
-	const end = formatDate(endDate);
+	const start = formatDateYYYYMMDD(startDate);
+	const end = formatDateYYYYMMDD(endDate);
 
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
 		`/pomodoros/statistics/dist/${start}/${end}`,
-	);
+	) as FocusDistribution;
 
 	return [{ json: response }];
 }
