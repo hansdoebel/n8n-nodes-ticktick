@@ -160,6 +160,28 @@ npm version patch|minor|major
 git push origin v1.2.3
 ```
 
+### Add MCP Server to Zed IDE
+
+"Add custom Server..." -> "Configure Remote" -> "Add Server"
+
+```
+{
+  /// The name of your remote MCP server
+  "n8n-mcp": {
+    /// The URL of the remote MCP server
+    "url": "http://localhost:5678/mcp-server/http",
+    "headers": {
+    /// Any headers to send along
+    "Authorization": "Bearer <TOKEN>"
+    }
+  }
+}
+```
+Available Tools:		
+- execute_workflow	
+- get_workflow_details
+- search_workflows
+
 ## Resources
 
 - [n8n Website](https://n8n.io/)
