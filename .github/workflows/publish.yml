@@ -28,6 +28,12 @@ jobs:
           node-version: '22'
           registry-url: 'https://registry.npmjs.org'
 
+      - name: Update npm to latest
+        run: npm install -g npm@latest
+
+      - name: Check npm version
+        run: npm --version
+
       - name: Install dependencies
         run: bun install
 
@@ -37,5 +43,5 @@ jobs:
       - name: Lint
         run: bun run lint
 
-      - name: Publish to npm with provenance
-        run: npm publish --access public --provenance
+      - name: Publish to npm
+        run: npm publish --access public
