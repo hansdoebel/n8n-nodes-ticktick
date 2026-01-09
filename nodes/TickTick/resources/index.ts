@@ -1,49 +1,29 @@
-import { taskFields, taskOperations } from "./tasks/TasksDescription";
-import {
-	projectFields,
-	projectOperations,
-} from "./projects/ProjectsDescription";
-import { tagFields, tagOperations } from "./tags/TagsDescription";
-import { habitFields, habitOperations } from "./habits/HabitsDescription";
-import { focusFields, focusOperations } from "./focus/FocusDescription";
-import {
-	projectGroupFields,
-	projectGroupOperations,
-} from "./projectGroups/ProjectGroupsDescription";
-import { userFields, userOperations } from "./user/UserDescription";
-import { syncFields, syncOperations } from "./sync/SyncDescription";
+import { ResourceRegistry } from "../types/registry";
+import { taskResource } from "./tasks";
+import { projectResource } from "./projects";
+import { tagResource } from "./tags";
+import { habitResource } from "./habits";
+import { focusResource } from "./focus";
+import { projectGroupResource } from "./projectGroups";
+import { userResource } from "./user";
+import { syncResource } from "./sync";
 
-export const ticktickResources = {
-	task: {
-		operations: taskOperations,
-		fields: taskFields,
-	},
-	project: {
-		operations: projectOperations,
-		fields: projectFields,
-	},
-	tag: {
-		operations: tagOperations,
-		fields: tagFields,
-	},
-	habit: {
-		operations: habitOperations,
-		fields: habitFields,
-	},
-	focus: {
-		operations: focusOperations,
-		fields: focusFields,
-	},
-	projectGroup: {
-		operations: projectGroupOperations,
-		fields: projectGroupFields,
-	},
-	user: {
-		operations: userOperations,
-		fields: userFields,
-	},
-	sync: {
-		operations: syncOperations,
-		fields: syncFields,
-	},
-};
+export const registry = new ResourceRegistry();
+
+registry.register(taskResource);
+registry.register(projectResource);
+registry.register(tagResource);
+registry.register(habitResource);
+registry.register(focusResource);
+registry.register(projectGroupResource);
+registry.register(userResource);
+registry.register(syncResource);
+
+export { taskResource } from "./tasks";
+export { projectResource } from "./projects";
+export { tagResource } from "./tags";
+export { habitResource } from "./habits";
+export { focusResource } from "./focus";
+export { projectGroupResource } from "./projectGroups";
+export { userResource } from "./user";
+export { syncResource } from "./sync";
