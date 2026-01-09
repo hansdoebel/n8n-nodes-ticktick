@@ -61,6 +61,7 @@ export class TickTick implements INodeType {
 		defaults: {
 			name: "TickTick",
 		},
+		usableAsTool: true,
 		inputs: ["main"],
 		outputs: ["main"],
 		credentials: [

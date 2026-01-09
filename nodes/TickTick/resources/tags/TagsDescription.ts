@@ -17,6 +17,7 @@ export const tagOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ["tag"],
+				authentication: ["tickTickSessionApi"],
 			},
 		},
 		options: [

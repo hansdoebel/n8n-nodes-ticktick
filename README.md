@@ -143,7 +143,7 @@ Tested successfully on 2026-01-06 with:
 Add this alias to your `~/.zshrc` for quick n8n process termination during development:
 
 ```bash
-alias kill-n8n="kill -9 \$(lsof -ti tcp:5678)"
+alias kill-n8n="kill -9 \$(lsof -ti tcp:5678 -sTCP:LISTEN)"
 ```
 
 After adding, reload your shell: `source ~/.zshrc`

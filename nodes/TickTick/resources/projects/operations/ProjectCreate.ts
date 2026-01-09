@@ -7,18 +7,12 @@ import {
 
 export const projectCreateFields: INodeProperties[] = [
 	{
-		displayName: "JSON Parameters",
-		name: "jsonParameters",
-		type: "boolean",
-		default: false,
-		displayOptions: { show: { resource: ["project"], operation: ["create"] } },
-	},
-	{
 		displayName: "Project Name",
 		name: "name",
 		type: "string",
 		required: true,
 		default: "",
+		description: "The name of the project to create",
 		displayOptions: {
 			show: {
 				resource: ["project"],
@@ -26,6 +20,13 @@ export const projectCreateFields: INodeProperties[] = [
 				jsonParameters: [false],
 			},
 		},
+	},
+	{
+		displayName: "JSON Parameters",
+		name: "jsonParameters",
+		type: "boolean",
+		default: false,
+		displayOptions: { show: { resource: ["project"], operation: ["create"] } },
 	},
 	{
 		displayName: "Additional Fields (JSON)",
