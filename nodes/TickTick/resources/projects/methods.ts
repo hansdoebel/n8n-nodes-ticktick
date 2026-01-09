@@ -2,7 +2,7 @@ import type {
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
-import { getProjects, searchProjects } from "@ticktick/GenericFunctions";
+import { getProjects, searchProjects } from "@ticktick/helpers";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const projectMethods = {

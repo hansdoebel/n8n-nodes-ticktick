@@ -4,6 +4,7 @@ import {
 	type TickTickTestClient,
 	uniqueName,
 } from "./utils/testClient";
+import { ENDPOINTS } from "./utils/endpoints";
 
 describe("TickTick V2 Tags Resource", () => {
 	let client: TickTickTestClient;
@@ -25,7 +26,7 @@ describe("TickTick V2 Tags Resource", () => {
 	});
 
 	test("GET /batch/check/0 - list all tags", async () => {
-		const response = await client.get("/batch/check/0");
+		const response = await client.get(ENDPOINTS.SYNC);
 
 		expect(response.statusCode).toBe(200);
 		expect(response.data).toBeDefined();
@@ -40,7 +41,7 @@ describe("TickTick V2 Tags Resource", () => {
 		let mergedTargetName: string | null = null;
 
 		try {
-			const createResponse = await client.post("/batch/tag", {
+			const createResponse = await client.post(ENDPOINTS.TAGS_BATCH, {
 				add: [
 					{ label: sourceLabel, name: sourceName },
 					{ label: targetLabel, name: targetName },
@@ -50,7 +51,7 @@ describe("TickTick V2 Tags Resource", () => {
 			expect(createResponse.statusCode).toBe(200);
 
 			const updatedLabel = uniqueName("Tag Updated");
-			const updateResponse = await client.post("/batch/tag", {
+			const updateResponse = await client.post(ENDPOINTS.TAGS_BATCH, {
 				update: [
 					{
 						name: sourceName,
@@ -63,14 +64,14 @@ describe("TickTick V2 Tags Resource", () => {
 			expect(updateResponse.statusCode).toBe(200);
 
 			const renamedLabel = uniqueName("Tag Renamed");
-			const renameResponse = await client.put("/tag/rename", {
+			const renameResponse = await client.put(ENDPOINTS.TAG_RENAME, {
 				name: targetName,
 				newName: renamedLabel,
 			});
 
 			expect(renameResponse.statusCode).toBe(200);
 
-			const syncResponse = await client.get("/batch/check/0");
+			const syncResponse = await client.get(ENDPOINTS.SYNC);
 			expect(syncResponse.statusCode).toBe(200);
 
 			const tags = Array.isArray(syncResponse.data?.tags)
@@ -83,7 +84,7 @@ describe("TickTick V2 Tags Resource", () => {
 
 			mergedTargetName = renamedTag?.name || targetName;
 
-			const mergeResponse = await client.put("/tag/merge", {
+			const mergeResponse = await client.put(ENDPOINTS.TAG_MERGE, {
 				name: sourceName,
 				newName: mergedTargetName,
 			});

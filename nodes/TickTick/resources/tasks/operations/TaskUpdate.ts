@@ -7,7 +7,7 @@ import {
 	formatTickTickDate,
 	tickTickApiRequest,
 	TimeZones,
-} from "@ticktick/GenericFunctions";
+} from "@ticktick/helpers";
 import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
 

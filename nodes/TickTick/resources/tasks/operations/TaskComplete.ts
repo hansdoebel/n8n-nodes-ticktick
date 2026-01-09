@@ -3,7 +3,7 @@ import type {
 	IExecuteFunctions,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequest } from "@ticktick/GenericFunctions";
+import { tickTickApiRequest } from "@ticktick/helpers";
 import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
 

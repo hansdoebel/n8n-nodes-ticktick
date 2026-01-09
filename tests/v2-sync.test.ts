@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
 import { createTestClient, type TickTickTestClient } from "./utils/testClient";
+import { ENDPOINTS } from "./utils/endpoints";
 
 describe("TickTick V2 Sync Resource", () => {
 	let client: TickTickTestClient;
@@ -13,7 +14,7 @@ describe("TickTick V2 Sync Resource", () => {
 	});
 
 	test("GET /batch/check/0 - sync all data (V2 API)", async () => {
-		const response = await client.get("/batch/check/0");
+		const response = await client.get(ENDPOINTS.SYNC);
 
 		expect(response.statusCode).toBe(200);
 		expect(response.data).toBeDefined();
@@ -29,7 +30,7 @@ describe("TickTick V2 Sync Resource", () => {
 	}, 10000);
 
 	test("Extract project data from sync response", async () => {
-		const response = await client.get("/batch/check/0");
+		const response = await client.get(ENDPOINTS.SYNC);
 
 		expect(response.statusCode).toBe(200);
 
@@ -54,7 +55,7 @@ describe("TickTick V2 Sync Resource", () => {
 	}, 10000);
 
 	test("Extract tasks from sync response", async () => {
-		const response = await client.get("/batch/check/0");
+		const response = await client.get(ENDPOINTS.SYNC);
 
 		expect(response.statusCode).toBe(200);
 
@@ -80,7 +81,7 @@ describe("TickTick V2 Sync Resource", () => {
 	}, 10000);
 
 	test("Filter tasks by project ID from sync response", async () => {
-		const response = await client.get("/batch/check/0");
+		const response = await client.get(ENDPOINTS.SYNC);
 
 		expect(response.statusCode).toBe(200);
 

@@ -1,6 +1,6 @@
 # n8n-nodes-ticktick
 
-n8n community node for integrating TickTick with your workflows. Manage tasks, projects, and productivity seamlessly.
+n8n community node for integrating TickTick with your workflows. Manage tasks, projects, tags, habits, and productivity seamlessly.
 
 ## Table of Contents
 
@@ -8,6 +8,12 @@ n8n community node for integrating TickTick with your workflows. Manage tasks, p
 - [Credentials](#credentials)  
 - [Task Operations](#task-operations)  
 - [Project Operations](#project-operations)  
+- [Tag Operations](#tag-operations)  
+- [Habit Operations](#habit-operations)  
+- [Focus Operations](#focus-operations)  
+- [Project Group Operations](#project-group-operations)  
+- [User Operations](#user-operations)  
+- [Sync Operations](#sync-operations)  
 - [Compatibility](#compatibility)  
 - [Known Issues](#known-issues)  
 - [Development Notes](#development-notes)  
@@ -28,7 +34,7 @@ Follow the [installation guide](https://docs.n8n.io/integrations/community-nodes
 
 ### TickTick Session API (V2) - Email/Password
 
-For access to V2 API features (sync, tags, etc.):
+For access to V2 API features (sync, tags, habits, focus, etc.):
 
 1. In n8n: Create new credential → **TickTick Session API**
 2. Enter your TickTick **email** and **password**
@@ -92,13 +98,11 @@ The following operations require **TickTick Session API** (Email/Password) crede
 | **List Deleted** | Get deleted/trashed tasks | — | Limit |
 | **Move** | Move task to different project | Task, To Project | — |
 
+### Project Operations (V2 Only)
 
-
-### Sync Operations (V2)
-
-| Operation | Description | Returns |
-|-----------|-------------|---------|
-| **Sync All** | Get all data from sync endpoint | Tasks, Projects, Tags, Habits, Project Groups, Column Data, User Info |
+| Operation | Description | Required Parameters | Optional/Additional Fields |
+|-----------|-------------|-------------------|--------------------------|
+| **List Closed** | Get all closed projects | — | — |
 
 ### Tag Operations (V2)
 
@@ -108,12 +112,57 @@ The following operations require **TickTick Session API** (Email/Password) crede
 | **Update** | Update existing tag | Tag | Name, Label, Sort Order, Color, Parent Tag |
 | **Delete** | Delete a tag | Tag | — |
 | **List** | List all tags | — | — |
+| **Rename** | Rename a tag | Tag, New Name | — |
+| **Merge** | Merge tag into another | Source Tag, Target Tag | — |
+
+### Habit Operations (V2)
+
+| Operation | Description | Required Parameters | Optional Fields |
+|-----------|-------------|-------------------|-----------------|
+| **Create** | Create a new habit | Habit Name | Type (Boolean/Real), Color, Icon, Repeat Rule, Target Days, Archived Days, Goal |
+| **Get** | Get a specific habit | Habit | — |
+| **Update** | Update existing habit | Habit | Name, Type, Color, Icon, Repeat Rule, Target Days, Archived Days, Goal |
+| **Archive** | Archive a habit | Habit | — |
+| **Unarchive** | Unarchive a habit | Habit | — |
+| **Delete** | Delete a habit | Habit | — |
+| **List** | List all habits | — | — |
+| **Checkin** | Record habit check-in | Habit, Date | Value (for Real type habits) |
+
+### Focus Operations (V2)
+
+| Operation | Description | Required Parameters | Optional Fields |
+|-----------|-------------|-------------------|-----------------|
+| **Get Heatmap** | Get focus heatmap data | Start Date, End Date | — |
+| **Get Distribution** | Get focus time distribution | Start Date, End Date | — |
+
+### Project Group Operations (V2)
+
+| Operation | Description | Required Parameters | Optional Fields |
+|-----------|-------------|-------------------|-----------------|
+| **Create** | Create a project group | Group Name | Sort Order, Sort Type |
+| **Update** | Update existing group | Project Group | Name, Sort Order, Sort Type |
+| **Delete** | Delete a project group | Project Group | — |
+| **List** | List all project groups | — | — |
+
+### User Operations (V2)
+
+| Operation | Description | Returns |
+|-----------|-------------|---------|
+| **Get Profile** | Get user profile information | User details, settings, subscription info |
+| **Get Status** | Get user status | Current status, activity data |
+| **Get Preferences** | Get user preferences | UI settings, notification preferences |
+
+### Sync Operations (V2)
+
+| Operation | Description | Returns |
+|-----------|-------------|---------|
+| **Sync All** | Get all data from sync endpoint | Tasks, Projects, Tags, Habits, Project Groups, Column Data, User Info |
 
 ---
 
 ## Compatibility
 
-Tested successfully on 2026-01-06 with:
+Tested successfully on 2026-01-09 with:
 
 - n8n Version: 2.2.3
 - Node Version: 22.11.0
@@ -197,6 +246,7 @@ Available Tools:
 
 ## Version History
 
+- `2.1.0` – **Major Refactor & New Resources**: Complete codebase restructure with resource registry pattern, barrel exports, TypeScript types, centralized constants. New resources: Habits (with check-ins), Focus (heatmap & distribution), Project Groups, User (profile/status/preferences). Enhanced tag operations (rename, merge). Improved API implementations matching Python SDK reference. Comprehensive test suite with 34+ tests.
 - `2.0.0` – **V2 API Support**: Added TickTick Session API (email/password) authentication with support for undocumented V2 endpoints. New resources: Tags, Sync. New V2-only task operations: List All, List Completed, List Deleted, Move. All V1 operations now support both V1 and V2 authentication methods.
 - `1.3.0` – Major refactor: Fixed API request context, added Inbox support, expanded Task/Project fields, added Subtask support, improved Project Get modes.
 - `1.2.2` – Documentation and metadata update only

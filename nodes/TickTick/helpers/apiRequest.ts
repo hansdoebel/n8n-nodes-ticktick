@@ -7,6 +7,7 @@ import type {
 	ILoadOptionsFunctions,
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
+import { TICKTICK_URLS } from "../constants/urls";
 import {
 	buildV2Headers,
 	clearV2Session,
@@ -50,12 +51,10 @@ export async function tickTickApiRequest(
 		});
 	}
 
-	const baseUrl = "https://api.ticktick.com";
-
 	const options: IHttpRequestOptions = {
 		method,
 		qs,
-		url: `${baseUrl}${endpoint}`,
+		url: `${TICKTICK_URLS.API_BASE_URL}${endpoint}`,
 		json: true,
 	};
 

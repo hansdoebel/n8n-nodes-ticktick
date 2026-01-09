@@ -2,7 +2,7 @@ import type {
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
-import { getTags, searchTags } from "@ticktick/GenericFunctions";
+import { getTags, searchTags } from "@ticktick/helpers";
 
 export const tagMethods = {
 	loadOptions: {

@@ -7,8 +7,9 @@ import type {
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
 import * as crypto from "crypto";
+import { TICKTICK_URLS } from "../constants/urls";
 
-const V2_API_BASE = "https://api.ticktick.com/api/v2";
+const V2_API_BASE = `${TICKTICK_URLS.API_BASE_URL}/api/v2`;
 const DEFAULT_V2_USER_AGENT = "Mozilla/5.0 (rv:145.0) Firefox/145.0";
 const DEFAULT_V2_DEVICE_VERSION = 6430;
 

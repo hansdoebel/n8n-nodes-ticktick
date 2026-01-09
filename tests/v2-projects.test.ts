@@ -1,5 +1,10 @@
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
-import { createTestClient, type TickTickTestClient } from "./utils/testClient";
+import {
+	createTestClient,
+	type TickTickTestClient,
+	uniqueName,
+} from "./utils/testClient";
+import { ENDPOINTS } from "./utils/endpoints";
 
 describe("TickTick V2 Projects Resource", () => {
 	let client: TickTickTestClient;
@@ -14,7 +19,7 @@ describe("TickTick V2 Projects Resource", () => {
 	});
 
 	test("GET /projects - list all projects (V2 endpoint)", async () => {
-		const response = await client.get("/projects");
+		const response = await client.get(ENDPOINTS.PROJECTS);
 
 		expect(response.statusCode).toBe(200);
 		expect(response.data).toBeDefined();
@@ -196,8 +201,7 @@ describe("TickTick V2 Projects Resource", () => {
 	test(
 		"GET /batch/check/0 - comprehensive data including projects",
 		async () => {
-			// The /batch/check/0 endpoint returns all user data including projects
-			const response = await client.request("GET", "/batch/check/0");
+			const response = await client.request("GET", ENDPOINTS.SYNC);
 
 			console.log(
 				`Testing V2 endpoint /batch/check/0 - Status: ${response.statusCode}`,
@@ -207,14 +211,12 @@ describe("TickTick V2 Projects Resource", () => {
 				expect(response.data).toBeDefined();
 				expect(typeof response.data).toBe("object");
 
-				// This endpoint should return comprehensive data
 				if (response.data) {
 					console.log(
 						"✓ V2 batch/check endpoint works! Keys:",
 						Object.keys(response.data),
 					);
 
-					// Check if projects are included
 					if (response.data.projectProfiles) {
 						console.log(
 							"  - Found projectProfiles:",
@@ -234,4 +236,61 @@ describe("TickTick V2 Projects Resource", () => {
 		},
 		10000,
 	);
+
+	test("Project create/update/delete flow", async () => {
+		const generateId = (length: number = 24): string => {
+			return Array.from(
+				{ length },
+				() => Math.floor(Math.random() * 16).toString(16),
+			).join("");
+		};
+
+		const projectName = uniqueName("TestProject");
+		const projectId = generateId(24);
+
+		const createBody = {
+			add: [
+				{
+					id: projectId,
+					name: projectName,
+					color: "#3b82f6",
+					sortOrder: 0,
+					viewMode: "list",
+				},
+			],
+			update: [],
+			delete: [],
+		};
+
+		const createResponse = await client.post(ENDPOINTS.PROJECTS_BATCH, createBody);
+		expect(createResponse.statusCode).toBe(200);
+		expect(createResponse.data).toBeDefined();
+
+		const updatedName = `${projectName}_Updated`;
+		const updateBody = {
+			add: [],
+			update: [
+				{
+					id: projectId,
+					name: updatedName,
+					color: "#3b82f6",
+					sortOrder: 0,
+					viewMode: "list",
+				},
+			],
+			delete: [],
+		};
+
+		const updateResponse = await client.post(ENDPOINTS.PROJECTS_BATCH, updateBody);
+		expect(updateResponse.statusCode).toBe(200);
+
+		const deleteBody = {
+			add: [],
+			update: [],
+			delete: [projectId],
+		};
+
+		const deleteResponse = await client.post(ENDPOINTS.PROJECTS_BATCH, deleteBody);
+		expect(deleteResponse.statusCode).toBe(200);
+	}, 30000);
 });

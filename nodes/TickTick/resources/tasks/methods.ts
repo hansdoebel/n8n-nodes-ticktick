@@ -1,5 +1,5 @@
 import type { ILoadOptionsFunctions } from "n8n-workflow";
-import { getTasks } from "@ticktick/GenericFunctions";
+import { getTasks } from "@ticktick/helpers";
 
 export const taskMethods = {
 	loadOptions: {

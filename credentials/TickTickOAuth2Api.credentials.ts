@@ -1,4 +1,5 @@
 import { Icon, ICredentialType, INodeProperties } from "n8n-workflow";
+import { TICKTICK_URLS } from "../nodes/TickTick/constants/urls";
 
 export class TickTickOAuth2Api implements ICredentialType {
 	name = "tickTickOAuth2Api";
@@ -19,14 +20,14 @@ export class TickTickOAuth2Api implements ICredentialType {
 			displayName: "Authorization URL",
 			name: "authUrl",
 			type: "hidden",
-			default: "https://ticktick.com/oauth/authorize",
+			default: TICKTICK_URLS.OAUTH_AUTHORIZE,
 			required: true,
 		},
 		{
 			displayName: "Access Token URL",
 			name: "accessTokenUrl",
 			type: "hidden",
-			default: "https://ticktick.com/oauth/token",
+			default: TICKTICK_URLS.OAUTH_TOKEN,
 			required: true,
 		},
 		{

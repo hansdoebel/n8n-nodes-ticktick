@@ -1,5 +1,5 @@
 import type { ILoadOptionsFunctions } from "n8n-workflow";
-import { getProjectGroups } from "@ticktick/GenericFunctions";
+import { getProjectGroups } from "@ticktick/helpers";
 
 export const projectGroupMethods = {
 	loadOptions: {

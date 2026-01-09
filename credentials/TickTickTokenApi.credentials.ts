@@ -5,6 +5,8 @@ import {
 	ICredentialType,
 	INodeProperties,
 } from "n8n-workflow";
+import { ENDPOINTS } from "../nodes/TickTick/constants/endpoints";
+import { TICKTICK_URLS } from "../nodes/TickTick/constants/urls";
 
 export class TickTickTokenApi implements ICredentialType {
 	name = "tickTickTokenApi";
@@ -33,8 +35,8 @@ export class TickTickTokenApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: "https://ticktick.com",
-			url: "/open/v1/project",
+			baseURL: TICKTICK_URLS.BASE_URL,
+			url: ENDPOINTS.OPEN_V1_PROJECT,
 		},
 	};
 }
