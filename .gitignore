@@ -8,6 +8,6 @@ yarn.lock
 .vscode/launch.json
 .env
 .env.test
-ticktick-sdk-main
+#ticktick-sdk-main
 .rules
 CLAUDE.md

@@ -52,17 +52,13 @@ export async function focusGetHeatmapExecute(
 		return `${year}${month}${day}`;
 	};
 
-	const qs = {
-		from: formatDate(startDate),
-		to: formatDate(endDate),
-	};
+	const start = formatDate(startDate);
+	const end = formatDate(endDate);
 
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/pomodoros/statistics/heatmap",
-		{},
-		qs,
+		`/pomodoros/statistics/heatmap/${start}/${end}`,
 	);
 
 	if (Array.isArray(response)) {

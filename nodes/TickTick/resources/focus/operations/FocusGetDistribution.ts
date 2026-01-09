@@ -43,7 +43,6 @@ export async function focusGetDistributionExecute(
 	const startDate = this.getNodeParameter("startDate", index) as string;
 	const endDate = this.getNodeParameter("endDate", index) as string;
 
-	// Format dates as YYYYMMDD
 	const formatDate = (dateStr: string): string => {
 		const date = new Date(dateStr);
 		const year = date.getFullYear();
@@ -52,17 +51,13 @@ export async function focusGetDistributionExecute(
 		return `${year}${month}${day}`;
 	};
 
-	const qs = {
-		from: formatDate(startDate),
-		to: formatDate(endDate),
-	};
+	const start = formatDate(startDate);
+	const end = formatDate(endDate);
 
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		"/pomodoros/statistics/dist",
-		{},
-		qs,
+		`/pomodoros/statistics/dist/${start}/${end}`,
 	);
 
 	return [{ json: response }];

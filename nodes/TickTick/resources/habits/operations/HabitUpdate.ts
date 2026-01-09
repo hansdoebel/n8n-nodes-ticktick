@@ -5,6 +5,7 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { NodeOperationError } from "n8n-workflow";
 
 export const habitUpdateFields: INodeProperties[] = [
 	{
@@ -17,7 +18,7 @@ export const habitUpdateFields: INodeProperties[] = [
 		required: true,
 		default: "",
 		description:
-			'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+			'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -131,11 +132,20 @@ export async function habitUpdateExecute(
 		unit?: string;
 	};
 
-	const currentHabit = await tickTickApiRequestV2.call(
+	const habitsResponse = await tickTickApiRequestV2.call(
 		this,
 		"GET",
-		`/habits/${habitId}`,
+		"/habits",
 	);
+	const habits = Array.isArray(habitsResponse) ? habitsResponse : [];
+	const currentHabit = habits.find((h: any) => h.id === habitId);
+
+	if (!currentHabit) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Habit with ID ${habitId} not found`,
+		);
+	}
 
 	const body: IDataObject = {
 		...(currentHabit as IDataObject),
@@ -162,11 +172,17 @@ export async function habitUpdateExecute(
 		body.reminders = updateFields.reminders.split(",").map((r) => r.trim());
 	}
 
+	const batchBody = {
+		add: [],
+		update: [body],
+		delete: [],
+	};
+
 	const response = await tickTickApiRequestV2.call(
 		this,
-		"PUT",
-		`/habits/${habitId}`,
-		body,
+		"POST",
+		"/habits/batch",
+		batchBody,
 	);
 
 	return [{ json: response }];

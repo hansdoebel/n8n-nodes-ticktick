@@ -6,6 +6,13 @@ import type {
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
 
+function generateHabitId(): string {
+	return Array.from(
+		{ length: 24 },
+		() => Math.floor(Math.random() * 16).toString(16),
+	).join("");
+}
+
 export const habitCreateFields: INodeProperties[] = [
 	{
 		displayName: "Name",
@@ -96,7 +103,7 @@ export const habitCreateFields: INodeProperties[] = [
 			},
 			{
 				displayName: "Type",
-				name: "habitType",
+				name: "type",
 				type: "options",
 				options: [
 					{ name: "Boolean (Yes/No)", value: "Boolean" },
@@ -131,32 +138,43 @@ export async function habitCreateExecute(
 		repeatRule?: string;
 		step?: number;
 		targetDays?: number;
-		habitType?: string;
+		type?: string;
 		unit?: string;
 	};
 
-	const body: IDataObject = {
+	const habit: IDataObject = {
+		id: generateHabitId(),
 		name,
+		type: additionalFields.type || "Boolean",
 		color: additionalFields.color || "#97E38B",
 		icon: additionalFields.icon || "habit_daily_check_in",
 		goal: additionalFields.goal || 1,
 		step: additionalFields.step || 0,
 		unit: additionalFields.unit || "Count",
-		habitType: additionalFields.habitType || "Boolean",
 		repeatRule: additionalFields.repeatRule ||
 			"RRULE:FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA",
 		targetDays: additionalFields.targetDays || 0,
 		encouragement: additionalFields.encouragement || "",
+		recordEnable: false,
+		sortOrder: 0,
 	};
 
 	if (additionalFields.reminders) {
-		body.reminders = additionalFields.reminders.split(",").map((r) => r.trim());
+		habit.reminders = additionalFields.reminders.split(",").map((r) =>
+			r.trim()
+		);
 	}
+
+	const body = {
+		add: [habit],
+		update: [],
+		delete: [],
+	};
 
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		"/habits",
+		"/habits/batch",
 		body,
 	);
 

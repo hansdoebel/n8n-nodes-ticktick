@@ -4,10 +4,11 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { NodeOperationError } from "n8n-workflow";
 
 export const habitGetFields: INodeProperties[] = [
 	{
-		displayName: 'Habit Name or ID',
+		displayName: "Habit Name or ID",
 		name: "habitId",
 		type: "options",
 		typeOptions: {
@@ -15,7 +16,8 @@ export const habitGetFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description: 'The habit to retrieve. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description:
+			'The habit to retrieve. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -31,11 +33,16 @@ export async function habitGetExecute(
 ): Promise<INodeExecutionData[]> {
 	const habitId = this.getNodeParameter("habitId", index) as string;
 
-	const response = await tickTickApiRequestV2.call(
-		this,
-		"GET",
-		`/habits/${habitId}`,
-	);
+	const response = await tickTickApiRequestV2.call(this, "GET", "/habits");
+	const habits = Array.isArray(response) ? response : [];
+	const habit = habits.find((h: any) => h.id === habitId);
 
-	return [{ json: response }];
+	if (!habit) {
+		throw new NodeOperationError(
+			this.getNode(),
+			`Habit with ID ${habitId} not found`,
+		);
+	}
+
+	return [{ json: habit }];
 }
