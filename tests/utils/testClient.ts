@@ -1,17 +1,11 @@
 /**
  * Test utilities for TickTick V2 API testing
- * Provides authentication and API request helpers
+ * Provides authentication and API request helpers using Bun's native fetch
  */
-
-import * as https from "https";
-import * as crypto from "crypto";
-import * as dotenv from "dotenv";
-
-// Load environment variables
-dotenv.config();
 
 const V2_USER_AGENT = "Mozilla/5.0 (rv:145.0) Firefox/145.0";
 const V2_DEVICE_VERSION = 6430;
+const API_BASE = "https://api.ticktick.com";
 
 /**
  * Convert object to JSON with spaces after colons and commas (Python-style)
@@ -26,7 +20,9 @@ export function toPythonStyleJson(obj: object): string {
  */
 export function generateObjectId(): string {
 	const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, "0");
-	const random = crypto.randomBytes(8).toString("hex");
+	const random = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
 	return timestamp + random;
 }
 
@@ -49,40 +45,10 @@ export interface AuthSession {
 	username: string;
 }
 
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
 	data: T;
 	statusCode: number;
-	headers: Record<string, string | string[] | undefined>;
-}
-
-/**
- * Make raw HTTPS request
- */
-function makeRawRequest(
-	options: https.RequestOptions,
-	body?: string,
-): Promise<{ body: string; statusCode: number; headers: any }> {
-	return new Promise((resolve, reject) => {
-		const req = https.request(options, (res) => {
-			let data = "";
-			res.on("data", (chunk) => (data += chunk));
-			res.on("end", () => {
-				resolve({
-					body: data,
-					statusCode: res.statusCode || 500,
-					headers: res.headers,
-				});
-			});
-		});
-
-		req.on("error", reject);
-
-		if (body) {
-			req.write(body);
-		}
-
-		req.end();
-	});
+	headers: Headers;
 }
 
 /**
@@ -102,32 +68,29 @@ export async function authenticate(): Promise<AuthSession> {
 	const bodyJson = toPythonStyleJson({ username, password });
 	const xDevice = buildDeviceHeader(deviceId);
 
-	const response = await makeRawRequest(
+	const response = await fetch(
+		`${API_BASE}/api/v2/user/signon?wc=true&remember=true`,
 		{
-			hostname: "api.ticktick.com",
-			path: "/api/v2/user/signon?wc=true&remember=true",
 			method: "POST",
 			headers: {
 				"User-Agent": V2_USER_AGENT,
 				"X-Device": xDevice,
 				"Content-Type": "application/json",
-				"Content-Length": Buffer.byteLength(bodyJson),
 			},
+			body: bodyJson,
 		},
-		bodyJson,
 	);
 
-	if (response.statusCode !== 200) {
-		const error = JSON.parse(response.body);
-		if (error.errorCode === "incorrect_password_too_many_times") {
+	const data = await response.json();
+
+	if (!response.ok) {
+		if (data.errorCode === "incorrect_password_too_many_times") {
 			throw new Error("Account temporarily locked. Wait 15-30 minutes.");
 		}
 		throw new Error(
-			`Authentication failed: ${error.errorMessage || error.errorCode}`,
+			`Authentication failed: ${data.errorMessage || data.errorCode}`,
 		);
 	}
-
-	const data = JSON.parse(response.body);
 
 	if (!data.token) {
 		throw new Error("No token in authentication response");
@@ -170,7 +133,7 @@ export class TickTickTestClient {
 	/**
 	 * Make authenticated V2 API request
 	 */
-	async request<T = any>(
+	async request<T = unknown>(
 		method: string,
 		endpoint: string,
 		body?: object,
@@ -179,67 +142,59 @@ export class TickTickTestClient {
 			throw new Error("Not connected. Call connect() first.");
 		}
 
-		const bodyJson = body ? toPythonStyleJson(body) : undefined;
 		const xDevice = buildDeviceHeader(this.session.deviceId);
 
-		const headers: Record<string, string | number> = {
-			"User-Agent": V2_USER_AGENT,
-			"X-Device": xDevice,
-			"Cookie": `t=${this.session.token}`,
-			"Content-Type": "application/json",
-		};
-
-		if (bodyJson) {
-			headers["Content-Length"] = Buffer.byteLength(bodyJson);
-		}
-
 		// Determine the path based on whether it's a V1 or V2 endpoint
-		// V1 endpoints start with /open/v1, others are V2
 		const path = endpoint.startsWith("/open/v1")
 			? `/api${endpoint}`
 			: `/api/v2${endpoint}`;
 
-		const response = await makeRawRequest(
-			{
-				hostname: "api.ticktick.com",
-				path,
-				method,
-				headers,
+		const response = await fetch(`${API_BASE}${path}`, {
+			method,
+			headers: {
+				"User-Agent": V2_USER_AGENT,
+				"X-Device": xDevice,
+				"Cookie": `t=${this.session.token}`,
+				"Content-Type": "application/json",
 			},
-			bodyJson,
-		);
+			body: body ? toPythonStyleJson(body) : undefined,
+		});
 
 		let data: T;
+		const text = await response.text();
 		try {
-			data = response.body ? JSON.parse(response.body) : ({} as T);
+			data = text ? JSON.parse(text) : ({} as T);
 		} catch {
-			data = response.body as unknown as T;
+			data = text as unknown as T;
 		}
 
 		return {
 			data,
-			statusCode: response.statusCode,
+			statusCode: response.status,
 			headers: response.headers,
 		};
 	}
 
 	// Convenience methods
-	async get<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+	async get<T = unknown>(endpoint: string): Promise<ApiResponse<T>> {
 		return this.request<T>("GET", endpoint);
 	}
 
-	async post<T = any>(
+	async post<T = unknown>(
 		endpoint: string,
 		body?: object,
 	): Promise<ApiResponse<T>> {
 		return this.request<T>("POST", endpoint, body);
 	}
 
-	async put<T = any>(endpoint: string, body?: object): Promise<ApiResponse<T>> {
+	async put<T = unknown>(
+		endpoint: string,
+		body?: object,
+	): Promise<ApiResponse<T>> {
 		return this.request<T>("PUT", endpoint, body);
 	}
 
-	async delete<T = any>(endpoint: string): Promise<ApiResponse<T>> {
+	async delete<T = unknown>(endpoint: string): Promise<ApiResponse<T>> {
 		return this.request<T>("DELETE", endpoint);
 	}
 }

@@ -19,7 +19,7 @@
 	"homepage": "https://github.com/hansdoebel/n8n-nodes-ticktick#readme",
 	"author": {
 		"name": "Hans Doebel",
-		"email": "dev@hansdoebel.de"
+		"email": "hansdev@mailbox.org"
 	},
 	"repository": {
 		"type": "git",
@@ -29,23 +29,19 @@
 		"url": "https://github.com/hansdoebel/n8n-nodes-ticktick/issues"
 	},
 	"engines": {
-		"node": ">=18.10",
-		"pnpm": ">=10"
+		"node": ">=18.10"
 	},
-	"packageManager": "pnpm@10.27.0",
-	"main": "index.js",
 	"scripts": {
-		"preinstall": "npx only-allow pnpm",
-		"build": "tsc && tsc-alias && gulp build:icons",
-		"dev": "tsc --watch",
+		"build": "tsc && tsc-alias && bun run build-icons.ts",
+		"dev": "n8n-node dev",
 		"format": "prettier nodes credentials --write",
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
-		"test": "jest",
-		"test:watch": "jest --watch",
-		"test:auth": "jest tests/auth.test.ts",
-		"test:v2": "jest tests/v2-*.test.ts",
-		"prepublishOnly": "pnpm build && pnpm lint -c .eslintrc.prepublish.js nodes credentials package.json"
+		"test": "bun test",
+		"test:watch": "bun test --watch",
+		"test:auth": "bun test tests/auth.test.ts",
+		"test:v2": "bun test tests/v2-*.test.ts",
+		"prepublishOnly": "bun run build && bun run lint -c .eslintrc.prepublish.js nodes credentials package.json"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -69,21 +65,18 @@
 		]
 	},
 	"devDependencies": {
-		"@types/jest": "^30.0.0",
+		"@n8n/node-cli": "^0.17.0",
+		"@types/bun": "latest",
 		"@types/luxon": "^3.7.1",
 		"@types/node": "^25.0.3",
 		"@typescript-eslint/parser": "^7.18.0",
-		"dotenv": "^17.2.3",
 		"eslint": "^8.57.1",
 		"eslint-plugin-n8n-nodes-base": "^1.16.4",
-		"gulp": "^4.0.2",
-		"jest": "^30.2.0",
 		"prettier": "^3.7.4",
-		"ts-jest": "^29.4.6",
 		"tsc-alias": "^1.8.16",
 		"typescript": "^5.9.3"
 	},
 	"peerDependencies": {
-		"n8n-workflow": "*"
+		"n8n-workflow": "^2.2.1"
 	}
 }

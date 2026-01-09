@@ -10,6 +10,7 @@ n8n community node for integrating TickTick with your workflows. Manage tasks, p
 - [Project Operations](#project-operations)  
 - [Compatibility](#compatibility)  
 - [Known Issues](#known-issues)  
+- [Development Notes](#development-notes)  
 - [Resources](#resources)  
 - [Version History](#version-history)
 
@@ -116,7 +117,7 @@ Tested successfully on 2026-01-06 with:
 
 - n8n Version: 2.2.3
 - Node Version: 22.11.0
-- pnpm Version: 10.27.0
+- Bun Version: 1.3.5
 - No extra packages required (Luxon is bundled)
 
 ## Known Issues
@@ -135,7 +136,19 @@ Tested successfully on 2026-01-06 with:
 ### General
 - **Unofficial Node**: Community-maintained node. Not affiliated with or endorsed by TickTick or n8n.
 
-## How to publish new release
+## Development Notes
+
+### Kill n8n Process
+
+Add this alias to your `~/.zshrc` for quick n8n process termination during development:
+
+```bash
+alias kill-n8n="kill -9 \$(lsof -ti tcp:5678)"
+```
+
+After adding, reload your shell: `source ~/.zshrc`
+
+### How to publish new release
 
 ```
 # Bump the version
