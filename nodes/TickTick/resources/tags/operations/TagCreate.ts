@@ -59,6 +59,11 @@ export async function tagCreateExecute(
 	index: number,
 ): Promise<INodeExecutionData[]> {
 	const name = this.getNodeParameter("name", index) as string;
+
+	if (!name || name.trim() === "") {
+		throw new Error("Tag name is required and cannot be empty");
+	}
+
 	const additionalFields = this.getNodeParameter("additionalFields", index) as {
 		color?: string;
 		parent?: string;

@@ -46,6 +46,21 @@ export async function focusGetDistributionExecute(
 	const startDate = this.getNodeParameter("startDate", index) as string;
 	const endDate = this.getNodeParameter("endDate", index) as string;
 
+	if (!startDate) {
+		throw new Error("Start date is required");
+	}
+
+	if (!endDate) {
+		throw new Error("End date is required");
+	}
+
+	const startDateObj = new Date(startDate);
+	const endDateObj = new Date(endDate);
+
+	if (startDateObj > endDateObj) {
+		throw new Error("Start date must be before or equal to end date");
+	}
+
 	const start = formatDateYYYYMMDD(startDate);
 	const end = formatDateYYYYMMDD(endDate);
 

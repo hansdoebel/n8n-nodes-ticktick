@@ -18,7 +18,8 @@ export const habitUpdateFields: INodeProperties[] = [
 		},
 		required: true,
 		default: "",
-		description: 'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description:
+			'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -119,6 +120,11 @@ export async function habitUpdateExecute(
 	index: number,
 ): Promise<INodeExecutionData[]> {
 	const habitId = this.getNodeParameter("habitId", index) as string;
+
+	if (!habitId || habitId.trim() === "") {
+		throw new Error("Habit ID is required");
+	}
+
 	const updateFields = this.getNodeParameter("updateFields", index) as {
 		color?: string;
 		encouragement?: string;

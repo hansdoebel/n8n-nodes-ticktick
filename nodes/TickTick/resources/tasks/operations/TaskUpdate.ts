@@ -306,6 +306,10 @@ export async function taskUpdateExecute(
 		projectIdParam = projectIdValue || "";
 	}
 
+	if (!taskId || taskId.trim() === "") {
+		throw new Error("Task ID is required");
+	}
+
 	const useJson = this.getNodeParameter(
 		"jsonParameters",
 		index,

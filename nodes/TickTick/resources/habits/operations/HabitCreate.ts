@@ -135,6 +135,11 @@ export async function habitCreateExecute(
 	index: number,
 ): Promise<INodeExecutionData[]> {
 	const name = this.getNodeParameter("name", index) as string;
+
+	if (!name || name.trim() === "") {
+		throw new Error("Habit name is required and cannot be empty");
+	}
+
 	const additionalFields = this.getNodeParameter("additionalFields", index) as {
 		color?: string;
 		encouragement?: string;

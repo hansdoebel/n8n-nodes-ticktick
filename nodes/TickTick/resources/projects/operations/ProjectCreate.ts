@@ -135,6 +135,10 @@ export async function projectCreateExecute(
 			{},
 		) as Record<string, any>;
 
+		if (!name || name.trim() === "") {
+			throw new Error("Project name is required and cannot be empty");
+		}
+
 		const cleaned: Record<string, any> = {};
 
 		cleaned.name = name;

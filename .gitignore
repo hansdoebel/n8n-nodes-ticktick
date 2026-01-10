@@ -11,3 +11,4 @@ yarn.lock
 ticktick-sdk-main
 .rules
 CLAUDE.md
+.claude

@@ -89,6 +89,10 @@ export async function taskDeleteExecute(
 		taskId = taskIdValue || "";
 	}
 
+	if (!taskId || taskId.trim() === "") {
+		throw new Error("Task ID is required");
+	}
+
 	const useV2 = isV2Auth(this, index);
 
 	if (useV2) {

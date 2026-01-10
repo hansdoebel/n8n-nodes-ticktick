@@ -100,6 +100,14 @@ export async function taskMoveExecute(
 		toProjectId = toProjectIdValue || "";
 	}
 
+	if (!taskId || taskId.trim() === "") {
+		throw new Error("Task ID is required");
+	}
+
+	if (!toProjectId || toProjectId.trim() === "") {
+		throw new Error("Destination Project ID is required");
+	}
+
 	const syncResponse = (await tickTickApiRequestV2.call(
 		this,
 		"GET",

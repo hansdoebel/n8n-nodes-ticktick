@@ -77,7 +77,10 @@ describe("TickTick V2 Habits Resource", () => {
 			delete: [],
 		};
 
-		const updateResponse = await client.post(ENDPOINTS.HABITS_BATCH, updateBody);
+		const updateResponse = await client.post(
+			ENDPOINTS.HABITS_BATCH,
+			updateBody,
+		);
 		expect(updateResponse.statusCode).toBe(200);
 
 		const archiveBody = {
@@ -96,7 +99,10 @@ describe("TickTick V2 Habits Resource", () => {
 			delete: [],
 		};
 
-		const archiveResponse = await client.post(ENDPOINTS.HABITS_BATCH, archiveBody);
+		const archiveResponse = await client.post(
+			ENDPOINTS.HABITS_BATCH,
+			archiveBody,
+		);
 		expect(archiveResponse.statusCode).toBe(200);
 
 		const unarchiveBody = {
@@ -115,7 +121,10 @@ describe("TickTick V2 Habits Resource", () => {
 			delete: [],
 		};
 
-		const unarchiveResponse = await client.post(ENDPOINTS.HABITS_BATCH, unarchiveBody);
+		const unarchiveResponse = await client.post(
+			ENDPOINTS.HABITS_BATCH,
+			unarchiveBody,
+		);
 		expect(unarchiveResponse.statusCode).toBe(200);
 
 		const deleteBody = {
@@ -124,7 +133,10 @@ describe("TickTick V2 Habits Resource", () => {
 			delete: [habitId],
 		};
 
-		const deleteResponse = await client.post(ENDPOINTS.HABITS_BATCH, deleteBody);
+		const deleteResponse = await client.post(
+			ENDPOINTS.HABITS_BATCH,
+			deleteBody,
+		);
 		expect(deleteResponse.statusCode).toBe(200);
 	}, 30000);
 
@@ -166,7 +178,10 @@ describe("TickTick V2 Habits Resource", () => {
 			delete: [],
 		};
 
-		const createResponse = await client.post(ENDPOINTS.HABITS_BATCH, createBody);
+		const createResponse = await client.post(
+			ENDPOINTS.HABITS_BATCH,
+			createBody,
+		);
 		expect(createResponse.statusCode).toBe(200);
 
 		const now = new Date();
@@ -225,5 +240,59 @@ describe("TickTick V2 Habits Resource", () => {
 			deleteHabitBody,
 		);
 		expect(deleteHabitResponse.statusCode).toBe(200);
+	}, 30000);
+
+	test("Habit get - retrieve single habit by ID", async () => {
+		const generateId = (length: number = 24): string => {
+			return Array.from(
+				{ length },
+				() => Math.floor(Math.random() * 16).toString(16),
+			).join("");
+		};
+
+		const habitName = uniqueName("TestHabitGet");
+		const habitId = generateId(24);
+
+		const createBody = {
+			add: [
+				{
+					id: habitId,
+					name: habitName,
+					type: "Boolean",
+					color: "#97E38B",
+					icon: "habit_daily_check_in",
+					repeatRule: "RRULE:FREQ=WEEKLY;BYDAY=SU,MO,TU,WE,TH,FR,SA",
+					status: 0,
+				},
+			],
+			update: [],
+			delete: [],
+		};
+
+		const createResponse = await client.post(
+			ENDPOINTS.HABITS_BATCH,
+			createBody,
+		);
+		expect(createResponse.statusCode).toBe(200);
+
+		const habitsResponse = await client.get(ENDPOINTS.HABITS);
+		expect(habitsResponse.statusCode).toBe(200);
+
+		const habits = Array.isArray(habitsResponse.data)
+			? habitsResponse.data
+			: [];
+		const habit = habits.find((h: any) => h.id === habitId);
+
+		expect(habit).toBeDefined();
+		expect(habit.name).toBe(habitName);
+		expect(habit.type).toBe("Boolean");
+		expect(habit.color).toBe("#97E38B");
+
+		const deleteBody = {
+			add: [],
+			update: [],
+			delete: [habitId],
+		};
+		await client.post(ENDPOINTS.HABITS_BATCH, deleteBody);
 	}, 30000);
 });

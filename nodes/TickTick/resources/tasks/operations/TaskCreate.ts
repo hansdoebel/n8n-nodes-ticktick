@@ -299,7 +299,7 @@ export async function taskCreateExecute(
 		const cleaned: Record<string, any> = {};
 
 		if (!title || title.trim() === "") {
-			throw new Error("Task title is required");
+			throw new Error("Task title is required and cannot be empty");
 		}
 
 		let projectId: string;

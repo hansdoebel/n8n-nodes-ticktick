@@ -143,6 +143,14 @@ export async function taskSetParentExecute(
 		parentId = parentIdValue || "";
 	}
 
+	if (!taskId || taskId.trim() === "") {
+		throw new Error("Task ID is required");
+	}
+
+	if (!projectId || projectId.trim() === "") {
+		throw new Error("Project ID is required");
+	}
+
 	const syncResponse = await tickTickApiRequestV2.call(
 		this,
 		"GET",
