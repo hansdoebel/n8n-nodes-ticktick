@@ -2,7 +2,11 @@ import type {
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
-import { getProjects, searchProjects } from "@ticktick/helpers";
+import {
+	getProjects,
+	searchProjects,
+	searchSharedProjects,
+} from "@ticktick/helpers";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const projectMethods = {
@@ -65,6 +69,13 @@ export const projectMethods = {
 			} catch (error) {
 			}
 
+			return { results };
+		},
+		async searchSharedProjects(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchSharedProjects.call(this, filter);
 			return { results };
 		},
 	},

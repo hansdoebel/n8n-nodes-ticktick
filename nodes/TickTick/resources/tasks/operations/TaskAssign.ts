@@ -13,14 +13,15 @@ export const taskAssignFields: INodeProperties[] = [
 		type: "resourceLocator",
 		default: { mode: "list", value: "" },
 		required: true,
-		description: "The project containing the task",
+		description:
+			"The shared project containing the task. Only projects shared with other users are shown.",
 		modes: [
 			{
 				displayName: "From List",
 				name: "list",
 				type: "list",
 				typeOptions: {
-					searchListMethod: "searchProjects",
+					searchListMethod: "searchSharedProjects",
 					searchable: true,
 					searchFilterRequired: false,
 				},

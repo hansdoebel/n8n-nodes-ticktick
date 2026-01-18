@@ -237,6 +237,48 @@ describe("TickTick V2 Projects Resource", () => {
 		10000,
 	);
 
+	test(
+		"GET /project/:projectId/users - get project users (shared project only)",
+		async () => {
+			// Skip if no projects found
+			if (!testProjectId) {
+				console.warn("Skipping test: no projects available");
+				return;
+			}
+
+			// Note: This endpoint only works for shared/collaborative projects
+			// For non-shared projects, it will return an error
+			const response = await client.request(
+				"GET",
+				`/project/${testProjectId}/users`,
+			);
+
+			console.log(
+				`Testing V2 endpoint /project/${testProjectId}/users - Status: ${response.statusCode}`,
+			);
+
+			// For personal (non-shared) projects, the API returns 500 with "no_project_permission"
+			// For shared projects, it returns 200 with an array of users
+			if (response.statusCode === 200) {
+				expect(Array.isArray(response.data)).toBe(true);
+				if (Array.isArray(response.data) && response.data.length > 0) {
+					const user = response.data[0];
+					expect(user).toHaveProperty("userId");
+					expect(user).toHaveProperty("username");
+					console.log("✓ V2 project users endpoint works!", response.data);
+				}
+			} else {
+				// Expected for non-shared projects
+				console.log(
+					"✓ V2 project users endpoint returned expected error for non-shared project",
+					response.data,
+				);
+				expect(response.statusCode).toBe(500);
+			}
+		},
+		10000,
+	);
+
 	test("Project create/update/delete flow", async () => {
 		const generateId = (length: number = 24): string => {
 			return Array.from(
@@ -262,7 +304,10 @@ describe("TickTick V2 Projects Resource", () => {
 			delete: [],
 		};
 
-		const createResponse = await client.post(ENDPOINTS.PROJECTS_BATCH, createBody);
+		const createResponse = await client.post(
+			ENDPOINTS.PROJECTS_BATCH,
+			createBody,
+		);
 		expect(createResponse.statusCode).toBe(200);
 		expect(createResponse.data).toBeDefined();
 
@@ -281,7 +326,10 @@ describe("TickTick V2 Projects Resource", () => {
 			delete: [],
 		};
 
-		const updateResponse = await client.post(ENDPOINTS.PROJECTS_BATCH, updateBody);
+		const updateResponse = await client.post(
+			ENDPOINTS.PROJECTS_BATCH,
+			updateBody,
+		);
 		expect(updateResponse.statusCode).toBe(200);
 
 		const deleteBody = {
@@ -290,7 +338,10 @@ describe("TickTick V2 Projects Resource", () => {
 			delete: [projectId],
 		};
 
-		const deleteResponse = await client.post(ENDPOINTS.PROJECTS_BATCH, deleteBody);
+		const deleteResponse = await client.post(
+			ENDPOINTS.PROJECTS_BATCH,
+			deleteBody,
+		);
 		expect(deleteResponse.statusCode).toBe(200);
 	}, 30000);
 });

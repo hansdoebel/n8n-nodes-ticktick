@@ -2,7 +2,11 @@ import type {
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
-import { getTasks, searchProjectUsers } from "@ticktick/helpers";
+import {
+	getTasks,
+	searchProjectUsers,
+	searchSharedProjects,
+} from "@ticktick/helpers";
 
 export const taskMethods = {
 	loadOptions: {
@@ -17,6 +21,13 @@ export const taskMethods = {
 			filter?: string,
 		): Promise<INodeListSearchResult> {
 			const results = await searchProjectUsers.call(this, filter);
+			return { results };
+		},
+		async searchSharedProjects(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchSharedProjects.call(this, filter);
 			return { results };
 		},
 	},

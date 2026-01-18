@@ -14,14 +14,15 @@ export const projectGetUsersFields: INodeProperties[] = [
 		type: "resourceLocator",
 		default: { mode: "list", value: "" },
 		required: true,
-		description: "The project to get users from",
+		description:
+			"The shared project to get users from. Only projects shared with other users are shown.",
 		modes: [
 			{
 				displayName: "From List",
 				name: "list",
 				type: "list",
 				typeOptions: {
-					searchListMethod: "searchProjects",
+					searchListMethod: "searchSharedProjects",
 					searchable: true,
 					searchFilterRequired: false,
 				},

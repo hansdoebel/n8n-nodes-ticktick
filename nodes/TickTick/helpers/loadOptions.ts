@@ -529,3 +529,50 @@ export async function searchProjectUsers(
 		return [];
 	}
 }
+
+export async function searchSharedProjects(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const response = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			"/batch/check/0",
+		)) as IDataObject;
+
+		const projects = response.projectProfiles as Array<{
+			id: string;
+			name: string;
+			userCount?: number;
+		}>;
+
+		if (!Array.isArray(projects)) {
+			return [];
+		}
+
+		let options = projects
+			.filter((project) => project && project.id && project.name)
+			.filter((project) => (project.userCount || 1) > 1)
+			.map((project) => ({
+				name: project.name,
+				value: project.id,
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}

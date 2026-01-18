@@ -273,6 +273,89 @@ describe("TickTick V2 Tasks Resource", () => {
 		await client.post(ENDPOINTS.PROJECTS_BATCH, deleteProjectBody);
 	}, 45000);
 
+	test(
+		"POST /task/assign - assign task to user (shared project only)",
+		async () => {
+			// Note: This test documents the task assign endpoint behavior
+			// It requires a shared project with multiple users to work properly
+			// For testing purposes, we verify the endpoint exists and returns expected errors
+			// for non-shared projects
+
+			const generateId = (length: number = 24): string => {
+				return Array.from(
+					{ length },
+					() => Math.floor(Math.random() * 16).toString(16),
+				).join("");
+			};
+
+			const taskTitle = uniqueName("TestTaskAssign");
+			const taskId = generateId(24);
+
+			// Create a test task
+			const createBody = {
+				add: [
+					{
+						id: taskId,
+						projectId: inboxId,
+						title: taskTitle,
+						status: 0,
+						sortOrder: 0,
+					},
+				],
+				update: [],
+				delete: [],
+			};
+
+			const createResponse = await client.post(
+				ENDPOINTS.TASKS_BATCH,
+				createBody,
+			);
+			expect(createResponse.statusCode).toBe(200);
+
+			// Try to assign the task (will fail for inbox since it's not shared)
+			// The endpoint expects an array of assignment objects
+			const assignBody = [
+				{
+					assignee: "123456789", // Dummy user ID
+					projectId: inboxId,
+					taskId: taskId,
+				},
+			];
+
+			const assignResponse = await client.post(
+				ENDPOINTS.TASK_ASSIGN,
+				assignBody,
+			);
+
+			console.log(
+				`Testing V2 endpoint /task/assign - Status: ${assignResponse.statusCode}`,
+			);
+
+			// For non-shared projects (like inbox), the API returns an error
+			// For shared projects with valid user IDs, it would return 200
+			if (assignResponse.statusCode === 200) {
+				console.log("✓ V2 task assign endpoint works!", assignResponse.data);
+			} else {
+				// Expected for inbox/non-shared projects or invalid user IDs
+				console.log(
+					"✓ V2 task assign endpoint returned expected error for non-shared project",
+					assignResponse.data,
+				);
+				// 500 is expected for inbox (no_project_permission) or invalid assignee
+				expect([400, 500]).toContain(assignResponse.statusCode);
+			}
+
+			// Cleanup
+			const deleteBody = {
+				add: [],
+				update: [],
+				delete: [{ taskId, projectId: inboxId }],
+			};
+			await client.post(ENDPOINTS.TASKS_BATCH, deleteBody);
+		},
+		30000,
+	);
+
 	test("Task setParent - set and unset parent task", async () => {
 		const generateId = (length: number = 24): string => {
 			return Array.from(

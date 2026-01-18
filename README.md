@@ -93,16 +93,22 @@ The following operations require **TickTick Session API** (Email/Password) crede
 
 | Operation | Description | Required Parameters | Optional/Additional Fields |
 |-----------|-------------|-------------------|--------------------------|
+| **Assign** | Assign task to a user (shared projects only) | Project, Task, Assignee | — |
 | **List All** | List all tasks across projects | — | Limit, Project Filter, Status Filter (All/Active/Completed), Include Deleted |
 | **List Completed** | Get completed tasks in date range | — | Limit, Date Range (From/To) |
 | **List Deleted** | Get deleted/trashed tasks | — | Limit |
 | **Move** | Move task to different project | Task, To Project | — |
 
+> **Note**: The **Assign** operation only works with shared/collaborative projects. The project dropdown automatically filters to show only projects that have been shared with other users. Assignees can be selected from a dropdown that loads users from the selected project.
+
 ### Project Operations (V2 Only)
 
 | Operation | Description | Required Parameters | Optional/Additional Fields |
 |-----------|-------------|-------------------|--------------------------|
+| **Get Users** | Get users in a shared project | Project | — |
 | **List Closed** | Get all closed projects | — | — |
+
+> **Note**: The **Get Users** operation only works with shared/collaborative projects. The project dropdown automatically filters to show only projects that have been shared with other users (userCount > 1). Personal projects and the Inbox cannot be used with this operation.
 
 ### Tag Operations (V2)
 
@@ -246,6 +252,7 @@ Available Tools:
 
 ## Version History
 
+- `2.1.0` – **Collaboration Features**: Added "Get Users" operation for projects to list users in shared/collaborative projects. Added "Assign" operation for tasks to assign tasks to users in shared projects. Assignee field supports dropdown selection from project users.
 - `2.0.3` – **Major Refactor & New Resources**: Complete codebase restructure with resource registry pattern, barrel exports, TypeScript types, centralized constants. New resources: Habits (with check-ins), Focus (heatmap & distribution), Project Groups, User (profile/status/preferences). Enhanced tag operations (rename, merge). Improved API implementations matching Python SDK reference. Comprehensive test suite with 34+ tests.
 - `2.0.0` – **V2 API Support**: Added TickTick Session API (email/password) authentication with support for undocumented V2 endpoints. New resources: Tags, Sync. New V2-only task operations: List All, List Completed, List Deleted, Move. All V1 operations now support both V1 and V2 authentication methods.
 - `1.3.0` – Major refactor: Fixed API request context, added Inbox support, expanded Task/Project fields, added Subtask support, improved Project Get modes.
