@@ -35,6 +35,11 @@ export const projectOperations: INodeProperties[] = [
 		options: [
 			{ name: "Create", value: "create", action: "Create a project" },
 			{ name: "Get", value: "get", action: "Get a project" },
+			{
+				name: "Get Users",
+				value: "getUsers",
+				action: "Get users in a project",
+			},
 			{ name: "Update", value: "update", action: "Update a project" },
 			{ name: "Delete", value: "delete", action: "Delete a project" },
 		],

@@ -36,4 +36,7 @@ export const ENDPOINTS = {
 	USER_PROFILE: "/user/profile",
 	USER_STATUS: "/user/status",
 	USER_PREFERENCES_SETTINGS: "/user/preferences/settings",
+
+	PROJECT_USERS: (projectId: string) => `/project/${projectId}/users`,
+	TASK_ASSIGN: "/task/assign",
 } as const;

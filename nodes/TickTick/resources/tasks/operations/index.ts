@@ -8,3 +8,4 @@ export * from "./TaskListCompleted";
 export * from "./TaskListDeleted";
 export * from "./TaskMove";
 export * from "./TaskSetParent";
+export * from "./TaskAssign";

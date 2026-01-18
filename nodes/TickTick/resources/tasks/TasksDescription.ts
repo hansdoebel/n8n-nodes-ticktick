@@ -34,6 +34,7 @@ export const taskOperations: INodeProperties[] = [
 			},
 		},
 		options: [
+			{ name: "Assign", value: "assign", action: "Assign a task to a user" },
 			{ name: "Complete", value: "complete", action: "Complete a task" },
 			{ name: "Create", value: "create", action: "Create a task" },
 			{ name: "Delete", value: "delete", action: "Delete a task" },

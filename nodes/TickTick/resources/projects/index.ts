@@ -10,6 +10,7 @@ export const projectResource: ResourceDefinition = {
 	handlers: {
 		create: operations.projectCreateExecute,
 		get: operations.projectGetExecute,
+		getUsers: operations.projectGetUsersExecute,
 		update: operations.projectUpdateExecute,
 		delete: operations.projectDeleteExecute,
 	},

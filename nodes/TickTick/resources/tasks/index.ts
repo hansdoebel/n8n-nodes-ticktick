@@ -8,6 +8,7 @@ export const taskResource: ResourceDefinition = {
 	operations: taskOperations,
 	fields: taskFields,
 	handlers: {
+		assign: operations.taskAssignExecute,
 		create: operations.taskCreateExecute,
 		get: operations.taskGetExecute,
 		listAll: operations.taskListAllExecute,
