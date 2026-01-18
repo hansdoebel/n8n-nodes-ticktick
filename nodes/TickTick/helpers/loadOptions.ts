@@ -472,3 +472,60 @@ export async function getProjectGroups(
 		return [];
 	}
 }
+
+export async function searchProjectUsers(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const projectIdParam = this.getCurrentNodeParameter("projectId");
+		let projectId = "";
+
+		if (typeof projectIdParam === "object" && projectIdParam !== null) {
+			projectId = (projectIdParam as { value: string }).value || "";
+		} else {
+			projectId = (projectIdParam as string) || "";
+		}
+
+		if (!projectId) {
+			return [];
+		}
+
+		const response = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			`/project/${projectId}/users`,
+		)) as Array<{
+			userId: number;
+			displayName: string;
+			username: string;
+		}>;
+
+		if (!Array.isArray(response)) {
+			return [];
+		}
+
+		let options = response
+			.filter((user) => user && user.userId)
+			.map((user) => ({
+				name: user.displayName || user.username || String(user.userId),
+				value: String(user.userId),
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}

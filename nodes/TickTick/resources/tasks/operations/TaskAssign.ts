@@ -74,13 +74,30 @@ export const taskAssignFields: INodeProperties[] = [
 		},
 	},
 	{
-		displayName: "Assignee User ID",
+		displayName: "Assignee",
 		name: "assignee",
-		type: "string",
-		default: "",
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		description:
-			"The user ID to assign the task to (obtain from Get Project Users)",
+		description: "The user to assign the task to",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchProjectUsers",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 123456789",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["task"],
@@ -101,7 +118,9 @@ export async function taskAssignExecute(
 	const taskIdValue = this.getNodeParameter("taskId", index) as
 		| string
 		| { mode: string; value: string };
-	const assignee = this.getNodeParameter("assignee", index) as string;
+	const assigneeValue = this.getNodeParameter("assignee", index) as
+		| string
+		| { mode: string; value: string };
 
 	const projectId = typeof projectIdValue === "object"
 		? projectIdValue.value
@@ -109,6 +128,9 @@ export async function taskAssignExecute(
 	const taskId = typeof taskIdValue === "object"
 		? taskIdValue.value
 		: taskIdValue;
+	const assignee = typeof assigneeValue === "object"
+		? assigneeValue.value
+		: assigneeValue;
 
 	if (!projectId?.trim()) {
 		throw new Error("Project ID is required");
