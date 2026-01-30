@@ -258,6 +258,48 @@ export const taskUpdateFields: INodeProperties[] = [
 				default: 0,
 			},
 			{
+				displayName: "Tags",
+				name: "tags",
+				type: "fixedCollection",
+				default: { tagValues: [] },
+				placeholder: "Add Tag",
+				typeOptions: { multipleValues: true },
+				options: [
+					{
+						name: "tagValues",
+						displayName: "Tag",
+						values: [
+							{
+								displayName: "Tag",
+								name: "tag",
+								type: "resourceLocator",
+								default: { mode: "list", value: "" },
+								description: "The tag to assign to the task",
+								modes: [
+									{
+										displayName: "From List",
+										name: "list",
+										type: "list",
+										typeOptions: {
+											searchListMethod: "searchTags",
+											searchable: true,
+											searchFilterRequired: false,
+										},
+									},
+									{
+										displayName: "By Name",
+										name: "name",
+										type: "string",
+										placeholder: "e.g. important",
+									},
+								],
+							},
+						],
+					},
+				],
+				description: "Tags to assign to the task (V2 API only)",
+			},
+			{
 				displayName: "Time Zone",
 				name: "timeZone",
 				type: "options",
@@ -274,39 +316,156 @@ export const taskUpdateFields: INodeProperties[] = [
 	},
 ];
 
+function extractResourceLocatorValue(
+	value: string | { mode: string; value: string } | undefined,
+): string {
+	if (typeof value === "object" && value !== null) {
+		return value.value || "";
+	}
+	return value || "";
+}
+
+function buildSubtask(sub: Record<string, any>): Record<string, any> {
+	const subtask: Record<string, any> = {};
+	if (sub.completedTime) {
+		subtask.completedTime = formatTickTickDate(sub.completedTime);
+	}
+	if (sub.isAllDay !== undefined) subtask.isAllDay = sub.isAllDay;
+	if (sub.sortOrder !== undefined && sub.sortOrder !== "") {
+		subtask.sortOrder = sub.sortOrder;
+	}
+	if (sub.startDate) subtask.startDate = formatTickTickDate(sub.startDate);
+	if (sub.status !== undefined) subtask.status = sub.status;
+	if (sub.timeZone) subtask.timeZone = sub.timeZone;
+	if (sub.title !== undefined && sub.title !== "") subtask.title = sub.title;
+	return subtask;
+}
+
+async function fetchCurrentTask(
+	context: IExecuteFunctions,
+	taskId: string,
+	useV2: boolean,
+): Promise<IDataObject> {
+	if (useV2) {
+		const response = (await tickTickApiRequestV2.call(
+			context,
+			"GET",
+			ENDPOINTS.SYNC,
+		)) as IDataObject;
+		const tasks =
+			((response.syncTaskBean as IDataObject)?.update || []) as IDataObject[];
+		return tasks.find((t) => String(t.id) === taskId) || {};
+	}
+
+	try {
+		return await tickTickApiRequest.call(
+			context,
+			"GET",
+			`/open/v1/project/all/task/${taskId}`,
+		);
+	} catch {
+		return {};
+	}
+}
+
+function parseReminders(reminders: string): string[] {
+	return reminders
+		.split(",")
+		.map((r) => r.trim())
+		.filter((r) => r.length > 0);
+}
+
+function buildTaskBody(
+	currentTask: IDataObject,
+	updateFields: Record<string, any>,
+	taskId: string,
+	projectId: string,
+): Record<string, any> {
+	const body: Record<string, any> = { ...currentTask };
+
+	body.id = taskId;
+	body.projectId = projectId || currentTask.projectId || "inbox";
+
+	const directFields = [
+		"content",
+		"desc",
+		"isAllDay",
+		"priority",
+		"repeatFlag",
+		"sortOrder",
+		"status",
+		"timeZone",
+		"title",
+	];
+	for (const field of directFields) {
+		if (
+			updateFields[field] !== undefined && updateFields[field] !== "" &&
+			updateFields[field] !== null
+		) {
+			body[field] = updateFields[field];
+		}
+	}
+
+	const dateFields = ["dueDate", "completedTime", "startDate"];
+	for (const field of dateFields) {
+		if (updateFields[field]) {
+			body[field] = formatTickTickDate(updateFields[field]);
+		}
+	}
+
+	if (
+		updateFields.tags?.tagValues && Array.isArray(updateFields.tags.tagValues)
+	) {
+		const tags = updateFields.tags.tagValues
+			.map((item: { tag: string | { mode: string; value: string } }) => {
+				if (typeof item.tag === "object" && item.tag !== null) {
+					return item.tag.value;
+				}
+				return item.tag;
+			})
+			.filter((tag: string) => tag && tag.trim() !== "");
+		if (tags.length > 0) {
+			body.tags = tags;
+		}
+	}
+
+	if (updateFields.reminders) {
+		const reminders = parseReminders(updateFields.reminders as string);
+		if (reminders.length > 0) {
+			body.reminders = reminders;
+		}
+	}
+
+	if (updateFields.items?.item && Array.isArray(updateFields.items.item)) {
+		const subtasks = updateFields.items.item
+			.map(buildSubtask)
+			.filter((s: Record<string, any>) => Object.keys(s).length > 0);
+		if (subtasks.length > 0) {
+			body.items = subtasks;
+		}
+	}
+
+	return body;
+}
+
 export async function taskUpdateExecute(
 	this: IExecuteFunctions,
 	index: number,
 ) {
-	function setIfDefined(target: Record<string, any>, key: string, value: any) {
-		if (value !== undefined && value !== "" && value !== null) {
-			target[key] = value;
-		}
-	}
+	const taskId = extractResourceLocatorValue(
+		this.getNodeParameter("taskId", index) as string | {
+			mode: string;
+			value: string;
+		},
+	);
+	const projectId = extractResourceLocatorValue(
+		this.getNodeParameter("projectId", index, "") as string | {
+			mode: string;
+			value: string;
+		},
+	);
 
-	const taskIdValue = this.getNodeParameter("taskId", index) as
-		| string
-		| { mode: string; value: string };
-	const projectIdValue = this.getNodeParameter("projectId", index, "") as
-		| string
-		| { mode: string; value: string };
-
-	let taskId: string;
-	let projectIdParam: string;
-
-	if (typeof taskIdValue === "object" && taskIdValue !== null) {
-		taskId = taskIdValue.value || "";
-	} else {
-		taskId = taskIdValue || "";
-	}
-
-	if (typeof projectIdValue === "object" && projectIdValue !== null) {
-		projectIdParam = projectIdValue.value || "";
-	} else {
-		projectIdParam = projectIdValue || "";
-	}
-
-	if (!taskId || taskId.trim() === "") {
+	if (!taskId.trim()) {
 		throw new Error("Task ID is required");
 	}
 
@@ -315,32 +474,10 @@ export async function taskUpdateExecute(
 		index,
 		false,
 	) as boolean;
-	let body: Record<string, any> = {};
-
-	let currentTask: any = {};
 	const useV2 = isV2Auth(this, index);
+	const currentTask = await fetchCurrentTask(this, taskId, useV2);
 
-	if (useV2) {
-		const response = (await tickTickApiRequestV2.call(
-			this,
-			"GET",
-			ENDPOINTS.SYNC,
-		)) as IDataObject;
-		const tasks =
-			((response.syncTaskBean as IDataObject)?.update || []) as IDataObject[];
-		const task = tasks.find((t) => String(t.id) === taskId);
-		if (task) {
-			currentTask = task;
-		}
-	} else {
-		try {
-			currentTask = await tickTickApiRequest.call(
-				this,
-				"GET",
-				`/open/v1/project/all/task/${taskId}`,
-			);
-		} catch (error) {}
-	}
+	let body: Record<string, any>;
 
 	if (useJson) {
 		const jsonString = this.getNodeParameter(
@@ -351,7 +488,7 @@ export async function taskUpdateExecute(
 		try {
 			body = JSON.parse(jsonString);
 		} catch (error) {
-			throw new Error(`Invalid JSON provided: ${error.message}`);
+			throw new Error(`Invalid JSON provided: ${(error as Error).message}`);
 		}
 	} else {
 		const updateFields = this.getNodeParameter(
@@ -359,114 +496,28 @@ export async function taskUpdateExecute(
 			index,
 			{},
 		) as Record<string, any>;
-
-		const cleaned: Record<string, any> = {
-			...currentTask,
-		};
-
-		cleaned.id = taskId;
-		cleaned.projectId = projectIdParam && projectIdParam !== ""
-			? projectIdParam
-			: currentTask.projectId || "inbox";
-
-		setIfDefined(cleaned, "content", updateFields.content);
-		setIfDefined(cleaned, "desc", updateFields.desc);
-		setIfDefined(
-			cleaned,
-			"dueDate",
-			formatTickTickDate(updateFields.dueDate),
-		);
-		setIfDefined(cleaned, "isAllDay", updateFields.isAllDay);
-		setIfDefined(
-			cleaned,
-			"completedTime",
-			formatTickTickDate(updateFields.completedTime),
-		);
-		setIfDefined(cleaned, "priority", updateFields.priority);
-		setIfDefined(cleaned, "repeatFlag", updateFields.repeatFlag);
-		setIfDefined(cleaned, "sortOrder", updateFields.sortOrder);
-		setIfDefined(
-			cleaned,
-			"startDate",
-			formatTickTickDate(updateFields.startDate),
-		);
-		setIfDefined(cleaned, "status", updateFields.status);
-		setIfDefined(cleaned, "timeZone", updateFields.timeZone);
-		setIfDefined(cleaned, "title", updateFields.title);
-
-		if (updateFields.reminders) {
-			try {
-				const reminders = (updateFields.reminders as string)
-					.split(",")
-					.map((r) => r.trim())
-					.filter((r) => r.length > 0);
-				if (reminders.length > 0) {
-					cleaned.reminders = reminders;
-				}
-			} catch (error) {}
-		}
-
-		if (updateFields.items?.item && Array.isArray(updateFields.items.item)) {
-			const subtasks = updateFields.items.item
-				.map((sub: Record<string, any>) => {
-					const subtask: Record<string, any> = {};
-					if (sub.completedTime) {
-						subtask.completedTime = formatTickTickDate(sub.completedTime);
-					}
-					if (sub.isAllDay !== undefined) {
-						subtask.isAllDay = sub.isAllDay;
-					}
-					if (sub.sortOrder !== undefined && sub.sortOrder !== "") {
-						subtask.sortOrder = sub.sortOrder;
-					}
-					if (sub.startDate) {
-						subtask.startDate = formatTickTickDate(sub.startDate);
-					}
-					if (sub.status !== undefined) {
-						subtask.status = sub.status;
-					}
-					if (sub.timeZone) {
-						subtask.timeZone = sub.timeZone;
-					}
-					if (sub.title !== undefined && sub.title !== "") {
-						subtask.title = sub.title;
-					}
-					return subtask;
-				})
-				.filter((s: Record<string, any>) => Object.keys(s).length > 0);
-
-			if (subtasks.length > 0) {
-				cleaned.items = subtasks;
-			}
-		}
-
-		body = cleaned;
+		body = buildTaskBody(currentTask, updateFields, taskId, projectId);
 	}
 
-	if (!body.projectId) {
-		body.projectId = "inbox";
-	}
-	if (!body.id) {
-		body.id = taskId;
-	}
-	if (!body.title && currentTask.title) {
-		body.title = currentTask.title;
-	}
+	body.projectId ||= "inbox";
+	body.id ||= taskId;
+	body.title ||= currentTask.title;
 
 	if (useV2) {
-		const batchBody = {
-			update: [body],
-		};
 		const response = await tickTickApiRequestV2.call(
 			this,
 			"POST",
 			ENDPOINTS.TASKS_BATCH,
-			batchBody,
+			{ update: [body] },
 		);
 		return [{ json: response }];
 	}
 
-	const endpoint = `/open/v1/task/${taskId}`;
-	const response = await tickTickApiRequest.call(this, "POST", endpoint, body);
+	const response = await tickTickApiRequest.call(
+		this,
+		"POST",
+		`/open/v1/task/${taskId}`,
+		body,
+	);
 	return [{ json: response }];
 }

@@ -356,6 +356,86 @@ describe("TickTick V2 Tasks Resource", () => {
 		30000,
 	);
 
+	test("Task update with tags", async () => {
+		const generateId = (length: number = 24): string => {
+			return Array.from(
+				{ length },
+				() => Math.floor(Math.random() * 16).toString(16),
+			).join("");
+		};
+
+		const tagLabel = uniqueName("TaskTag");
+		const tagName = tagLabel.toLowerCase().replace(/\s+/g, "");
+
+		// Create a tag first
+		const createTagResponse = await client.post(ENDPOINTS.TAGS_BATCH, {
+			add: [{ label: tagLabel, name: tagName }],
+		});
+		expect(createTagResponse.statusCode).toBe(200);
+
+		const taskTitle = uniqueName("TestTaskWithTags");
+		const taskId = generateId(24);
+
+		// Create a task
+		const createBody = {
+			add: [
+				{
+					id: taskId,
+					projectId: inboxId,
+					title: taskTitle,
+					status: 0,
+					sortOrder: 0,
+				},
+			],
+			update: [],
+			delete: [],
+		};
+
+		const createResponse = await client.post(ENDPOINTS.TASKS_BATCH, createBody);
+		expect(createResponse.statusCode).toBe(200);
+
+		// Update task with tags
+		const updateBody = {
+			add: [],
+			update: [
+				{
+					id: taskId,
+					projectId: inboxId,
+					title: taskTitle,
+					tags: [tagName],
+					status: 0,
+					sortOrder: 0,
+				},
+			],
+			delete: [],
+		};
+
+		const updateResponse = await client.post(ENDPOINTS.TASKS_BATCH, updateBody);
+		expect(updateResponse.statusCode).toBe(200);
+
+		// Verify task has tags
+		const syncResponse = await client.get(ENDPOINTS.SYNC);
+		expect(syncResponse.statusCode).toBe(200);
+
+		const tasks = (syncResponse.data as any)?.syncTaskBean?.update || [];
+		const updatedTask = tasks.find((t: any) => t.id === taskId);
+
+		expect(updatedTask).toBeDefined();
+		expect(updatedTask.tags).toBeDefined();
+		expect(updatedTask.tags).toContain(tagName);
+
+		// Cleanup - delete task
+		const deleteTaskBody = {
+			add: [],
+			update: [],
+			delete: [{ taskId, projectId: inboxId }],
+		};
+		await client.post(ENDPOINTS.TASKS_BATCH, deleteTaskBody);
+
+		// Cleanup - delete tag
+		await client.delete(`/tag?name=${encodeURIComponent(tagName)}`);
+	}, 30000);
+
 	test("Task setParent - set and unset parent task", async () => {
 		const generateId = (length: number = 24): string => {
 			return Array.from(
