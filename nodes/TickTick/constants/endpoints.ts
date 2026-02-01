@@ -49,4 +49,5 @@ export const ENDPOINTS = {
 	PROJECT_USERS: (projectId: string) => `/project/${projectId}/users`,
 	TASK_ASSIGN: "/task/assign",
 	TASK_PROJECT: "/batch/taskProject",
+	TASK_PARENT: "/batch/taskParent",
 } as const;

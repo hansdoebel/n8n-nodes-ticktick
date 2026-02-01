@@ -59,6 +59,11 @@ export const taskOperations: INodeProperties[] = [
 				value: "move",
 				action: "Move a task",
 			},
+			{
+				name: "Set Parent",
+				value: "setParent",
+				action: "Set parent task",
+			},
 			{ name: "Update", value: "update", action: "Update a task" },
 		],
 		default: "create",
