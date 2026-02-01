@@ -1,6 +1,6 @@
 {
 	"name": "n8n-nodes-ticktick",
-	"version": "2.1.1",
+	"version": "2.1.2",
 	"description": "TickTick module for custom n8n node.",
 	"keywords": [
 		"n8n-community-node-package",
