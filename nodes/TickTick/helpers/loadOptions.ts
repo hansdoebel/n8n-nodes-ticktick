@@ -368,6 +368,49 @@ export async function getHabits(
 	}
 }
 
+export async function searchHabits(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const habits =
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.HABITS)) as Array<
+				{
+					id: string;
+					name: string;
+					status?: number;
+				}
+			>;
+
+		if (!Array.isArray(habits)) {
+			return [];
+		}
+
+		let options = habits
+			.filter((habit) => habit && habit.id && habit.name)
+			.map((habit) => ({
+				name: habit.name,
+				value: habit.id,
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}
+
 export async function getTags(
 	this: ILoadOptionsFunctions,
 ): Promise<{ name: string; value: string }[]> {

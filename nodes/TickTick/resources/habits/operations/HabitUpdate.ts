@@ -10,16 +10,30 @@ import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 export const habitUpdateFields: INodeProperties[] = [
 	{
-		displayName: "Habit Name or ID",
+		displayName: "Habit",
 		name: "habitId",
-		type: "options",
-		typeOptions: {
-			loadOptionsMethod: "getHabits",
-		},
+		type: "resourceLocator",
+		default: { mode: "list", value: "" },
 		required: true,
-		default: "",
-		description:
-			'The habit to update. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code-examples/expressions/">expression</a>. Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+		description: "The habit to update",
+		modes: [
+			{
+				displayName: "From List",
+				name: "list",
+				type: "list",
+				typeOptions: {
+					searchListMethod: "searchHabits",
+					searchable: true,
+					searchFilterRequired: false,
+				},
+			},
+			{
+				displayName: "By ID",
+				name: "id",
+				type: "string",
+				placeholder: "e.g. 60f1a2b3c4d5e6f7a8b9c0d1",
+			},
+		],
 		displayOptions: {
 			show: {
 				resource: ["habit"],
@@ -119,7 +133,16 @@ export async function habitUpdateExecute(
 	this: IExecuteFunctions,
 	index: number,
 ): Promise<INodeExecutionData[]> {
-	const habitId = this.getNodeParameter("habitId", index) as string;
+	const habitIdValue = this.getNodeParameter("habitId", index) as
+		| string
+		| { mode: string; value: string };
+
+	let habitId: string;
+	if (typeof habitIdValue === "object" && habitIdValue !== null) {
+		habitId = habitIdValue.value || "";
+	} else {
+		habitId = habitIdValue || "";
+	}
 
 	if (!habitId || habitId.trim() === "") {
 		throw new Error("Habit ID is required");
