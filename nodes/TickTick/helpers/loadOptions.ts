@@ -440,6 +440,59 @@ export async function searchTags(
 	}
 }
 
+export async function searchParentTags(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		let currentTagName = "";
+		try {
+			const tagNameParam = this.getCurrentNodeParameter("tagName");
+			if (typeof tagNameParam === "object" && tagNameParam !== null) {
+				currentTagName = (tagNameParam as { value: string }).value || "";
+			} else {
+				currentTagName = (tagNameParam as string) || "";
+			}
+		} catch {
+		}
+
+		const response =
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.SYNC)) as {
+				tags?: Array<{ name: string; label?: string }>;
+			};
+
+		const tags = response.tags || [];
+
+		if (!Array.isArray(tags)) {
+			return [];
+		}
+
+		let options = tags
+			.filter((tag) => tag && tag.name)
+			.filter((tag) => tag.name !== currentTagName)
+			.map((tag) => ({
+				name: tag.label || tag.name,
+				value: tag.name,
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}
+
 export async function getProjectGroups(
 	this: ILoadOptionsFunctions,
 ): Promise<{ name: string; value: string }[]> {

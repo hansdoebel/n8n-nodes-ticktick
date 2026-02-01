@@ -276,11 +276,6 @@ describe("TickTick V2 Tasks Resource", () => {
 	test(
 		"POST /task/assign - assign task to user (shared project only)",
 		async () => {
-			// Note: This test documents the task assign endpoint behavior
-			// It requires a shared project with multiple users to work properly
-			// For testing purposes, we verify the endpoint exists and returns expected errors
-			// for non-shared projects
-
 			const generateId = (length: number = 24): string => {
 				return Array.from(
 					{ length },
@@ -291,7 +286,6 @@ describe("TickTick V2 Tasks Resource", () => {
 			const taskTitle = uniqueName("TestTaskAssign");
 			const taskId = generateId(24);
 
-			// Create a test task
 			const createBody = {
 				add: [
 					{
@@ -312,11 +306,9 @@ describe("TickTick V2 Tasks Resource", () => {
 			);
 			expect(createResponse.statusCode).toBe(200);
 
-			// Try to assign the task (will fail for inbox since it's not shared)
-			// The endpoint expects an array of assignment objects
 			const assignBody = [
 				{
-					assignee: "123456789", // Dummy user ID
+					assignee: "123456789",
 					projectId: inboxId,
 					taskId: taskId,
 				},
@@ -331,21 +323,16 @@ describe("TickTick V2 Tasks Resource", () => {
 				`Testing V2 endpoint /task/assign - Status: ${assignResponse.statusCode}`,
 			);
 
-			// For non-shared projects (like inbox), the API returns an error
-			// For shared projects with valid user IDs, it would return 200
 			if (assignResponse.statusCode === 200) {
 				console.log("✓ V2 task assign endpoint works!", assignResponse.data);
 			} else {
-				// Expected for inbox/non-shared projects or invalid user IDs
 				console.log(
 					"✓ V2 task assign endpoint returned expected error for non-shared project",
 					assignResponse.data,
 				);
-				// 500 is expected for inbox (no_project_permission) or invalid assignee
 				expect([400, 500]).toContain(assignResponse.statusCode);
 			}
 
-			// Cleanup
 			const deleteBody = {
 				add: [],
 				update: [],
@@ -367,7 +354,6 @@ describe("TickTick V2 Tasks Resource", () => {
 		const tagLabel = uniqueName("TaskTag");
 		const tagName = tagLabel.toLowerCase().replace(/\s+/g, "");
 
-		// Create a tag first
 		const createTagResponse = await client.post(ENDPOINTS.TAGS_BATCH, {
 			add: [{ label: tagLabel, name: tagName }],
 		});
@@ -376,7 +362,6 @@ describe("TickTick V2 Tasks Resource", () => {
 		const taskTitle = uniqueName("TestTaskWithTags");
 		const taskId = generateId(24);
 
-		// Create a task
 		const createBody = {
 			add: [
 				{
@@ -394,7 +379,6 @@ describe("TickTick V2 Tasks Resource", () => {
 		const createResponse = await client.post(ENDPOINTS.TASKS_BATCH, createBody);
 		expect(createResponse.statusCode).toBe(200);
 
-		// Update task with tags
 		const updateBody = {
 			add: [],
 			update: [
@@ -413,7 +397,6 @@ describe("TickTick V2 Tasks Resource", () => {
 		const updateResponse = await client.post(ENDPOINTS.TASKS_BATCH, updateBody);
 		expect(updateResponse.statusCode).toBe(200);
 
-		// Verify task has tags
 		const syncResponse = await client.get(ENDPOINTS.SYNC);
 		expect(syncResponse.statusCode).toBe(200);
 
@@ -424,7 +407,6 @@ describe("TickTick V2 Tasks Resource", () => {
 		expect(updatedTask.tags).toBeDefined();
 		expect(updatedTask.tags).toContain(tagName);
 
-		// Cleanup - delete task
 		const deleteTaskBody = {
 			add: [],
 			update: [],
@@ -432,7 +414,6 @@ describe("TickTick V2 Tasks Resource", () => {
 		};
 		await client.post(ENDPOINTS.TASKS_BATCH, deleteTaskBody);
 
-		// Cleanup - delete tag
 		await client.delete(`/tag?name=${encodeURIComponent(tagName)}`);
 	}, 30000);
 

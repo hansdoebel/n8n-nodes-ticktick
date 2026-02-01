@@ -20,7 +20,6 @@ describe("TickTick V2 Sync Resource", () => {
 		expect(response.data).toBeDefined();
 		expect(typeof response.data).toBe("object");
 
-		// Verify sync data structure
 		expect(response.data).toHaveProperty("projectProfiles");
 		expect(response.data).toHaveProperty("syncTaskBean");
 		expect(response.data).toHaveProperty("tags");
@@ -34,7 +33,6 @@ describe("TickTick V2 Sync Resource", () => {
 
 		expect(response.statusCode).toBe(200);
 
-		// Extract projects from sync data
 		const projects = response.data.projectProfiles || [];
 		expect(Array.isArray(projects)).toBe(true);
 
@@ -59,7 +57,6 @@ describe("TickTick V2 Sync Resource", () => {
 
 		expect(response.statusCode).toBe(200);
 
-		// Extract tasks from sync data
 		const tasks = response.data.syncTaskBean?.update || [];
 		expect(Array.isArray(tasks)).toBe(true);
 
@@ -89,11 +86,9 @@ describe("TickTick V2 Sync Resource", () => {
 		const tasks = response.data.syncTaskBean?.update || [];
 
 		if (projects.length > 0 && tasks.length > 0) {
-			// Get first project ID
 			const targetProjectId = projects[0].id;
 			const projectName = projects[0].name;
 
-			// Filter tasks for this project
 			const projectTasks = tasks.filter(
 				(task: any) => task.projectId === targetProjectId,
 			);

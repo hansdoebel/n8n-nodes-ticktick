@@ -64,7 +64,7 @@ describe("HabitList Operation", () => {
 				{
 					id: "habitArchived",
 					name: "Archived Habit",
-					status: 2, // ARCHIVED
+					status: 2,
 				},
 			];
 

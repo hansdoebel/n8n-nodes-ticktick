@@ -39,7 +39,9 @@ describe("HabitUpdate Operation", () => {
 			expectApiCalled(mockContext, "POST", ENDPOINTS.HABITS_BATCH);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
@@ -72,13 +74,13 @@ describe("HabitUpdate Operation", () => {
 			await habitUpdateExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
-			// Original name preserved
 			expect(body.update[0].name).toBe("Exercise");
-			// New color applied
 			expect(body.update[0].color).toBe("#FF0000");
 		});
 
@@ -109,7 +111,9 @@ describe("HabitUpdate Operation", () => {
 			await habitUpdateExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
@@ -143,7 +147,9 @@ describe("HabitUpdate Operation", () => {
 			await habitUpdateExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
@@ -176,7 +182,9 @@ describe("HabitUpdate Operation", () => {
 			await habitUpdateExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
@@ -250,7 +258,9 @@ describe("HabitUpdate Operation", () => {
 			await habitUpdateExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};

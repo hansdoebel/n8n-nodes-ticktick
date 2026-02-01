@@ -144,7 +144,6 @@ export class TickTickTestClient {
 
 		const xDevice = buildDeviceHeader(this.session.deviceId);
 
-		// Determine the path based on whether it's a V1 or V2 endpoint
 		const path = endpoint.startsWith("/open/v1")
 			? `/api${endpoint}`
 			: `/api/v2${endpoint}`;
@@ -175,7 +174,6 @@ export class TickTickTestClient {
 		};
 	}
 
-	// Convenience methods
 	async get<T = unknown>(endpoint: string): Promise<ApiResponse<T>> {
 		return this.request<T>("GET", endpoint);
 	}

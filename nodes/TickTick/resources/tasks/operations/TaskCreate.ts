@@ -290,7 +290,7 @@ interface SubtaskInput {
 	title?: string;
 	isAllDay?: boolean;
 	completedTime?: string;
-	sortOrder?: number | string; // Can be empty string from form
+	sortOrder?: number | string;
 	startDate?: string;
 	status?: number;
 	timeZone?: string;

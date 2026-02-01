@@ -151,7 +151,6 @@ describe("HabitCheckin Operation", () => {
 			const body = batchCall?.body as {
 				add: Array<Record<string, unknown>>;
 			};
-			// checkinStamp is a number in YYYYMMDD format
 			expect(body.add[0].checkinStamp).toBe(20240315);
 		});
 
@@ -181,7 +180,6 @@ describe("HabitCheckin Operation", () => {
 			const body = batchCall?.body as {
 				add: Array<Record<string, unknown>>;
 			};
-			// Should be today's date as a number in YYYYMMDD format
 			expect(typeof body.add[0].checkinStamp).toBe("number");
 			expect(body.add[0].checkinStamp).toBeGreaterThan(20200101);
 		});
@@ -212,7 +210,7 @@ describe("HabitCheckin Operation", () => {
 			const body = batchCall?.body as {
 				add: Array<Record<string, unknown>>;
 			};
-			expect(body.add[0].status).toBe(2); // CHECKIN_STATUS.COMPLETED
+			expect(body.add[0].status).toBe(2);
 		});
 
 		test("throws error when habit ID is empty", async () => {

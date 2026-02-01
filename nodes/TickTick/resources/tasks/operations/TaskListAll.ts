@@ -167,7 +167,6 @@ export async function taskListAllExecute(
 			return true;
 		});
 
-		// Apply user's limit after filtering
 		const limited = limit > 0 ? filtered.slice(0, limit) : filtered;
 		return limited.map((task) => ({ json: task }));
 	}

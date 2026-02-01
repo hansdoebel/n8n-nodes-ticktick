@@ -13,7 +13,7 @@ describe("HabitUnarchive Operation", () => {
 			name: "Archived Habit",
 			color: "#6495ED",
 			goal: 1,
-			status: 2, // ARCHIVED
+			status: 2,
 			iconRes: "habit_default",
 		};
 
@@ -44,7 +44,9 @@ describe("HabitUnarchive Operation", () => {
 			expectApiCalled(mockContext, "POST", ENDPOINTS.HABITS_BATCH);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
@@ -74,7 +76,9 @@ describe("HabitUnarchive Operation", () => {
 			await habitUnarchiveExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
@@ -138,7 +142,9 @@ describe("HabitUnarchive Operation", () => {
 			await habitUnarchiveExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.HABITS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.HABITS_BATCH)
+			);
 			const body = batchCall?.body as {
 				add: unknown[];
 				update: unknown[];

@@ -102,7 +102,6 @@ export async function taskSetParentExecute(
 		throw new Error("Task ID is required");
 	}
 
-	// Fetch all tasks to find the task (and parent if specified)
 	const syncResponse = await tickTickApiRequestV2.call(
 		this,
 		"GET",
@@ -120,7 +119,6 @@ export async function taskSetParentExecute(
 	const taskProjectId = currentTask.projectId as string;
 	const isRemovingParent = !parentId || parentId.trim() === "";
 
-	// If setting a parent (not removing), validate the parent task exists and is in same project
 	if (!isRemovingParent) {
 		const parentTask = tasks.find((t) => String(t.id) === parentId);
 		if (!parentTask) {
@@ -135,7 +133,6 @@ export async function taskSetParentExecute(
 		}
 	}
 
-	// Use the batch endpoint to update the task's parentId
 	const updatedTask = {
 		...currentTask,
 		id: taskId,

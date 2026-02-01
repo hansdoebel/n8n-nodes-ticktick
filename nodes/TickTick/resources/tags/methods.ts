@@ -2,7 +2,7 @@ import type {
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
-import { getTags, searchTags } from "@ticktick/helpers";
+import { getTags, searchParentTags, searchTags } from "@ticktick/helpers";
 
 export const tagMethods = {
 	loadOptions: {
@@ -16,6 +16,13 @@ export const tagMethods = {
 			filter?: string,
 		): Promise<INodeListSearchResult> {
 			const results = await searchTags.call(this, filter);
+			return { results };
+		},
+		async searchParentTags(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchParentTags.call(this, filter);
 			return { results };
 		},
 	},

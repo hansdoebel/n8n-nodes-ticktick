@@ -64,14 +64,39 @@ export const tagUpdateFields: INodeProperties[] = [
 				name: "label",
 				type: "string",
 				default: "",
-				description: "The display name of the tag",
+				description: "The new display name for the tag",
 			},
 			{
 				displayName: "Parent Tag",
 				name: "parent",
-				type: "string",
-				default: "",
-				description: "The name of the parent tag for nested tags",
+				type: "resourceLocator",
+				default: { mode: "list", value: "" },
+				description: "The parent tag for nested tags",
+				modes: [
+					{
+						displayName: "From List",
+						name: "list",
+						type: "list",
+						typeOptions: {
+							searchListMethod: "searchParentTags",
+							searchable: true,
+							searchFilterRequired: false,
+						},
+					},
+					{
+						displayName: "By Name",
+						name: "name",
+						type: "string",
+						placeholder: "e.g. Projects",
+					},
+					{
+						displayName: "None",
+						name: "none",
+						type: "string",
+						placeholder: "No parent (top-level tag)",
+						hint: "Leave empty to make this a top-level tag",
+					},
+				],
 			},
 			{
 				displayName: "Sort Order",
@@ -107,7 +132,7 @@ export async function tagUpdateExecute(
 		label?: string;
 		color?: string;
 		sortType?: string;
-		parent?: string;
+		parent?: string | { mode: string; value: string };
 		sortOrder?: number;
 	};
 
@@ -119,39 +144,88 @@ export async function tagUpdateExecute(
 		tagName = tagNameValue || "";
 	}
 
-	if (!updateFields.label) {
-		throw new Error("Tag label is required for update.");
+	let currentTagName = tagName;
+	const results: Record<string, unknown> = { originalName: tagName };
+
+	if (updateFields.label) {
+		const renameBody = {
+			name: tagName,
+			newName: updateFields.label,
+		};
+
+		await tickTickApiRequestV2.call(
+			this,
+			"PUT",
+			ENDPOINTS.TAG_RENAME,
+			renameBody,
+		);
+
+		currentTagName = updateFields.label;
+		results.renamed = true;
+		results.newName = updateFields.label;
 	}
 
-	const tag: Record<string, unknown> = {
-		name: tagName,
-		label: updateFields.label,
-		rawName: tagName,
-	};
-
-	if (updateFields.color) {
-		tag.color = updateFields.color;
-	}
+	let parentValue: string | undefined;
 	if (updateFields.parent) {
-		tag.parent = updateFields.parent;
-	}
-	if (updateFields.sortType && updateFields.sortType !== "NONE") {
-		tag.sortType = updateFields.sortType;
-	}
-	if (typeof updateFields.sortOrder === "number") {
-		tag.sortOrder = updateFields.sortOrder;
+		if (
+			typeof updateFields.parent === "object" && updateFields.parent !== null
+		) {
+			parentValue = updateFields.parent.value || undefined;
+		} else {
+			parentValue = updateFields.parent || undefined;
+		}
 	}
 
-	const body = {
-		update: [tag],
-	};
+	const hasOtherUpdates = updateFields.color ||
+		parentValue !== undefined ||
+		(updateFields.sortType && updateFields.sortType !== "NONE") ||
+		typeof updateFields.sortOrder === "number";
 
-	const response = await tickTickApiRequestV2.call(
-		this,
-		"POST",
-		ENDPOINTS.TAGS_BATCH,
-		body,
-	);
+	if (hasOtherUpdates) {
+		const tag: Record<string, unknown> = {
+			name: currentTagName,
+			label: currentTagName,
+			rawName: currentTagName,
+		};
 
-	return [{ json: response }];
+		if (updateFields.color) {
+			tag.color = updateFields.color;
+		}
+		if (parentValue !== undefined) {
+			tag.parent = parentValue;
+		}
+		if (updateFields.sortType && updateFields.sortType !== "NONE") {
+			tag.sortType = updateFields.sortType;
+		}
+		if (typeof updateFields.sortOrder === "number") {
+			tag.sortOrder = updateFields.sortOrder;
+		}
+
+		const body = {
+			update: [tag],
+		};
+
+		const response = await tickTickApiRequestV2.call(
+			this,
+			"POST",
+			ENDPOINTS.TAGS_BATCH,
+			body,
+		);
+
+		return [{ json: { ...results, ...response } }];
+	}
+
+	if (updateFields.label) {
+		return [
+			{
+				json: {
+					success: true,
+					originalName: tagName,
+					newName: updateFields.label,
+				},
+			},
+		];
+	}
+
+	throw new Error("At least one update field must be provided.");
 }

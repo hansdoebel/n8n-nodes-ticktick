@@ -69,7 +69,6 @@ describe("TickTick V2 Authentication", () => {
 
 		console.log("Response status:", response.statusCode);
 
-		// Check for rate limiting
 		if (response.body.errorCode === "incorrect_password_too_many_times") {
 			console.log(
 				"⚠️  Account temporarily locked. Wait 15-30 minutes and try again.",
@@ -77,13 +76,11 @@ describe("TickTick V2 Authentication", () => {
 			return;
 		}
 
-		// Log error details if present
 		if (response.body.errorCode) {
 			console.error("Error code:", response.body.errorCode);
 			console.error("Error message:", response.body.errorMessage);
 		}
 
-		// Check for 2FA requirement
 		if (response.body.authId && !response.body.token) {
 			throw new Error(
 				"Two-factor authentication is enabled. Please disable it for testing.",

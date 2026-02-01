@@ -88,7 +88,6 @@ export function createMockExecuteFunctions(
 			.replace(/^https:\/\/api\.ticktick\.com\/api\/v2/, "")
 			.replace(/^https:\/\/api\.ticktick\.com/, "");
 
-		// Handle V2 signon for session authentication
 		if (endpoint.includes("/user/signon")) {
 			const signonResponse = {
 				token: v2SessionToken,
