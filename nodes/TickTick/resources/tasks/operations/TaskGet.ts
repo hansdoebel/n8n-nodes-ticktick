@@ -113,7 +113,10 @@ export async function taskGetExecute(this: IExecuteFunctions, index: number) {
 		return [{ json: task }];
 	}
 
-	const endpoint = `/open/v1/project/${projectId || "inbox"}/task/${taskId}`;
-	const response = await tickTickApiRequest.call(this, "GET", endpoint);
+	const response = await tickTickApiRequest.call(
+		this,
+		"GET",
+		ENDPOINTS.OPEN_V1_TASK_BY_PROJECT(projectId || "inbox", taskId),
+	);
 	return [{ json: response }];
 }

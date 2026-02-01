@@ -120,6 +120,24 @@ export const taskUpdateFields: INodeProperties[] = [
 				default: false,
 			},
 			{
+				displayName: "Clear Fields",
+				name: "clearFields",
+				type: "multiOptions",
+				default: [],
+				description: "Select fields to clear/remove from the task",
+				options: [
+					{ name: "Completed Time", value: "completedTime" },
+					{ name: "Content", value: "content" },
+					{ name: "Description", value: "desc" },
+					{ name: "Due Date", value: "dueDate" },
+					{ name: "Reminders", value: "reminders" },
+					{ name: "Repeat Flag", value: "repeatFlag" },
+					{ name: "Start Date", value: "startDate" },
+					{ name: "Tags", value: "tags" },
+					{ name: "Time Zone", value: "timeZone" },
+				],
+			},
+			{
 				displayName: "Completed Time",
 				name: "completedTime",
 				type: "dateTime",
@@ -229,6 +247,49 @@ export const taskUpdateFields: INodeProperties[] = [
 					'Comma-separated reminder triggers, e.g. "TRIGGER:PT0S,TRIGGER:P0DT9H0M0S"',
 			},
 			{
+				displayName: "Remove Tags",
+				name: "removeTags",
+				type: "fixedCollection",
+				default: { tagValues: [] },
+				placeholder: "Add Tag to Remove",
+				typeOptions: { multipleValues: true },
+				description:
+					"Select specific tags to remove from this task. Remaining tags are kept. (V2 API only)",
+				options: [
+					{
+						name: "tagValues",
+						displayName: "Tag",
+						values: [
+							{
+								displayName: "Tag",
+								name: "tag",
+								type: "resourceLocator",
+								default: { mode: "list", value: "" },
+								description: "The tag to remove from the task",
+								modes: [
+									{
+										displayName: "From List",
+										name: "list",
+										type: "list",
+										typeOptions: {
+											searchListMethod: "searchTags",
+											searchable: true,
+											searchFilterRequired: false,
+										},
+									},
+									{
+										displayName: "By Name",
+										name: "name",
+										type: "string",
+										placeholder: "e.g. important",
+									},
+								],
+							},
+						],
+					},
+				],
+			},
+			{
 				displayName: "Repeat Flag",
 				name: "repeatFlag",
 				type: "string",
@@ -274,7 +335,7 @@ export const taskUpdateFields: INodeProperties[] = [
 								name: "tag",
 								type: "resourceLocator",
 								default: { mode: "list", value: "" },
-								description: "The tag to assign to the task",
+								description: "The tag to add to the task",
 								modes: [
 									{
 										displayName: "From List",
@@ -297,7 +358,8 @@ export const taskUpdateFields: INodeProperties[] = [
 						],
 					},
 				],
-				description: "Tags to assign to the task (V2 API only)",
+				description:
+					"Tags to add to the task. Existing tags are preserved unless removed. (V2 API only)",
 			},
 			{
 				displayName: "Time Zone",
@@ -316,7 +378,7 @@ export const taskUpdateFields: INodeProperties[] = [
 	},
 ];
 
-function extractResourceLocatorValue(
+export function extractResourceLocatorValue(
 	value: string | { mode: string; value: string } | undefined,
 ): string {
 	if (typeof value === "object" && value !== null) {
@@ -325,7 +387,7 @@ function extractResourceLocatorValue(
 	return value || "";
 }
 
-function buildSubtask(sub: Record<string, any>): Record<string, any> {
+export function buildSubtask(sub: Record<string, any>): Record<string, any> {
 	const subtask: Record<string, any> = {};
 	if (sub.completedTime) {
 		subtask.completedTime = formatTickTickDate(sub.completedTime);
@@ -361,21 +423,101 @@ async function fetchCurrentTask(
 		return await tickTickApiRequest.call(
 			context,
 			"GET",
-			`/open/v1/project/all/task/${taskId}`,
+			ENDPOINTS.OPEN_V1_TASK_ALL(taskId),
 		);
 	} catch {
 		return {};
 	}
 }
 
-function parseReminders(reminders: string): string[] {
+export function parseReminders(reminders: string): string[] {
 	return reminders
 		.split(",")
 		.map((r) => r.trim())
 		.filter((r) => r.length > 0);
 }
 
-function buildTaskBody(
+export function extractTagValue(
+	tag: string | { mode: string; value: string } | undefined,
+): string {
+	if (typeof tag === "object" && tag !== null) {
+		return tag.value || "";
+	}
+	return tag || "";
+}
+
+export function applyClearFields(
+	body: Record<string, any>,
+	clearFields: string[],
+): void {
+	const dateFields = ["dueDate", "startDate", "completedTime"];
+	for (const field of clearFields) {
+		if (field === "tags") {
+			continue;
+		} else if (field === "reminders") {
+			body.reminders = [];
+		} else if (dateFields.includes(field)) {
+			body[field] = null;
+		} else {
+			body[field] = "";
+		}
+	}
+}
+
+export function applyTagChanges(
+	body: Record<string, any>,
+	currentTask: IDataObject,
+	updateFields: Record<string, any>,
+	clearFields: string[],
+): void {
+	const currentTags: string[] = clearFields.includes("tags")
+		? []
+		: ((currentTask.tags as string[]) || []);
+	let finalTags = [...currentTags];
+	let tagsModified = clearFields.includes("tags");
+
+	if (
+		updateFields.removeTags?.tagValues &&
+		Array.isArray(updateFields.removeTags.tagValues) &&
+		updateFields.removeTags.tagValues.length > 0
+	) {
+		const tagsToRemove = updateFields.removeTags.tagValues
+			.map((item: { tag: string | { mode: string; value: string } }) =>
+				extractTagValue(item.tag)
+			)
+			.filter((tag: string) => tag && tag.trim() !== "");
+
+		if (tagsToRemove.length > 0) {
+			finalTags = finalTags.filter((tag) => !tagsToRemove.includes(tag));
+			tagsModified = true;
+		}
+	}
+
+	if (
+		updateFields.tags?.tagValues &&
+		Array.isArray(updateFields.tags.tagValues) &&
+		updateFields.tags.tagValues.length > 0
+	) {
+		const tagsToAdd = updateFields.tags.tagValues
+			.map((item: { tag: string | { mode: string; value: string } }) =>
+				extractTagValue(item.tag)
+			)
+			.filter(
+				(tag: string) => tag && tag.trim() !== "" && !finalTags.includes(tag),
+			);
+
+		if (tagsToAdd.length > 0) {
+			finalTags = [...finalTags, ...tagsToAdd];
+			tagsModified = true;
+		}
+	}
+
+	if (tagsModified) {
+		body.tags = finalTags;
+	}
+}
+
+export function buildTaskBody(
 	currentTask: IDataObject,
 	updateFields: Record<string, any>,
 	taskId: string,
@@ -385,6 +527,11 @@ function buildTaskBody(
 
 	body.id = taskId;
 	body.projectId = projectId || currentTask.projectId || "inbox";
+
+	const clearFields = (updateFields.clearFields as string[]) || [];
+	if (clearFields.length > 0) {
+		applyClearFields(body, clearFields);
+	}
 
 	const directFields = [
 		"content",
@@ -398,8 +545,12 @@ function buildTaskBody(
 		"title",
 	];
 	for (const field of directFields) {
+		if (clearFields.includes(field)) {
+			continue;
+		}
 		if (
-			updateFields[field] !== undefined && updateFields[field] !== "" &&
+			updateFields[field] !== undefined &&
+			updateFields[field] !== "" &&
 			updateFields[field] !== null
 		) {
 			body[field] = updateFields[field];
@@ -408,28 +559,17 @@ function buildTaskBody(
 
 	const dateFields = ["dueDate", "completedTime", "startDate"];
 	for (const field of dateFields) {
+		if (clearFields.includes(field)) {
+			continue;
+		}
 		if (updateFields[field]) {
 			body[field] = formatTickTickDate(updateFields[field]);
 		}
 	}
 
-	if (
-		updateFields.tags?.tagValues && Array.isArray(updateFields.tags.tagValues)
-	) {
-		const tags = updateFields.tags.tagValues
-			.map((item: { tag: string | { mode: string; value: string } }) => {
-				if (typeof item.tag === "object" && item.tag !== null) {
-					return item.tag.value;
-				}
-				return item.tag;
-			})
-			.filter((tag: string) => tag && tag.trim() !== "");
-		if (tags.length > 0) {
-			body.tags = tags;
-		}
-	}
+	applyTagChanges(body, currentTask, updateFields, clearFields);
 
-	if (updateFields.reminders) {
+	if (!clearFields.includes("reminders") && updateFields.reminders) {
 		const reminders = parseReminders(updateFields.reminders as string);
 		if (reminders.length > 0) {
 			body.reminders = reminders;
@@ -516,7 +656,7 @@ export async function taskUpdateExecute(
 	const response = await tickTickApiRequest.call(
 		this,
 		"POST",
-		`/open/v1/task/${taskId}`,
+		ENDPOINTS.OPEN_V1_TASK_UPDATE(taskId),
 		body,
 	);
 	return [{ json: response }];

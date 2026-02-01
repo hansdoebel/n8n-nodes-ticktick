@@ -219,7 +219,7 @@ export async function projectUpdateExecute(
 	const response = await tickTickApiRequest.call(
 		this,
 		"POST",
-		`/open/v1/project/${projectId}`,
+		ENDPOINTS.OPEN_V1_PROJECT_BY_ID(projectId),
 		body,
 	);
 	return [{ json: response }];

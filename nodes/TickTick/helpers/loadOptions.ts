@@ -9,6 +9,7 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "./apiRequest";
+import { ENDPOINTS } from "@ticktick/constants/endpoints";
 
 interface Project {
 	id: string;
@@ -28,7 +29,7 @@ export async function getInboxProjectId(
 		const projects = (await tickTickApiRequest.call(
 			this,
 			"GET",
-			"/open/v1/project",
+			ENDPOINTS.OPEN_V1_PROJECT,
 		)) as Project[];
 
 		const inboxProject = projects.find(
@@ -49,12 +50,11 @@ export async function getProjects(
 		return await searchProjectsV2.call(this);
 	}
 
-	const endpoint = "/open/v1/project";
 	try {
 		const responseData = (await tickTickApiRequest.call(
 			this,
 			"GET",
-			endpoint,
+			ENDPOINTS.OPEN_V1_PROJECT,
 		)) as Project[];
 
 		if (!Array.isArray(responseData)) {
@@ -94,11 +94,10 @@ export async function searchProjects(
 			return await searchProjectsV2.call(this, filter);
 		}
 
-		const endpoint = "/open/v1/project";
 		const responseData = (await tickTickApiRequest.call(
 			this,
 			"GET",
-			endpoint,
+			ENDPOINTS.OPEN_V1_PROJECT,
 		)) as Project[];
 
 		if (!Array.isArray(responseData)) {
@@ -198,13 +197,11 @@ export async function getTasks(
 
 	const actualProjectId = !projectId || projectId === "" ? "inbox" : projectId;
 
-	const endpoint = `/open/v1/project/${actualProjectId}/data`;
-
 	try {
 		const responseData = (await tickTickApiRequest.call(
 			this,
 			"GET",
-			endpoint,
+			ENDPOINTS.OPEN_V1_PROJECT_DATA(actualProjectId),
 		)) as IDataObject;
 
 		const tasks = responseData.tasks as IDataObject[];
@@ -247,12 +244,11 @@ export async function searchTasks(
 		const actualProjectId = !projectId || projectId === ""
 			? "inbox"
 			: projectId;
-		const endpoint = `/open/v1/project/${actualProjectId}/data`;
 
 		const responseData = (await tickTickApiRequest.call(
 			this,
 			"GET",
-			endpoint,
+			ENDPOINTS.OPEN_V1_PROJECT_DATA(actualProjectId),
 		)) as IDataObject;
 
 		const tasks = responseData.tasks as IDataObject[];

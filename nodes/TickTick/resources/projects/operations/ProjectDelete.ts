@@ -71,10 +71,18 @@ export async function projectDeleteExecute(
 		const body = {
 			delete: [projectId],
 		};
-		await tickTickApiRequestV2.call(this, "POST", ENDPOINTS.PROJECTS_BATCH, body);
+		await tickTickApiRequestV2.call(
+			this,
+			"POST",
+			ENDPOINTS.PROJECTS_BATCH,
+			body,
+		);
 	} else {
-		const endpoint = `/open/v1/project/${projectId}`;
-		await tickTickApiRequest.call(this, "DELETE", endpoint);
+		await tickTickApiRequest.call(
+			this,
+			"DELETE",
+			ENDPOINTS.OPEN_V1_PROJECT_BY_ID(projectId),
+		);
 	}
 
 	return [

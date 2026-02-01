@@ -107,7 +107,7 @@ describe("TickTick V2 Projects Resource", () => {
 		"V1 API endpoints are NOT compatible with V2 session auth - /open/v1/project",
 		async () => {
 			// Test if V1 endpoint for listing all projects works with V2 auth
-			const response = await client.request("GET", "/open/v1/project");
+			const response = await client.request("GET", ENDPOINTS.OPEN_V1_PROJECT);
 
 			// V1 endpoints return 404 when using V2 session credentials
 			expect(response.statusCode).toBe(404);

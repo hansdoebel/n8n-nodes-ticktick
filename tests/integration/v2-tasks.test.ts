@@ -248,7 +248,7 @@ describe("TickTick V2 Tasks Resource", () => {
 			},
 		];
 
-		const moveResponse = await client.post("/batch/taskProject", moveBody);
+		const moveResponse = await client.post(ENDPOINTS.TASK_PROJECT, moveBody);
 		expect(moveResponse.statusCode).toBe(200);
 
 		const syncResponse = await client.get(ENDPOINTS.SYNC);

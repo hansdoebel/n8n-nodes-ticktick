@@ -121,10 +121,11 @@ export async function taskCompleteExecute(
 
 		await tickTickApiRequestV2.call(this, "POST", ENDPOINTS.TASKS_BATCH, body);
 	} else {
-		const endpoint = `/open/v1/project/${
-			projectId || "inbox"
-		}/task/${taskId}/complete`;
-		await tickTickApiRequest.call(this, "POST", endpoint);
+		await tickTickApiRequest.call(
+			this,
+			"POST",
+			ENDPOINTS.OPEN_V1_TASK_COMPLETE(projectId || "inbox", taskId),
+		);
 	}
 
 	return [

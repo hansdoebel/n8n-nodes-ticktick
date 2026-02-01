@@ -38,9 +38,9 @@
 		"lint": "eslint nodes credentials package.json",
 		"lintfix": "eslint nodes credentials package.json --fix",
 		"test": "bun test",
+		"test:unit": "bun test tests/unit",
+		"test:integration": "bun test tests/integration",
 		"test:watch": "bun test --watch",
-		"test:auth": "bun test tests/auth.test.ts",
-		"test:v2": "bun test tests/v2-*.test.ts",
 		"prepublishOnly": "bun run build && bun run lint -c .eslintrc.prepublish.js nodes credentials package.json"
 	},
 	"publishConfig": {

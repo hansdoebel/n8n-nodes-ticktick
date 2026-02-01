@@ -126,8 +126,11 @@ export async function taskDeleteExecute(
 		};
 		await tickTickApiRequestV2.call(this, "POST", ENDPOINTS.TASKS_BATCH, body);
 	} else {
-		const endpoint = `/open/v1/project/${projectId || "inbox"}/task/${taskId}`;
-		await tickTickApiRequest.call(this, "DELETE", endpoint);
+		await tickTickApiRequest.call(
+			this,
+			"DELETE",
+			ENDPOINTS.OPEN_V1_TASK_BY_PROJECT(projectId || "inbox", taskId),
+		);
 	}
 
 	return [

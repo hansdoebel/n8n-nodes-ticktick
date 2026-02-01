@@ -24,7 +24,16 @@ export const ENDPOINTS = {
 	PROJECT_ALL_COMPLETED: "/project/all/completed",
 
 	OPEN_V1_PROJECT: "/open/v1/project",
+	OPEN_V1_PROJECT_BY_ID: (projectId: string) => `/open/v1/project/${projectId}`,
+	OPEN_V1_PROJECT_DATA: (projectId: string) =>
+		`/open/v1/project/${projectId}/data`,
 	OPEN_V1_TASK: "/open/v1/task",
+	OPEN_V1_TASK_UPDATE: (taskId: string) => `/open/v1/task/${taskId}`,
+	OPEN_V1_TASK_ALL: (taskId: string) => `/open/v1/project/all/task/${taskId}`,
+	OPEN_V1_TASK_BY_PROJECT: (projectId: string, taskId: string) =>
+		`/open/v1/project/${projectId}/task/${taskId}`,
+	OPEN_V1_TASK_COMPLETE: (projectId: string, taskId: string) =>
+		`/open/v1/project/${projectId}/task/${taskId}/complete`,
 
 	FOCUS_HEATMAP: (start: string, end: string) =>
 		`/pomodoros/statistics/heatmap/${start}/${end}`,
