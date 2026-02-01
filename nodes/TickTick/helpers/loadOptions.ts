@@ -146,7 +146,7 @@ export async function searchProjectsV2(
 		const response = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/batch/check/0",
+			ENDPOINTS.SYNC,
 		)) as IDataObject;
 
 		const projects = response.projectProfiles as Array<
@@ -299,7 +299,7 @@ export async function searchTasksV2(
 		const response = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/batch/check/0",
+			ENDPOINTS.SYNC,
 		)) as IDataObject;
 
 		const tasks = (response.syncTaskBean as IDataObject)
@@ -345,11 +345,13 @@ export async function getHabits(
 		}
 
 		const habits =
-			(await tickTickApiRequestV2.call(this, "GET", "/habits")) as Array<{
-				id: string;
-				name: string;
-				status?: number;
-			}>;
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.HABITS)) as Array<
+				{
+					id: string;
+					name: string;
+					status?: number;
+				}
+			>;
 
 		if (!Array.isArray(habits)) {
 			return [];
@@ -376,7 +378,7 @@ export async function getTags(
 		}
 
 		const response =
-			(await tickTickApiRequestV2.call(this, "GET", "/batch/check/0")) as {
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.SYNC)) as {
 				tags?: Array<{ name: string; label?: string }>;
 			};
 
@@ -408,7 +410,7 @@ export async function searchTags(
 		}
 
 		const response =
-			(await tickTickApiRequestV2.call(this, "GET", "/batch/check/0")) as {
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.SYNC)) as {
 				tags?: Array<{ name: string; label?: string }>;
 			};
 
@@ -448,7 +450,7 @@ export async function getProjectGroups(
 		}
 
 		const response =
-			(await tickTickApiRequestV2.call(this, "GET", "/batch/check/0")) as {
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.SYNC)) as {
 				projectGroups?: Array<{ id: string; name: string }>;
 			};
 
@@ -495,7 +497,7 @@ export async function searchProjectUsers(
 		const response = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			`/project/${projectId}/users`,
+			ENDPOINTS.PROJECT_USERS(projectId),
 		)) as Array<{
 			userId: number;
 			displayName: string;
@@ -539,7 +541,7 @@ export async function searchSharedProjects(
 		const response = (await tickTickApiRequestV2.call(
 			this,
 			"GET",
-			"/batch/check/0",
+			ENDPOINTS.SYNC,
 		)) as IDataObject;
 
 		const projects = response.projectProfiles as Array<{
@@ -559,6 +561,66 @@ export async function searchSharedProjects(
 				name: project.name,
 				value: project.id,
 			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}
+
+export async function searchTaskTags(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const taskIdParam = this.getCurrentNodeParameter("taskId");
+		let taskId = "";
+
+		if (typeof taskIdParam === "object" && taskIdParam !== null) {
+			taskId = (taskIdParam as { value: string }).value || "";
+		} else {
+			taskId = (taskIdParam as string) || "";
+		}
+
+		if (!taskId) {
+			return [];
+		}
+
+		const response = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			ENDPOINTS.SYNC,
+		)) as IDataObject;
+
+		const tasks = (response.syncTaskBean as IDataObject)
+			?.update as IDataObject[];
+
+		if (!Array.isArray(tasks)) {
+			return [];
+		}
+
+		const task = tasks.find((t) => String(t.id) === taskId);
+
+		if (!task || !task.tags || !Array.isArray(task.tags)) {
+			return [];
+		}
+
+		let options = (task.tags as string[]).map((tag) => ({
+			name: tag,
+			value: tag,
+		}));
 
 		if (filter) {
 			const searchTerm = filter.toLowerCase();

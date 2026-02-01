@@ -272,7 +272,7 @@ export const taskUpdateFields: INodeProperties[] = [
 										name: "list",
 										type: "list",
 										typeOptions: {
-											searchListMethod: "searchTags",
+											searchListMethod: "searchTaskTags",
 											searchable: true,
 											searchFilterRequired: false,
 										},

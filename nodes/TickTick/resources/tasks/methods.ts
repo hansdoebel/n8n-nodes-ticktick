@@ -6,6 +6,7 @@ import {
 	getTasks,
 	searchProjectUsers,
 	searchSharedProjects,
+	searchTaskTags,
 } from "@ticktick/helpers";
 
 export const taskMethods = {
@@ -28,6 +29,13 @@ export const taskMethods = {
 			filter?: string,
 		): Promise<INodeListSearchResult> {
 			const results = await searchSharedProjects.call(this, filter);
+			return { results };
+		},
+		async searchTaskTags(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchTaskTags.call(this, filter);
 			return { results };
 		},
 	},
