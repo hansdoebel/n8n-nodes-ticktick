@@ -113,6 +113,42 @@ export const projectUpdateFields: INodeProperties[] = [
 				description: "Name of the project",
 			},
 			{
+				displayName: "Project Group",
+				name: "groupId",
+				type: "resourceLocator",
+				default: { mode: "list", value: "" },
+				description:
+					'Project group to place this project in. Select "None" to remove from current group. Requires V2 API (Email/Password authentication).',
+				modes: [
+					{
+						displayName: "From List",
+						name: "list",
+						type: "list",
+						typeOptions: {
+							searchListMethod: "searchProjectGroups",
+							searchable: true,
+							searchFilterRequired: false,
+						},
+					},
+					{
+						displayName: "By ID",
+						name: "id",
+						type: "string",
+						validation: [
+							{
+								type: "regex",
+								properties: {
+									regex: "^[a-zA-Z0-9]+$",
+									errorMessage:
+										"Project Group ID must contain only letters and numbers",
+								},
+							},
+						],
+						placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+					},
+				],
+			},
+			{
 				displayName: "Sort Order",
 				name: "sortOrder",
 				type: "number",
@@ -138,6 +174,7 @@ export const projectUpdateFields: INodeProperties[] = [
 /** Update fields from the n8n form */
 interface ProjectUpdateFields {
 	color?: string;
+	groupId?: string | ResourceLocatorValue;
 	kind?: string;
 	name?: string;
 	sortOrder?: number;
@@ -187,6 +224,17 @@ export async function projectUpdateExecute(
 		setIfDefined(cleaned, "name", updateFields.name);
 		setIfDefined(cleaned, "sortOrder", updateFields.sortOrder);
 		setIfDefined(cleaned, "viewMode", updateFields.viewMode);
+
+		// Handle groupId with special "none" value for removing from group
+		if (updateFields.groupId !== undefined) {
+			const groupIdValue = extractResourceLocatorValue(updateFields.groupId);
+			if (groupIdValue === "none") {
+				// Set to null to remove project from group
+				cleaned.groupId = null as unknown as string;
+			} else if (groupIdValue) {
+				cleaned.groupId = groupIdValue;
+			}
+		}
 
 		body = cleaned;
 	}

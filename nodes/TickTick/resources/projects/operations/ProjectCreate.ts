@@ -79,6 +79,17 @@ export const projectCreateFields: INodeProperties[] = [
 				description: "Kind of project",
 			},
 			{
+				displayName: "Project Group Name or ID",
+				name: "groupId",
+				type: "options",
+				typeOptions: {
+					loadOptionsMethod: "getProjectGroups",
+				},
+				default: "",
+				description:
+					'Project group to place this project in. Requires V2 API (Email/Password authentication). Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+			},
+			{
 				displayName: "Sort Order",
 				name: "sortOrder",
 				type: "number",
@@ -104,6 +115,7 @@ export const projectCreateFields: INodeProperties[] = [
 /** Additional fields from the n8n form */
 interface ProjectAdditionalFields {
 	color?: string;
+	groupId?: string;
 	kind?: string;
 	sortOrder?: number;
 	viewMode?: string;
@@ -148,6 +160,7 @@ export async function projectCreateExecute(
 		cleaned.name = name;
 
 		setIfDefined(cleaned, "color", additional.color);
+		setIfDefined(cleaned, "groupId", additional.groupId);
 		setIfDefined(cleaned, "kind", additional.kind);
 		setIfDefined(cleaned, "sortOrder", additional.sortOrder);
 		setIfDefined(cleaned, "viewMode", additional.viewMode);

@@ -3,7 +3,9 @@ import type {
 	INodeListSearchResult,
 } from "n8n-workflow";
 import {
+	getProjectGroups,
 	getProjects,
+	searchProjectGroups,
 	searchProjects,
 	searchSharedProjects,
 } from "@ticktick/helpers";
@@ -13,6 +15,9 @@ export const projectMethods = {
 	loadOptions: {
 		async getProjects(this: ILoadOptionsFunctions) {
 			return await getProjects.call(this);
+		},
+		async getProjectGroups(this: ILoadOptionsFunctions) {
+			return await getProjectGroups.call(this);
 		},
 	},
 	listSearch: {
@@ -76,6 +81,13 @@ export const projectMethods = {
 			filter?: string,
 		): Promise<INodeListSearchResult> {
 			const results = await searchSharedProjects.call(this, filter);
+			return { results };
+		},
+		async searchProjectGroups(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchProjectGroups.call(this, filter);
 			return { results };
 		},
 	},

@@ -567,6 +567,50 @@ export async function getProjectGroups(
 	}
 }
 
+export async function searchProjectGroups(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const response =
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.SYNC)) as {
+				projectGroups?: Array<{ id: string; name: string }>;
+			};
+
+		const projectGroups = response.projectGroups || [];
+
+		if (!Array.isArray(projectGroups)) {
+			return [{ name: "— None (Remove From Group) —", value: "none" }];
+		}
+
+		let options = projectGroups
+			.filter((group) => group && group.id && group.name)
+			.map((group) => ({
+				name: group.name,
+				value: group.id,
+			}));
+
+		// Add "None" option at the beginning to allow removing from group
+		options.unshift({ name: "— None (Remove From Group) —", value: "none" });
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [{ name: "— None (Remove From Group) —", value: "none" }];
+	}
+}
+
 export async function searchProjectUsers(
 	this: ILoadOptionsFunctions,
 	filter?: string,
