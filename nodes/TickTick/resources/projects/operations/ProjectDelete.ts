@@ -20,7 +20,7 @@ export const projectDeleteFields: INodeProperties[] = [
 				name: "list",
 				type: "list",
 				typeOptions: {
-					searchListMethod: "searchProjects",
+					searchListMethod: "searchProjectsForDelete",
 					searchable: true,
 					searchFilterRequired: false,
 				},

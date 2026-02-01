@@ -185,6 +185,75 @@ export async function searchProjectsV2(
 	}
 }
 
+export async function searchProjectsForDelete(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+
+		if (authType === "tickTickSessionApi") {
+			const response = (await tickTickApiRequestV2.call(
+				this,
+				"GET",
+				ENDPOINTS.SYNC,
+			)) as IDataObject;
+
+			const projects = response.projectProfiles as Array<
+				{ id: string; name: string }
+			>;
+
+			if (!Array.isArray(projects)) {
+				return [];
+			}
+
+			let options = projects
+				.filter((project) => project && project.id && project.name)
+				.map((project) => ({
+					name: project.name,
+					value: project.id,
+				}));
+
+			if (filter) {
+				const searchTerm = filter.toLowerCase();
+				options = options.filter((option) =>
+					option.name.toLowerCase().includes(searchTerm)
+				);
+			}
+
+			return options;
+		}
+
+		const responseData = (await tickTickApiRequest.call(
+			this,
+			"GET",
+			ENDPOINTS.OPEN_V1_PROJECT,
+		)) as Project[];
+
+		if (!Array.isArray(responseData)) {
+			throw new Error("API response is not an array of projects");
+		}
+
+		let options = responseData
+			.filter((project: Project) => project && project.id && project.name)
+			.map((project: Project) => ({
+				name: project.name,
+				value: project.id,
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
+	}
+}
+
 export async function getTasks(
 	this: ILoadOptionsFunctions,
 	projectId?: string,
@@ -585,7 +654,7 @@ export async function searchProjectGroups(
 		const projectGroups = response.projectGroups || [];
 
 		if (!Array.isArray(projectGroups)) {
-			return [{ name: "— None (Remove From Group) —", value: "none" }];
+			return [{ name: "None (Remove From Group)", value: "null" }];
 		}
 
 		let options = projectGroups
@@ -595,8 +664,7 @@ export async function searchProjectGroups(
 				value: group.id,
 			}));
 
-		// Add "None" option at the beginning to allow removing from group
-		options.unshift({ name: "— None (Remove From Group) —", value: "none" });
+		options.unshift({ name: "None (Remove From Group)", value: "null" });
 
 		if (filter) {
 			const searchTerm = filter.toLowerCase();
@@ -607,7 +675,48 @@ export async function searchProjectGroups(
 
 		return options;
 	} catch (error) {
-		return [{ name: "— None (Remove From Group) —", value: "none" }];
+		return [{ name: "None (Remove From Group)", value: "null" }];
+	}
+}
+
+export async function searchProjectGroupsForCreate(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	try {
+		const authType = getAuthenticationType(this);
+		if (authType !== "tickTickSessionApi") {
+			return [];
+		}
+
+		const response =
+			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.SYNC)) as {
+				projectGroups?: Array<{ id: string; name: string }>;
+			};
+
+		const projectGroups = response.projectGroups || [];
+
+		if (!Array.isArray(projectGroups)) {
+			return [];
+		}
+
+		let options = projectGroups
+			.filter((group) => group && group.id && group.name)
+			.map((group) => ({
+				name: group.name,
+				value: group.id,
+			}));
+
+		if (filter) {
+			const searchTerm = filter.toLowerCase();
+			options = options.filter((option) =>
+				option.name.toLowerCase().includes(searchTerm)
+			);
+		}
+
+		return options;
+	} catch (error) {
+		return [];
 	}
 }
 

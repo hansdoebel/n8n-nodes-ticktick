@@ -6,7 +6,9 @@ import {
 	getProjectGroups,
 	getProjects,
 	searchProjectGroups,
+	searchProjectGroupsForCreate,
 	searchProjects,
+	searchProjectsForDelete,
 	searchSharedProjects,
 } from "@ticktick/helpers";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
@@ -26,6 +28,13 @@ export const projectMethods = {
 			filter?: string,
 		): Promise<INodeListSearchResult> {
 			const results = await searchProjects.call(this, filter);
+			return { results };
+		},
+		async searchProjectsForDelete(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchProjectsForDelete.call(this, filter);
 			return { results };
 		},
 		async searchProjectsForMove(
@@ -88,6 +97,63 @@ export const projectMethods = {
 			filter?: string,
 		): Promise<INodeListSearchResult> {
 			const results = await searchProjectGroups.call(this, filter);
+			return { results };
+		},
+		async searchProjectGroupsForCreate(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchProjectGroupsForCreate.call(this, filter);
+			return { results };
+		},
+		async searchProjectGroupsForUpdate(
+			this: ILoadOptionsFunctions,
+			filter?: string,
+		): Promise<INodeListSearchResult> {
+			const results = await searchProjectGroups.call(this, filter);
+
+			try {
+				const projectIdValue = this.getCurrentNodeParameter("projectId") as
+					| string
+					| { mode: string; value: string };
+
+				let projectId: string;
+				if (typeof projectIdValue === "object" && projectIdValue !== null) {
+					projectId = projectIdValue.value || "";
+				} else {
+					projectId = projectIdValue || "";
+				}
+
+				if (projectId) {
+					const authType = this.getCurrentNodeParameter(
+						"authentication",
+					) as string;
+
+					if (authType === "tickTickSessionApi") {
+						const { tickTickApiRequestV2 } = await import(
+							"../../helpers/apiRequest"
+						);
+						const syncResponse = (await tickTickApiRequestV2.call(
+							this,
+							"GET",
+							ENDPOINTS.SYNC,
+						)) as any;
+
+						const projects = syncResponse?.projectProfiles || [];
+						const project = projects.find((p: any) =>
+							String(p.id) === projectId
+						);
+
+						if (project && project.groupId) {
+							return {
+								results: results.filter((r) => r.value !== project.groupId),
+							};
+						}
+					}
+				}
+			} catch (error) {
+			}
+
 			return { results };
 		},
 	},

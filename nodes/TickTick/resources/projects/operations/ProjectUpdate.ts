@@ -1,4 +1,8 @@
-import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	INodeProperties,
+} from "n8n-workflow";
 import {
 	isV2Auth,
 	tickTickApiRequest,
@@ -125,7 +129,7 @@ export const projectUpdateFields: INodeProperties[] = [
 						name: "list",
 						type: "list",
 						typeOptions: {
-							searchListMethod: "searchProjectGroups",
+							searchListMethod: "searchProjectGroupsForUpdate",
 							searchable: true,
 							searchFilterRequired: false,
 						},
@@ -171,7 +175,6 @@ export const projectUpdateFields: INodeProperties[] = [
 	},
 ];
 
-/** Update fields from the n8n form */
 interface ProjectUpdateFields {
 	color?: string;
 	groupId?: string | ResourceLocatorValue;
@@ -225,12 +228,10 @@ export async function projectUpdateExecute(
 		setIfDefined(cleaned, "sortOrder", updateFields.sortOrder);
 		setIfDefined(cleaned, "viewMode", updateFields.viewMode);
 
-		// Handle groupId with special "none" value for removing from group
 		if (updateFields.groupId !== undefined) {
 			const groupIdValue = extractResourceLocatorValue(updateFields.groupId);
-			if (groupIdValue === "none") {
-				// Set to null to remove project from group
-				cleaned.groupId = null as unknown as string;
+			if (groupIdValue === "null") {
+				cleaned.groupId = "null";
 			} else if (groupIdValue) {
 				cleaned.groupId = groupIdValue;
 			}
@@ -246,10 +247,23 @@ export async function projectUpdateExecute(
 	const useV2 = isV2Auth(this, index);
 
 	if (useV2) {
+		const syncResponse = (await tickTickApiRequestV2.call(
+			this,
+			"GET",
+			ENDPOINTS.SYNC,
+		)) as IDataObject;
+
+		const projects = (syncResponse.projectProfiles as IDataObject[]) || [];
+		const currentProject = projects.find((p) => String(p.id) === projectId);
+
+		if (!currentProject) {
+			throw new Error(`Project with ID ${projectId} not found`);
+		}
+
 		const batchBody = {
 			update: [
 				{
-					id: projectId,
+					...currentProject,
 					...body,
 				},
 			],

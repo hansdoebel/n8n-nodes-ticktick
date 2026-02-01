@@ -4,9 +4,9 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "@helpers/apiRequest";
-import { setIfDefined } from "@ticktick/helpers";
+import { extractResourceLocatorValue, setIfDefined } from "@ticktick/helpers";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
-import type { ProjectBody } from "@ticktick/types/api";
+import type { ProjectBody, ResourceLocatorValue } from "@ticktick/types/api";
 
 export const projectCreateFields: INodeProperties[] = [
 	{
@@ -79,15 +79,40 @@ export const projectCreateFields: INodeProperties[] = [
 				description: "Kind of project",
 			},
 			{
-				displayName: "Project Group Name or ID",
+				displayName: "Project Group",
 				name: "groupId",
-				type: "options",
-				typeOptions: {
-					loadOptionsMethod: "getProjectGroups",
-				},
-				default: "",
+				type: "resourceLocator",
+				default: { mode: "list", value: "" },
 				description:
-					'Project group to place this project in. Requires V2 API (Email/Password authentication). Choose from the list, or specify an ID using an <a href="https://docs.n8n.io/code/expressions/">expression</a>.',
+					"Project group to place this project in. Requires V2 API (Email/Password authentication).",
+				modes: [
+					{
+						displayName: "From List",
+						name: "list",
+						type: "list",
+						typeOptions: {
+							searchListMethod: "searchProjectGroupsForCreate",
+							searchable: true,
+							searchFilterRequired: false,
+						},
+					},
+					{
+						displayName: "By ID",
+						name: "id",
+						type: "string",
+						validation: [
+							{
+								type: "regex",
+								properties: {
+									regex: "^[a-zA-Z0-9]+$",
+									errorMessage:
+										"Project Group ID must contain only letters and numbers",
+								},
+							},
+						],
+						placeholder: "e.g. 5f9b3a4c8d2e1f0012345678",
+					},
+				],
 			},
 			{
 				displayName: "Sort Order",
@@ -115,7 +140,7 @@ export const projectCreateFields: INodeProperties[] = [
 /** Additional fields from the n8n form */
 interface ProjectAdditionalFields {
 	color?: string;
-	groupId?: string;
+	groupId?: string | ResourceLocatorValue;
 	kind?: string;
 	sortOrder?: number;
 	viewMode?: string;
@@ -160,10 +185,17 @@ export async function projectCreateExecute(
 		cleaned.name = name;
 
 		setIfDefined(cleaned, "color", additional.color);
-		setIfDefined(cleaned, "groupId", additional.groupId);
 		setIfDefined(cleaned, "kind", additional.kind);
 		setIfDefined(cleaned, "sortOrder", additional.sortOrder);
 		setIfDefined(cleaned, "viewMode", additional.viewMode);
+
+		// Handle groupId resource locator
+		if (additional.groupId !== undefined) {
+			const groupIdValue = extractResourceLocatorValue(additional.groupId);
+			if (groupIdValue) {
+				cleaned.groupId = groupIdValue;
+			}
+		}
 
 		body = cleaned;
 	}
