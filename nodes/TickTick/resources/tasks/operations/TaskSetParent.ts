@@ -102,11 +102,7 @@ export async function taskSetParentExecute(
 		throw new Error("Task ID is required");
 	}
 
-	if (!parentId || parentId.trim() === "") {
-		throw new Error("Parent Task ID is required");
-	}
-
-	// Fetch all tasks to find the task and parent
+	// Fetch all tasks to find the task (and parent if specified)
 	const syncResponse = await tickTickApiRequestV2.call(
 		this,
 		"GET",
@@ -121,36 +117,45 @@ export async function taskSetParentExecute(
 		throw new Error(`Task with ID ${taskId} not found`);
 	}
 
-	const parentTask = tasks.find((t) => String(t.id) === parentId);
-	if (!parentTask) {
-		throw new Error(`Parent task with ID ${parentId} not found`);
-	}
-
-	// Verify both tasks are in the same project
 	const taskProjectId = currentTask.projectId as string;
-	const parentProjectId = parentTask.projectId as string;
+	const isRemovingParent = !parentId || parentId.trim() === "";
 
-	if (taskProjectId !== parentProjectId) {
-		throw new Error(
-			`Task and parent must be in the same project. Task is in project "${taskProjectId}", parent is in project "${parentProjectId}".`,
-		);
+	// If setting a parent (not removing), validate the parent task exists and is in same project
+	if (!isRemovingParent) {
+		const parentTask = tasks.find((t) => String(t.id) === parentId);
+		if (!parentTask) {
+			throw new Error(`Parent task with ID ${parentId} not found`);
+		}
+
+		const parentProjectId = parentTask.projectId as string;
+		if (taskProjectId !== parentProjectId) {
+			throw new Error(
+				`Task and parent must be in the same project. Task is in project "${taskProjectId}", parent is in project "${parentProjectId}".`,
+			);
+		}
 	}
 
-	// Use the batch/taskParent endpoint with the correct payload format
-	const payload = [
-		{
-			taskId: taskId,
-			parentId: parentId,
-			projectId: taskProjectId,
-		},
-	];
+	// Use the batch endpoint to update the task's parentId
+	const updatedTask = {
+		...currentTask,
+		id: taskId,
+		projectId: taskProjectId,
+		parentId: isRemovingParent ? "" : parentId,
+	};
 
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		ENDPOINTS.TASK_PARENT,
-		payload as unknown as IDataObject,
+		ENDPOINTS.TASKS_BATCH,
+		{ update: [updatedTask] } as unknown as IDataObject,
 	);
 
-	return [{ json: response }];
+	return [{
+		json: {
+			success: true,
+			taskId: taskId,
+			parentId: isRemovingParent ? null : parentId,
+			response,
+		},
+	}];
 }

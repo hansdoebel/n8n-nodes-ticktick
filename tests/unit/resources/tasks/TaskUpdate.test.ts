@@ -13,11 +13,13 @@ import {
 	applyTagChanges,
 	buildSubtask,
 	buildTaskBody,
+	taskUpdateExecute,
+} from "../../../../nodes/TickTick/resources/tasks/operations/TaskUpdate";
+import {
 	extractResourceLocatorValue,
 	extractTagValue,
 	parseReminders,
-	taskUpdateExecute,
-} from "../../../../nodes/TickTick/resources/tasks/operations/TaskUpdate";
+} from "../../../../nodes/TickTick/helpers/utils";
 import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
 
 describe("TaskUpdate Operation", () => {
@@ -574,7 +576,11 @@ describe("TaskUpdate Operation", () => {
 
 				expect(result).toHaveLength(1);
 				expect(result[0].json.title).toBe("Updated Title");
-				expectApiCalled(mockContext, "POST", ENDPOINTS.OPEN_V1_TASK_UPDATE("task123"));
+				expectApiCalled(
+					mockContext,
+					"POST",
+					ENDPOINTS.OPEN_V1_TASK_UPDATE("task123"),
+				);
 			});
 
 			test("throws error when taskId is empty", async () => {
@@ -671,7 +677,9 @@ describe("TaskUpdate Operation", () => {
 				await taskUpdateExecute.call(mockContext as any, 0);
 
 				const calls = mockContext._getApiCalls();
-				const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.TASKS_BATCH));
+				const batchCall = calls.find((c) =>
+					c.endpoint.includes(ENDPOINTS.TASKS_BATCH)
+				);
 				expect(batchCall).toBeDefined();
 				const body = batchCall?.body as { update: Array<{ tags: string[] }> };
 				expect(body.update[0].tags).toContain("work");

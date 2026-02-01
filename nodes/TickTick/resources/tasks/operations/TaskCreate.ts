@@ -1,11 +1,19 @@
 import type { IExecuteFunctions, INodeProperties } from "n8n-workflow";
 import {
+	extractResourceLocatorValue,
 	formatTickTickDate,
+	parseReminders,
+	setIfDefined,
 	tickTickApiRequest,
 	TimeZones,
 } from "@ticktick/helpers";
 import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import type {
+	ChecklistItem,
+	ResourceLocatorValue,
+	TaskBody,
+} from "@ticktick/types/api";
 
 export const taskCreateFields: INodeProperties[] = [
 	{
@@ -257,22 +265,76 @@ export const taskCreateFields: INodeProperties[] = [
 	},
 ];
 
+/** Additional fields from the n8n form */
+interface TaskAdditionalFields {
+	isAllDay?: boolean;
+	completedTime?: string;
+	content?: string;
+	desc?: string;
+	dueDate?: string;
+	kind?: string;
+	priority?: number;
+	repeatFlag?: string;
+	sortOrder?: number;
+	startDate?: string;
+	status?: number;
+	timeZone?: string;
+	reminders?: string;
+	items?: {
+		item?: SubtaskInput[];
+	};
+}
+
+/** Subtask input from n8n form */
+interface SubtaskInput {
+	title?: string;
+	isAllDay?: boolean;
+	completedTime?: string;
+	sortOrder?: number | string; // Can be empty string from form
+	startDate?: string;
+	status?: number;
+	timeZone?: string;
+}
+
+/**
+ * Builds a subtask/checklist item from form input.
+ */
+function buildSubtaskItem(sub: SubtaskInput): Partial<ChecklistItem> {
+	const subtask: Partial<ChecklistItem> = {};
+	if (sub.title !== undefined && sub.title !== "") {
+		subtask.title = sub.title;
+	}
+	if (sub.isAllDay !== undefined) {
+		subtask.isAllDay = sub.isAllDay;
+	}
+	if (sub.completedTime) {
+		subtask.completedTime = formatTickTickDate(sub.completedTime);
+	}
+	if (sub.sortOrder !== undefined && sub.sortOrder !== "") {
+		subtask.sortOrder = sub.sortOrder as number;
+	}
+	if (sub.startDate) {
+		subtask.startDate = formatTickTickDate(sub.startDate);
+	}
+	if (sub.status !== undefined) {
+		subtask.status = sub.status;
+	}
+	if (sub.timeZone) {
+		subtask.timeZone = sub.timeZone;
+	}
+	return subtask;
+}
+
 export async function taskCreateExecute(
 	this: IExecuteFunctions,
 	index: number,
 ) {
-	function setIfDefined(target: Record<string, any>, key: string, value: any) {
-		if (value !== undefined && value !== "" && value !== null) {
-			target[key] = value;
-		}
-	}
-
 	const useJson = this.getNodeParameter(
 		"jsonParameters",
 		index,
 		false,
 	) as boolean;
-	let body: Record<string, any> = {};
+	let body: TaskBody = {};
 
 	if (useJson) {
 		const jsonString = this.getNodeParameter(
@@ -281,34 +343,28 @@ export async function taskCreateExecute(
 			"{}",
 		) as string;
 		try {
-			body = JSON.parse(jsonString);
+			body = JSON.parse(jsonString) as TaskBody;
 		} catch (error) {
-			throw new Error(`Invalid JSON provided: ${error.message}`);
+			throw new Error(`Invalid JSON provided: ${(error as Error).message}`);
 		}
 	} else {
 		const title = this.getNodeParameter("title", index) as string;
 		const projectIdValue = this.getNodeParameter("projectId", index, "") as
 			| string
-			| { mode: string; value: string };
+			| ResourceLocatorValue;
 		const additional = this.getNodeParameter(
 			"additionalFields",
 			index,
 			{},
-		) as Record<string, any>;
+		) as TaskAdditionalFields;
 
-		const cleaned: Record<string, any> = {};
+		const cleaned: TaskBody = {};
 
 		if (!title || title.trim() === "") {
 			throw new Error("Task title is required and cannot be empty");
 		}
 
-		let projectId: string;
-
-		if (typeof projectIdValue === "object" && projectIdValue !== null) {
-			projectId = projectIdValue.value || "";
-		} else {
-			projectId = projectIdValue || "";
-		}
+		const projectId = extractResourceLocatorValue(projectIdValue);
 
 		if (projectId && projectId.trim() !== "") {
 			cleaned.projectId = projectId;
@@ -319,11 +375,15 @@ export async function taskCreateExecute(
 		setIfDefined(
 			cleaned,
 			"completedTime",
-			formatTickTickDate(additional.completedTime),
+			formatTickTickDate(additional.completedTime ?? ""),
 		);
 		setIfDefined(cleaned, "content", additional.content);
 		setIfDefined(cleaned, "desc", additional.desc);
-		setIfDefined(cleaned, "dueDate", formatTickTickDate(additional.dueDate));
+		setIfDefined(
+			cleaned,
+			"dueDate",
+			formatTickTickDate(additional.dueDate ?? ""),
+		);
 		setIfDefined(cleaned, "kind", additional.kind);
 		setIfDefined(cleaned, "priority", additional.priority);
 		setIfDefined(cleaned, "repeatFlag", additional.repeatFlag);
@@ -331,51 +391,22 @@ export async function taskCreateExecute(
 		setIfDefined(
 			cleaned,
 			"startDate",
-			formatTickTickDate(additional.startDate),
+			formatTickTickDate(additional.startDate ?? ""),
 		);
 		setIfDefined(cleaned, "status", additional.status);
 		setIfDefined(cleaned, "timeZone", additional.timeZone);
 
 		if (additional.reminders) {
-			try {
-				const reminders = (additional.reminders as string)
-					.split(",")
-					.map((r) => r.trim())
-					.filter((r) => r.length > 0);
-				if (reminders.length > 0) {
-					cleaned.reminders = reminders;
-				}
-			} catch (error) {}
+			const reminders = parseReminders(additional.reminders);
+			if (reminders.length > 0) {
+				cleaned.reminders = reminders;
+			}
 		}
 
 		if (additional.items?.item && Array.isArray(additional.items.item)) {
 			const subtasks = additional.items.item
-				.map((sub: Record<string, any>) => {
-					const subtask: Record<string, any> = {};
-					if (sub.title !== undefined && sub.title !== "") {
-						subtask.title = sub.title;
-					}
-					if (sub.isAllDay !== undefined) {
-						subtask.isAllDay = sub.isAllDay;
-					}
-					if (sub.completedTime) {
-						subtask.completedTime = formatTickTickDate(sub.completedTime);
-					}
-					if (sub.sortOrder !== undefined && sub.sortOrder !== "") {
-						subtask.sortOrder = sub.sortOrder;
-					}
-					if (sub.startDate) {
-						subtask.startDate = formatTickTickDate(sub.startDate);
-					}
-					if (sub.status !== undefined) {
-						subtask.status = sub.status;
-					}
-					if (sub.timeZone) {
-						subtask.timeZone = sub.timeZone;
-					}
-					return subtask;
-				})
-				.filter((s: Record<string, any>) => Object.keys(s).length > 0);
+				.map(buildSubtaskItem)
+				.filter((s) => Object.keys(s).length > 0);
 
 			if (subtasks.length > 0) {
 				cleaned.items = subtasks;

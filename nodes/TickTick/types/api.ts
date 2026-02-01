@@ -1,5 +1,22 @@
 import type { IDataObject } from "n8n-workflow";
 
+// ============================================================================
+// Common Types
+// ============================================================================
+
+/** Resource locator value from n8n UI components */
+export interface ResourceLocatorValue {
+	mode: string;
+	value: string;
+}
+
+/** User ID - represented as number in API responses */
+export type UserId = number;
+
+// ============================================================================
+// Task Related Types
+// ============================================================================
+
 export interface TaskReminder {
 	id?: string;
 	trigger: string;
@@ -14,6 +31,38 @@ export interface ChecklistItem {
 	timeZone?: string;
 	isAllDay?: boolean;
 	sortOrder?: number;
+}
+
+/** Task assignee information */
+export interface TaskAssignee {
+	userId: UserId;
+	displayName?: string;
+	username?: string;
+}
+
+/** Attachment on a task */
+export interface TaskAttachment {
+	id: string;
+	name?: string;
+	size?: number;
+	path?: string;
+	fileType?: string;
+	createdTime?: string;
+}
+
+/** Focus session summary for a task */
+export interface FocusSummary {
+	pomoCount?: number;
+	pomoDuration?: number;
+	estimatedPomos?: number;
+	focusDuration?: number;
+}
+
+/** Pomodoro session summary for a task */
+export interface PomodoroSummary {
+	pomoCount?: number;
+	pomoDuration?: number;
+	estimatedPomos?: number;
 }
 
 export interface Task extends IDataObject {
@@ -50,13 +99,30 @@ export interface Task extends IDataObject {
 	tags?: string[];
 	columnId?: string;
 	sortOrder?: number;
-	assignee?: any;
-	creator?: number;
-	completedUserId?: number;
+	assignee?: UserId | TaskAssignee;
+	creator?: UserId;
+	completedUserId?: UserId;
 	commentCount?: number;
-	attachments?: any[];
-	focusSummaries?: any[];
-	pomodoroSummaries?: any[];
+	attachments?: TaskAttachment[];
+	focusSummaries?: FocusSummary[];
+	pomodoroSummaries?: PomodoroSummary[];
+}
+
+// ============================================================================
+// Project Related Types
+// ============================================================================
+
+/** Project closure information */
+export interface ProjectClosure {
+	closedTime?: string;
+	closedBy?: UserId;
+}
+
+/** Project transfer information */
+export interface ProjectTransfer {
+	transferredTime?: string;
+	fromUserId?: UserId;
+	toUserId?: UserId;
 }
 
 export interface Project extends IDataObject {
@@ -73,9 +139,9 @@ export interface Project extends IDataObject {
 	modifiedTime?: string;
 	isOwner?: boolean;
 	userCount?: number;
-	closed?: any;
+	closed?: boolean | ProjectClosure;
 	muted?: boolean;
-	transferred?: any;
+	transferred?: boolean | ProjectTransfer;
 }
 
 export interface ProjectGroup extends IDataObject {
@@ -171,16 +237,38 @@ export interface UserPreferences extends IDataObject {
 	timeZone?: string;
 }
 
+// ============================================================================
+// Batch & Sync Types
+// ============================================================================
+
 export interface BatchResponse extends IDataObject {
 	id2etag: Record<string, string>;
 	id2error: Record<string, string>;
 }
 
+/** Deleted item reference in sync response */
+export interface DeletedItem {
+	taskId: string;
+	projectId?: string;
+	deletedTime?: string;
+}
+
 export interface SyncTaskBean extends IDataObject {
 	update: Task[];
 	add?: Task[];
-	delete?: any[];
+	delete?: DeletedItem[];
 	empty?: boolean;
+}
+
+/** User-defined filter/smart list */
+export interface UserFilter {
+	id: string;
+	name: string;
+	etag?: string;
+	rule?: string;
+	sortOrder?: number;
+	sortType?: string;
+	viewMode?: string;
 }
 
 export interface SyncState extends IDataObject {
@@ -189,7 +277,7 @@ export interface SyncState extends IDataObject {
 	projectGroups: ProjectGroup[];
 	syncTaskBean: SyncTaskBean;
 	tags: Tag[];
-	filters?: any[];
+	filters?: UserFilter[];
 	checkPoint: number;
 }
 
@@ -200,3 +288,69 @@ export interface FocusHeatmap extends IDataObject {
 export type FocusDistribution = IDataObject & {
 	[tagName: string]: number;
 };
+
+// ============================================================================
+// Request Body Types
+// ============================================================================
+
+/** Base fields for creating/updating a task */
+export interface TaskBody extends IDataObject {
+	id?: string;
+	projectId?: string;
+	title?: string;
+	content?: string;
+	desc?: string;
+	kind?: string;
+	status?: number;
+	priority?: number;
+	startDate?: string | null;
+	dueDate?: string | null;
+	completedTime?: string | null;
+	timeZone?: string;
+	isAllDay?: boolean;
+	repeatFlag?: string;
+	reminders?: string[];
+	items?: Partial<ChecklistItem>[];
+	tags?: string[];
+	sortOrder?: number;
+}
+
+/** Base fields for creating/updating a project */
+export interface ProjectBody extends IDataObject {
+	id?: string;
+	name?: string;
+	color?: string;
+	kind?: string;
+	groupId?: string;
+	viewMode?: string;
+	sortOrder?: number;
+}
+
+/** Batch request for tasks */
+export interface TaskBatchRequest {
+	add?: TaskBody[];
+	update?: TaskBody[];
+	delete?: Array<{ taskId: string; projectId: string }>;
+}
+
+/** Batch request for projects */
+export interface ProjectBatchRequest {
+	add?: ProjectBody[];
+	update?: ProjectBody[];
+	delete?: Array<{ projectId: string }>;
+}
+
+/** Task assignment request body */
+export interface TaskAssignRequest {
+	assignee: string;
+	projectId: string;
+	taskId: string;
+}
+
+/** Project user in shared project */
+export interface ProjectUser {
+	userId: UserId;
+	displayName?: string;
+	username?: string;
+	permission?: string;
+}

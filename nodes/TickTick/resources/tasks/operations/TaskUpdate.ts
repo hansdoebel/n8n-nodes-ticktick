@@ -4,12 +4,20 @@ import type {
 	INodeProperties,
 } from "n8n-workflow";
 import {
+	extractResourceLocatorValue,
+	extractTagValue,
 	formatTickTickDate,
+	parseReminders,
 	tickTickApiRequest,
 	TimeZones,
 } from "@ticktick/helpers";
 import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import type {
+	ChecklistItem,
+	ResourceLocatorValue,
+	TaskBody,
+} from "@ticktick/types/api";
 
 export const taskUpdateFields: INodeProperties[] = [
 	{
@@ -378,23 +386,25 @@ export const taskUpdateFields: INodeProperties[] = [
 	},
 ];
 
-export function extractResourceLocatorValue(
-	value: string | { mode: string; value: string } | undefined,
-): string {
-	if (typeof value === "object" && value !== null) {
-		return value.value || "";
-	}
-	return value || "";
+/** Subtask input from n8n form */
+interface SubtaskInput {
+	title?: string;
+	isAllDay?: boolean;
+	completedTime?: string;
+	sortOrder?: number | string; // Can be empty string from form
+	startDate?: string;
+	status?: number;
+	timeZone?: string;
 }
 
-export function buildSubtask(sub: Record<string, any>): Record<string, any> {
-	const subtask: Record<string, any> = {};
+export function buildSubtask(sub: SubtaskInput): Partial<ChecklistItem> {
+	const subtask: Partial<ChecklistItem> = {};
 	if (sub.completedTime) {
 		subtask.completedTime = formatTickTickDate(sub.completedTime);
 	}
 	if (sub.isAllDay !== undefined) subtask.isAllDay = sub.isAllDay;
 	if (sub.sortOrder !== undefined && sub.sortOrder !== "") {
-		subtask.sortOrder = sub.sortOrder;
+		subtask.sortOrder = sub.sortOrder as number;
 	}
 	if (sub.startDate) subtask.startDate = formatTickTickDate(sub.startDate);
 	if (sub.status !== undefined) subtask.status = sub.status;
@@ -430,24 +440,35 @@ async function fetchCurrentTask(
 	}
 }
 
-export function parseReminders(reminders: string): string[] {
-	return reminders
-		.split(",")
-		.map((r) => r.trim())
-		.filter((r) => r.length > 0);
-}
-
-export function extractTagValue(
-	tag: string | { mode: string; value: string } | undefined,
-): string {
-	if (typeof tag === "object" && tag !== null) {
-		return tag.value || "";
-	}
-	return tag || "";
+/** Task update fields from the n8n form */
+interface TaskUpdateFields {
+	isAllDay?: boolean;
+	clearFields?: string[];
+	completedTime?: string;
+	content?: string;
+	desc?: string;
+	dueDate?: string;
+	items?: {
+		item?: SubtaskInput[];
+	};
+	priority?: number;
+	reminders?: string;
+	removeTags?: {
+		tagValues?: Array<{ tag: string | ResourceLocatorValue }>;
+	};
+	repeatFlag?: string;
+	sortOrder?: number;
+	startDate?: string;
+	status?: number;
+	tags?: {
+		tagValues?: Array<{ tag: string | ResourceLocatorValue }>;
+	};
+	timeZone?: string;
+	title?: string;
 }
 
 export function applyClearFields(
-	body: Record<string, any>,
+	body: TaskBody,
 	clearFields: string[],
 ): void {
 	const dateFields = ["dueDate", "startDate", "completedTime"];
@@ -457,17 +478,17 @@ export function applyClearFields(
 		} else if (field === "reminders") {
 			body.reminders = [];
 		} else if (dateFields.includes(field)) {
-			body[field] = null;
+			(body as Record<string, unknown>)[field] = null;
 		} else {
-			body[field] = "";
+			(body as Record<string, unknown>)[field] = "";
 		}
 	}
 }
 
 export function applyTagChanges(
-	body: Record<string, any>,
+	body: TaskBody,
 	currentTask: IDataObject,
-	updateFields: Record<string, any>,
+	updateFields: TaskUpdateFields,
 	clearFields: string[],
 ): void {
 	const currentTags: string[] = clearFields.includes("tags")
@@ -482,9 +503,7 @@ export function applyTagChanges(
 		updateFields.removeTags.tagValues.length > 0
 	) {
 		const tagsToRemove = updateFields.removeTags.tagValues
-			.map((item: { tag: string | { mode: string; value: string } }) =>
-				extractTagValue(item.tag)
-			)
+			.map((item) => extractTagValue(item.tag))
 			.filter((tag: string) => tag && tag.trim() !== "");
 
 		if (tagsToRemove.length > 0) {
@@ -499,9 +518,7 @@ export function applyTagChanges(
 		updateFields.tags.tagValues.length > 0
 	) {
 		const tagsToAdd = updateFields.tags.tagValues
-			.map((item: { tag: string | { mode: string; value: string } }) =>
-				extractTagValue(item.tag)
-			)
+			.map((item) => extractTagValue(item.tag))
 			.filter(
 				(tag: string) => tag && tag.trim() !== "" && !finalTags.includes(tag),
 			);
@@ -519,16 +536,16 @@ export function applyTagChanges(
 
 export function buildTaskBody(
 	currentTask: IDataObject,
-	updateFields: Record<string, any>,
+	updateFields: TaskUpdateFields,
 	taskId: string,
 	projectId: string,
-): Record<string, any> {
-	const body: Record<string, any> = { ...currentTask };
+): TaskBody {
+	const body: TaskBody = { ...(currentTask as unknown as TaskBody) };
 
 	body.id = taskId;
-	body.projectId = projectId || currentTask.projectId || "inbox";
+	body.projectId = projectId || (currentTask.projectId as string) || "inbox";
 
-	const clearFields = (updateFields.clearFields as string[]) || [];
+	const clearFields = updateFields.clearFields || [];
 	if (clearFields.length > 0) {
 		applyClearFields(body, clearFields);
 	}
@@ -543,34 +560,35 @@ export function buildTaskBody(
 		"status",
 		"timeZone",
 		"title",
-	];
+	] as const;
+
 	for (const field of directFields) {
 		if (clearFields.includes(field)) {
 			continue;
 		}
-		if (
-			updateFields[field] !== undefined &&
-			updateFields[field] !== "" &&
-			updateFields[field] !== null
-		) {
-			body[field] = updateFields[field];
+		const value = updateFields[field as keyof TaskUpdateFields];
+		if (value !== undefined && value !== "" && value !== null) {
+			(body as Record<string, unknown>)[field] = value;
 		}
 	}
 
-	const dateFields = ["dueDate", "completedTime", "startDate"];
+	const dateFields = ["dueDate", "completedTime", "startDate"] as const;
 	for (const field of dateFields) {
 		if (clearFields.includes(field)) {
 			continue;
 		}
-		if (updateFields[field]) {
-			body[field] = formatTickTickDate(updateFields[field]);
+		const value = updateFields[field as keyof TaskUpdateFields] as
+			| string
+			| undefined;
+		if (value) {
+			(body as Record<string, unknown>)[field] = formatTickTickDate(value);
 		}
 	}
 
 	applyTagChanges(body, currentTask, updateFields, clearFields);
 
 	if (!clearFields.includes("reminders") && updateFields.reminders) {
-		const reminders = parseReminders(updateFields.reminders as string);
+		const reminders = parseReminders(updateFields.reminders);
 		if (reminders.length > 0) {
 			body.reminders = reminders;
 		}
@@ -579,7 +597,7 @@ export function buildTaskBody(
 	if (updateFields.items?.item && Array.isArray(updateFields.items.item)) {
 		const subtasks = updateFields.items.item
 			.map(buildSubtask)
-			.filter((s: Record<string, any>) => Object.keys(s).length > 0);
+			.filter((s) => Object.keys(s).length > 0);
 		if (subtasks.length > 0) {
 			body.items = subtasks;
 		}
@@ -593,16 +611,12 @@ export async function taskUpdateExecute(
 	index: number,
 ) {
 	const taskId = extractResourceLocatorValue(
-		this.getNodeParameter("taskId", index) as string | {
-			mode: string;
-			value: string;
-		},
+		this.getNodeParameter("taskId", index) as string | ResourceLocatorValue,
 	);
 	const projectId = extractResourceLocatorValue(
-		this.getNodeParameter("projectId", index, "") as string | {
-			mode: string;
-			value: string;
-		},
+		this.getNodeParameter("projectId", index, "") as
+			| string
+			| ResourceLocatorValue,
 	);
 
 	if (!taskId.trim()) {
@@ -617,7 +631,7 @@ export async function taskUpdateExecute(
 	const useV2 = isV2Auth(this, index);
 	const currentTask = await fetchCurrentTask(this, taskId, useV2);
 
-	let body: Record<string, any>;
+	let body: TaskBody;
 
 	if (useJson) {
 		const jsonString = this.getNodeParameter(
@@ -626,7 +640,7 @@ export async function taskUpdateExecute(
 			"{}",
 		) as string;
 		try {
-			body = JSON.parse(jsonString);
+			body = JSON.parse(jsonString) as TaskBody;
 		} catch (error) {
 			throw new Error(`Invalid JSON provided: ${(error as Error).message}`);
 		}
@@ -635,13 +649,13 @@ export async function taskUpdateExecute(
 			"updateFields",
 			index,
 			{},
-		) as Record<string, any>;
+		) as TaskUpdateFields;
 		body = buildTaskBody(currentTask, updateFields, taskId, projectId);
 	}
 
 	body.projectId ||= "inbox";
 	body.id ||= taskId;
-	body.title ||= currentTask.title;
+	body.title ||= currentTask.title as string;
 
 	if (useV2) {
 		const response = await tickTickApiRequestV2.call(

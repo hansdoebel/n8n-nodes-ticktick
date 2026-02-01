@@ -17,7 +17,6 @@ describe("TaskSetParent Operation", () => {
 				authentication: "tickTickSessionApi",
 				nodeParameters: {
 					taskId: { mode: "id", value: "task123" },
-					projectId: { mode: "id", value: "project456" },
 					parentId: { mode: "id", value: "parentTask" },
 				},
 			});
@@ -48,7 +47,6 @@ describe("TaskSetParent Operation", () => {
 				authentication: "tickTickSessionApi",
 				nodeParameters: {
 					taskId: { mode: "id", value: "task123" },
-					projectId: { mode: "id", value: "project456" },
 					parentId: "",
 				},
 			});
@@ -71,7 +69,9 @@ describe("TaskSetParent Operation", () => {
 			expect(result[0].json.parentId).toBeNull();
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.TASKS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.TASKS_BATCH)
+			);
 			const body = batchCall?.body as { update: Array<{ parentId: string }> };
 			expect(body.update[0].parentId).toBe("");
 		});
@@ -81,8 +81,7 @@ describe("TaskSetParent Operation", () => {
 				authentication: "tickTickSessionApi",
 				nodeParameters: {
 					taskId: { mode: "id", value: "" },
-					projectId: { mode: "id", value: "project456" },
-					parentId: "",
+					parentId: { mode: "id", value: "parentTask" },
 				},
 			});
 
@@ -92,19 +91,24 @@ describe("TaskSetParent Operation", () => {
 				);
 		});
 
-		test("throws error when projectId is empty", async () => {
+		test("throws error when parent task not found", async () => {
 			const mockContext = createMockExecuteFunctions({
 				authentication: "tickTickSessionApi",
 				nodeParameters: {
 					taskId: { mode: "id", value: "task123" },
-					projectId: { mode: "id", value: "" },
-					parentId: "",
+					parentId: { mode: "id", value: "nonexistentParent" },
 				},
+			});
+
+			mockContext._addApiHandler({
+				method: "GET",
+				endpoint: ENDPOINTS.SYNC,
+				response: mockSyncResponse,
 			});
 
 			await expect(taskSetParentExecute.call(mockContext as any, 0)).rejects
 				.toThrow(
-					"Project ID is required",
+					"Parent task with ID nonexistentParent not found",
 				);
 		});
 
@@ -113,8 +117,7 @@ describe("TaskSetParent Operation", () => {
 				authentication: "tickTickSessionApi",
 				nodeParameters: {
 					taskId: { mode: "id", value: "nonexistent" },
-					projectId: { mode: "id", value: "project456" },
-					parentId: "",
+					parentId: { mode: "id", value: "parentTask" },
 				},
 			});
 
@@ -135,7 +138,6 @@ describe("TaskSetParent Operation", () => {
 				authentication: "tickTickSessionApi",
 				nodeParameters: {
 					taskId: { mode: "id", value: "task123" },
-					projectId: { mode: "id", value: "project456" },
 					parentId: { mode: "id", value: "parentTask" },
 				},
 			});
@@ -155,7 +157,9 @@ describe("TaskSetParent Operation", () => {
 			await taskSetParentExecute.call(mockContext as any, 0);
 
 			const calls = mockContext._getApiCalls();
-			const batchCall = calls.find((c) => c.endpoint.includes(ENDPOINTS.TASKS_BATCH));
+			const batchCall = calls.find((c) =>
+				c.endpoint.includes(ENDPOINTS.TASKS_BATCH)
+			);
 			const body = batchCall?.body as {
 				update: Array<Record<string, unknown>>;
 			};
@@ -169,7 +173,6 @@ describe("TaskSetParent Operation", () => {
 				authentication: "tickTickSessionApi",
 				nodeParameters: {
 					taskId: "task123",
-					projectId: "project456",
 					parentId: "parentTask",
 				},
 			});

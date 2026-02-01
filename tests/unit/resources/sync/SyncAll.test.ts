@@ -63,7 +63,7 @@ describe("SyncAll Operation", () => {
 			const tasks = result[0].json.syncTaskBean as {
 				update: Array<{ id: string; title: string }>;
 			};
-			expect(tasks.update).toHaveLength(2);
+			expect(tasks.update).toHaveLength(3);
 			expect(tasks.update[0].title).toBe("Test Task");
 		});
 

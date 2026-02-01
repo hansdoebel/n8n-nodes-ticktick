@@ -4,7 +4,9 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "@helpers/apiRequest";
+import { setIfDefined } from "@ticktick/helpers";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import type { ProjectBody } from "@ticktick/types/api";
 
 export const projectCreateFields: INodeProperties[] = [
 	{
@@ -99,22 +101,24 @@ export const projectCreateFields: INodeProperties[] = [
 	},
 ];
 
+/** Additional fields from the n8n form */
+interface ProjectAdditionalFields {
+	color?: string;
+	kind?: string;
+	sortOrder?: number;
+	viewMode?: string;
+}
+
 export async function projectCreateExecute(
 	this: IExecuteFunctions,
 	index: number,
 ) {
-	function setIfDefined(target: Record<string, any>, key: string, value: any) {
-		if (value !== undefined && value !== "" && value !== null) {
-			target[key] = value;
-		}
-	}
-
 	const useJson = this.getNodeParameter(
 		"jsonParameters",
 		index,
 		false,
 	) as boolean;
-	let body: Record<string, any> = {};
+	let body: ProjectBody = {};
 
 	if (useJson) {
 		const jsonString = this.getNodeParameter(
@@ -123,9 +127,9 @@ export async function projectCreateExecute(
 			"{}",
 		) as string;
 		try {
-			body = JSON.parse(jsonString);
+			body = JSON.parse(jsonString) as ProjectBody;
 		} catch (error) {
-			throw new Error(`Invalid JSON provided: ${error.message}`);
+			throw new Error(`Invalid JSON provided: ${(error as Error).message}`);
 		}
 	} else {
 		const name = this.getNodeParameter("name", index) as string;
@@ -133,13 +137,13 @@ export async function projectCreateExecute(
 			"additionalFields",
 			index,
 			{},
-		) as Record<string, any>;
+		) as ProjectAdditionalFields;
 
 		if (!name || name.trim() === "") {
 			throw new Error("Project name is required and cannot be empty");
 		}
 
-		const cleaned: Record<string, any> = {};
+		const cleaned: ProjectBody = {};
 
 		cleaned.name = name;
 

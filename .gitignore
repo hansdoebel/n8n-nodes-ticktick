@@ -12,3 +12,5 @@ yarn.lock
 !.env.example
 
 .claude
+
+ROADMAP.md

@@ -4,7 +4,9 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "@helpers/apiRequest";
+import { extractResourceLocatorValue, setIfDefined } from "@ticktick/helpers";
 import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import type { ProjectBody, ResourceLocatorValue } from "@ticktick/types/api";
 
 export const projectUpdateFields: INodeProperties[] = [
 	{
@@ -133,16 +135,19 @@ export const projectUpdateFields: INodeProperties[] = [
 	},
 ];
 
+/** Update fields from the n8n form */
+interface ProjectUpdateFields {
+	color?: string;
+	kind?: string;
+	name?: string;
+	sortOrder?: number;
+	viewMode?: string;
+}
+
 export async function projectUpdateExecute(
 	this: IExecuteFunctions,
 	index: number,
 ) {
-	function setIfDefined(target: Record<string, any>, key: string, value: any) {
-		if (value !== undefined && value !== "" && value !== null) {
-			target[key] = value;
-		}
-	}
-
 	const useJson = this.getNodeParameter(
 		"jsonParameters",
 		index,
@@ -151,17 +156,11 @@ export async function projectUpdateExecute(
 
 	const projectIdValue = this.getNodeParameter("projectId", index, "") as
 		| string
-		| { mode: string; value: string };
+		| ResourceLocatorValue;
 
-	let projectId: string;
+	const projectId = extractResourceLocatorValue(projectIdValue);
 
-	if (typeof projectIdValue === "object" && projectIdValue !== null) {
-		projectId = projectIdValue.value || "";
-	} else {
-		projectId = projectIdValue || "";
-	}
-
-	let body: Record<string, any> = {};
+	let body: ProjectBody = {};
 
 	if (useJson) {
 		const jsonString = this.getNodeParameter(
@@ -170,18 +169,18 @@ export async function projectUpdateExecute(
 			"{}",
 		) as string;
 		try {
-			body = JSON.parse(jsonString);
+			body = JSON.parse(jsonString) as ProjectBody;
 		} catch (error) {
-			throw new Error(`Invalid JSON provided: ${error.message}`);
+			throw new Error(`Invalid JSON provided: ${(error as Error).message}`);
 		}
 	} else {
 		const updateFields = this.getNodeParameter(
 			"updateFields",
 			index,
 			{},
-		) as Record<string, any>;
+		) as ProjectUpdateFields;
 
-		const cleaned: Record<string, any> = {};
+		const cleaned: ProjectBody = {};
 
 		setIfDefined(cleaned, "color", updateFields.color);
 		setIfDefined(cleaned, "kind", updateFields.kind);
