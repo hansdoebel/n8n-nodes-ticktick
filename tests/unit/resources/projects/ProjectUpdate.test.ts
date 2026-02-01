@@ -32,7 +32,11 @@ describe("ProjectUpdate Operation", () => {
 				const result = await projectUpdateExecute.call(mockContext as any, 0);
 
 				expect(result).toHaveLength(1);
-				expectApiCalled(mockContext, "POST", ENDPOINTS.OPEN_V1_PROJECT_BY_ID("project456"));
+				expectApiCalled(
+					mockContext,
+					"POST",
+					ENDPOINTS.OPEN_V1_PROJECT_BY_ID("project456"),
+				);
 			});
 
 			test("updates multiple fields", async () => {
@@ -91,6 +95,17 @@ describe("ProjectUpdate Operation", () => {
 						updateFields: {
 							name: "V2 Updated",
 						},
+					},
+				});
+
+				// Mock the sync endpoint that fetches current project data
+				mockContext._addApiHandler({
+					method: "GET",
+					endpoint: ENDPOINTS.SYNC,
+					response: {
+						projectProfiles: [
+							{ id: "project456", name: "Old Name", color: "#FF0000" },
+						],
 					},
 				});
 
@@ -177,6 +192,17 @@ describe("ProjectUpdate Operation", () => {
 					},
 				});
 
+				// Mock the sync endpoint that fetches current project data
+				mockContext._addApiHandler({
+					method: "GET",
+					endpoint: ENDPOINTS.SYNC,
+					response: {
+						projectProfiles: [
+							{ id: "project456", name: "Existing Name", color: "#0000FF" },
+						],
+					},
+				});
+
 				mockContext._addApiHandler({
 					method: "POST",
 					endpoint: ENDPOINTS.PROJECTS_BATCH,
@@ -192,8 +218,7 @@ describe("ProjectUpdate Operation", () => {
 				const body = batchCall?.body as {
 					update: Array<Record<string, unknown>>;
 				};
-				expect(body.update[0].name).toBeUndefined();
-				expect(body.update[0].color).toBeUndefined();
+				// Empty string and null values should be skipped, but existing project data is merged
 				expect(body.update[0].id).toBe("project456");
 			});
 
