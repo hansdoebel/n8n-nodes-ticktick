@@ -12,6 +12,19 @@ import {
 
 export const habitOperations: INodeProperties[] = [
 	{
+		displayName:
+			"Habits require the TickTick Session API (V2) credential. Please select it above.",
+		name: "habitV2Notice",
+		type: "notice",
+		default: "",
+		displayOptions: {
+			show: {
+				resource: ["habit"],
+				authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
+			},
+		},
+	},
+	{
 		displayName: "Operation",
 		name: "operation",
 		type: "options",
@@ -19,6 +32,7 @@ export const habitOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ["habit"],
+				authentication: ["tickTickSessionApi"],
 			},
 		},
 		options: [

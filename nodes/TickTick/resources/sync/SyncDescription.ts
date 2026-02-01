@@ -3,6 +3,19 @@ import { syncAllFields } from "./operations";
 
 export const syncOperations: INodeProperties[] = [
 	{
+		displayName:
+			"Sync requires the TickTick Session API (V2) credential. Please select it above.",
+		name: "syncV2Notice",
+		type: "notice",
+		default: "",
+		displayOptions: {
+			show: {
+				resource: ["sync"],
+				authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
+			},
+		},
+	},
+	{
 		displayName: "Operation",
 		name: "operation",
 		type: "options",
@@ -10,6 +23,7 @@ export const syncOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ["sync"],
+				authentication: ["tickTickSessionApi"],
 			},
 		},
 		options: [

@@ -10,6 +10,19 @@ import {
 
 export const tagOperations: INodeProperties[] = [
 	{
+		displayName:
+			"Tags require the TickTick Session API (V2) credential. Please select it above.",
+		name: "tagV2Notice",
+		type: "notice",
+		default: "",
+		displayOptions: {
+			show: {
+				resource: ["tag"],
+				authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
+			},
+		},
+	},
+	{
 		displayName: "Operation",
 		name: "operation",
 		type: "options",

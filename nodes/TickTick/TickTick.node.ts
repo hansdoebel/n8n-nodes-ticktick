@@ -63,27 +63,6 @@ export class TickTick implements INodeType {
 				name: "resource",
 				type: "options",
 				noDataExpression: true,
-				displayOptions: {
-					show: {
-						authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
-					},
-				},
-				options: [
-					{ name: "Project", value: "project" },
-					{ name: "Task", value: "task" },
-				],
-				default: "task",
-			},
-			{
-				displayName: "Resource",
-				name: "resource",
-				type: "options",
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						authentication: ["tickTickSessionApi"],
-					},
-				},
 				options: [
 					{ name: "Focus", value: "focus" },
 					{ name: "Habit", value: "habit" },
@@ -96,8 +75,7 @@ export class TickTick implements INodeType {
 				],
 				default: "task",
 			},
-			...registry.getAllOperations(),
-			...registry.getAllFields(),
+			...registry.getAllProperties(),
 		],
 	};
 

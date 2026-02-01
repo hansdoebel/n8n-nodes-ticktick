@@ -8,6 +8,19 @@ import {
 
 export const projectGroupOperations: INodeProperties[] = [
 	{
+		displayName:
+			"Project Groups require the TickTick Session API (V2) credential. Please select it above.",
+		name: "projectGroupV2Notice",
+		type: "notice",
+		default: "",
+		displayOptions: {
+			show: {
+				resource: ["projectGroup"],
+				authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
+			},
+		},
+	},
+	{
 		displayName: "Operation",
 		name: "operation",
 		type: "options",
@@ -15,6 +28,7 @@ export const projectGroupOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ["projectGroup"],
+				authentication: ["tickTickSessionApi"],
 			},
 		},
 		options: [

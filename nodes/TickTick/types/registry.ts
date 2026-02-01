@@ -56,6 +56,15 @@ export class ResourceRegistry {
 		return Array.from(this.resources.values()).flatMap((r) => r.fields);
 	}
 
+	getAllProperties(): INodeProperties[] {
+		const properties: INodeProperties[] = [];
+		for (const resource of this.resources.values()) {
+			properties.push(...resource.operations);
+			properties.push(...resource.fields);
+		}
+		return properties;
+	}
+
 	getAllLoadOptions(): Record<string, LoadOptionsFunction> {
 		const allOptions: Record<string, LoadOptionsFunction> = {};
 		for (const resource of this.resources.values()) {

@@ -10,26 +10,6 @@ export const projectOperations: INodeProperties[] = [
 		displayOptions: {
 			show: {
 				resource: ["project"],
-				authentication: ["tickTickTokenApi", "tickTickOAuth2Api"],
-			},
-		},
-		options: [
-			{ name: "Create", value: "create", action: "Create a project" },
-			{ name: "Get", value: "get", action: "Get a project" },
-			{ name: "Update", value: "update", action: "Update a project" },
-			{ name: "Delete", value: "delete", action: "Delete a project" },
-		],
-		default: "create",
-	},
-	{
-		displayName: "Operation",
-		name: "operation",
-		type: "options",
-		noDataExpression: true,
-		displayOptions: {
-			show: {
-				resource: ["project"],
-				authentication: ["tickTickSessionApi"],
 			},
 		},
 		options: [
@@ -40,6 +20,7 @@ export const projectOperations: INodeProperties[] = [
 				name: "Get Users",
 				value: "getUsers",
 				action: "Get users in a project",
+				description: "Get users in a shared project (V2 API only)",
 			},
 			{ name: "Update", value: "update", action: "Update a project" },
 		],
