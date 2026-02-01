@@ -4,20 +4,13 @@ n8n community node for integrating TickTick with your workflows. Manage tasks, p
 
 ## Table of Contents
 
-- [Installation](#installation)  
-- [Credentials](#credentials)  
-- [Task Operations](#task-operations)  
-- [Project Operations](#project-operations)  
-- [Tag Operations](#tag-operations)  
-- [Habit Operations](#habit-operations)  
-- [Focus Operations](#focus-operations)  
-- [Project Group Operations](#project-group-operations)  
-- [User Operations](#user-operations)  
-- [Sync Operations](#sync-operations)  
-- [Compatibility](#compatibility)  
-- [Known Issues](#known-issues)  
-- [Development Notes](#development-notes)  
-- [Resources](#resources)  
+- [Installation](#installation)
+- [Credentials](#credentials)
+- [TickTick V1 API (Official)](#ticktick-v1-api-official)
+- [TickTick V2 API (Undocumented)](#ticktick-v2-api-undocumented-session-api)
+- [Compatibility](#compatibility)
+- [Known Issues](#known-issues)
+- [Resources](#resources)
 - [Version History](#version-history)
 
 ## Installation
@@ -54,34 +47,24 @@ For access to V2 API features (sync, tags, habits, focus, etc.):
 2. Copy **Client ID** & **Client Secret**
 3. In n8n: Create new credential → **TickTick OAuth2 API** → Paste credentials → Connect
 
----
-
 ## TickTick V1 API (Official)
 
 The following operations use the official TickTick Open API (V1) and work with **API Token** or **OAuth2** credentials.
 
 ### Task Operations (V1)
 
-| Operation | Required Parameters | Optional/Additional Fields |
-|-----------|-------------------|--------------------------|
-| **Create** | Title | Project, All Day, Content, Description, Due Date, Priority, Reminders, Start Date, Status, Items (Subtasks) |
-| **Get** | Task ID, Project ID | — |
-| **Update** | Task ID | Project ID, Title, Content, Description, Due Date, Priority, Reminders, Start Date, Status, Items, All Day |
-| **Complete** | Task ID, Project ID | — |
-| **Delete** | Task ID, Project ID | — |
+- **Create** - Create a new task with optional subtasks
+- **Get** - Get a specific task by ID
+- **Update** - Update task properties
+- **Complete** - Mark a task as complete
+- **Delete** - Delete a task
 
 ### Project Operations (V1)
 
-| Operation | Mode/Type | Required Parameters | Optional Fields |
-|-----------|-----------|-------------------|-----------------|
-| **Create** | — | Project Name | Color, Kind, Sort Order, View Mode |
-| **Get** | All Projects | — | — |
-| **Get** | Specific Project | Project ID | — |
-| **Get** | With Tasks & Columns | Project ID | — |
-| **Update** | — | Project ID | Name, Color, Kind, Sort Order, View Mode |
-| **Delete** | — | Project ID | — |
-
----
+- **Create** - Create a new project
+- **Get** - Get all projects, a specific project, or project with tasks & columns
+- **Update** - Update project properties
+- **Delete** - Delete a project
 
 ## TickTick V2 API (Undocumented Session API)
 
@@ -91,89 +74,62 @@ The following operations require **TickTick Session API** (Email/Password) crede
 
 ### Task Operations (V2 Only)
 
-| Operation | Description | Required Parameters | Optional/Additional Fields |
-|-----------|-------------|-------------------|--------------------------|
-| **Assign** | Assign task to a user (shared projects only) | Project, Task, Assignee | — |
-| **List All** | List all tasks across projects | — | Limit, Project Filter, Status Filter (All/Active/Completed), Include Deleted |
-| **List Completed** | Get completed tasks in date range | — | Limit, Date Range (From/To) |
-| **List Deleted** | Get deleted/trashed tasks | — | Limit |
-| **Move** | Move task to different project | Task, To Project | — |
-
-> **Note**: The **Assign** operation only works with shared/collaborative projects. The project dropdown automatically filters to show only projects that have been shared with other users. Assignees can be selected from a dropdown that loads users from the selected project.
+- **Assign** - Assign task to a user (shared projects only)
+- **List All** - List all tasks across projects with filtering
+- **List Completed** - Get completed tasks in date range
+- **List Deleted** - Get deleted/trashed tasks
+- **Move** - Move task to different project
 
 ### Project Operations (V2 Only)
 
-| Operation | Description | Required Parameters | Optional/Additional Fields |
-|-----------|-------------|-------------------|--------------------------|
-| **Get Users** | Get users in a shared project | Project | — |
-| **List Closed** | Get all closed projects | — | — |
-
-> **Note**: The **Get Users** operation only works with shared/collaborative projects. The project dropdown automatically filters to show only projects that have been shared with other users (userCount > 1). Personal projects and the Inbox cannot be used with this operation.
+- **Get Users** - Get users in a shared/collaborative project
+- **List Closed** - Get all closed projects
 
 ### Tag Operations (V2)
 
-| Operation | Description | Required Parameters | Optional Fields |
-|-----------|-------------|-------------------|-----------------|
-| **Create** | Create a new tag | Tag Name | Label, Sort Order, Color, Parent Tag |
-| **Update** | Update existing tag | Tag | Name, Label, Sort Order, Color, Parent Tag |
-| **Delete** | Delete a tag | Tag | — |
-| **List** | List all tags | — | — |
-| **Rename** | Rename a tag | Tag, New Name | — |
-| **Merge** | Merge tag into another | Source Tag, Target Tag | — |
+- **Create** - Create a new tag
+- **Update** - Update existing tag
+- **Delete** - Delete a tag
+- **List** - List all tags
+- **Rename** - Rename a tag
+- **Merge** - Merge tag into another
 
 ### Habit Operations (V2)
 
-| Operation | Description | Required Parameters | Optional Fields |
-|-----------|-------------|-------------------|-----------------|
-| **Create** | Create a new habit | Habit Name | Type (Boolean/Real), Color, Icon, Repeat Rule, Target Days, Archived Days, Goal |
-| **Get** | Get a specific habit | Habit | — |
-| **Update** | Update existing habit | Habit | Name, Type, Color, Icon, Repeat Rule, Target Days, Archived Days, Goal |
-| **Archive** | Archive a habit | Habit | — |
-| **Unarchive** | Unarchive a habit | Habit | — |
-| **Delete** | Delete a habit | Habit | — |
-| **List** | List all habits | — | — |
-| **Checkin** | Record habit check-in | Habit, Date | Value (for Real type habits) |
+- **Create** - Create a new habit
+- **Get** - Get a specific habit
+- **Update** - Update existing habit
+- **Archive** - Archive a habit
+- **Unarchive** - Unarchive a habit
+- **Delete** - Delete a habit
+- **List** - List all habits
+- **Checkin** - Record habit check-in
 
 ### Focus Operations (V2)
 
-| Operation | Description | Required Parameters | Optional Fields |
-|-----------|-------------|-------------------|-----------------|
-| **Get Heatmap** | Get focus heatmap data | Start Date, End Date | — |
-| **Get Distribution** | Get focus time distribution | Start Date, End Date | — |
+- **Get Heatmap** - Get focus heatmap data for date range
+- **Get Distribution** - Get focus time distribution for date range
 
 ### Project Group Operations (V2)
 
-| Operation | Description | Required Parameters | Optional Fields |
-|-----------|-------------|-------------------|-----------------|
-| **Create** | Create a project group | Group Name | Sort Order, Sort Type |
-| **Update** | Update existing group | Project Group | Name, Sort Order, Sort Type |
-| **Delete** | Delete a project group | Project Group | — |
-| **List** | List all project groups | — | — |
+- **Create** - Create a project group
+- **Update** - Update existing group
+- **Delete** - Delete a project group
+- **List** - List all project groups
 
 ### User Operations (V2)
 
-| Operation | Description | Returns |
-|-----------|-------------|---------|
-| **Get Profile** | Get user profile information | User details, settings, subscription info |
-| **Get Status** | Get user status | Current status, activity data |
-| **Get Preferences** | Get user preferences | UI settings, notification preferences |
+- **Get Profile** - Get user profile information
+- **Get Status** - Get user status
+- **Get Preferences** - Get user preferences
 
 ### Sync Operations (V2)
 
-| Operation | Description | Returns |
-|-----------|-------------|---------|
-| **Sync All** | Get all data from sync endpoint | Tasks, Projects, Tags, Habits, Project Groups, Column Data, User Info |
-
----
+- **Sync All** - Get all data (tasks, projects, tags, habits, etc.)
 
 ## Compatibility
 
-Tested successfully on 2026-01-09 with:
-
-- n8n Version: 2.2.3
-- Node Version: 22.11.0
-- Bun Version: 1.3.5
-- No extra packages required (Luxon is bundled)
+Tested with n8n 2.4.8, Node 22.21.1, Bun 1.3.8 (2026-02-01)
 
 ## Known Issues
 
@@ -182,81 +138,22 @@ Tested successfully on 2026-01-09 with:
 - **Empty Responses**: Operations like delete or complete often return `200 OK` with no body. This node generates a success message for these cases.
 
 ### V2 API (Undocumented)
-- **Undocumented API**: The V2 Session API is not officially documented by TickTick. Endpoints and behaviors were discovered through reverse engineering and may change without notice.
-- **Rate Limits Unknown**: Rate limiting behavior for the V2 API is undocumented and unknown. Use responsibly to avoid potential account issues.
-- **No Official Support**: TickTick does not provide official support for the V2 Session API. Use at your own risk.
-- **Authentication Security**: Session API requires email/password credentials. These are stored securely by n8n but consider the security implications for your use case.
-- **Breaking Changes**: Since the API is undocumented, TickTick may change endpoints or behavior at any time without warning.
+- **Undocumented API**: The V2 Session API is not officially documented by TickTick. Endpoints were discovered through reverse engineering and may change without notice. Use at your own risk.
+- **Authentication**: Session API requires email/password credentials. These are stored securely by n8n but consider the security implications for your use case.
 
 ### General
 - **Unofficial Node**: Community-maintained node. Not affiliated with or endorsed by TickTick or n8n.
-
-## Development Notes
-
-### Kill n8n Process
-
-Add this alias to your `~/.zshrc` for quick n8n process termination during development:
-
-```bash
-alias kill-n8n="kill -9 \$(lsof -ti tcp:5678 -sTCP:LISTEN)"
-```
-
-After adding, reload your shell: `source ~/.zshrc`
-
-### How to publish new release
-
-```
-# Bump the version
-npm version patch|minor|major
-```
-
-```
-# push the tag to GitHub
-git push origin v1.2.3
-```
-
-### Add MCP Server to Zed IDE
-
-"Add custom Server..." -> "Configure Remote" -> "Add Server"
-
-```
-{
-  /// The name of your remote MCP server
-  "n8n-mcp": {
-    /// The URL of the remote MCP server
-    "url": "http://localhost:5678/mcp-server/http",
-    "headers": {
-    /// Any headers to send along
-    "Authorization": "Bearer <TOKEN>"
-    }
-  }
-}
-```
-Available Tools:		
-- execute_workflow	
-- get_workflow_details
-- search_workflows
 
 ## Resources
 
 - [n8n Website](https://n8n.io/)
 - [n8n Community Nodes Documentation](https://docs.n8n.io/integrations/community-nodes/)
-- [n8n Documentation for LLMs](https://docs.n8n.io/llms.txt)
 - [TickTick Website](https://www.ticktick.com/)
 - [TickTick Open API](https://developer.ticktick.com/docs#/openapi)
 - [GitHub Repository](https://github.com/hansdoebel/n8n-nodes-ticktick)
-- [dev-mirzabicer/ticktick-sdk](https://github.com/dev-mirzabicer/ticktick-sdk)
-- [lazeroffmichael/ticktick-py](https://github.com/lazeroffmichael/ticktick-py/)
-- [@n8n/node-cli README](https://raw.githubusercontent.com/n8n-io/n8n/refs/heads/master/packages/%40n8n/node-cli/README.md)
-
 
 ## Version History
 
 - `2.1.0` – **Collaboration Features**: Added "Get Users" operation for projects to list users in shared/collaborative projects. Added "Assign" operation for tasks to assign tasks to users in shared projects. Assignee field supports dropdown selection from project users.
 - `2.0.3` – **Major Refactor & New Resources**: Complete codebase restructure with resource registry pattern, barrel exports, TypeScript types, centralized constants. New resources: Habits (with check-ins), Focus (heatmap & distribution), Project Groups, User (profile/status/preferences). Enhanced tag operations (rename, merge). Improved API implementations matching Python SDK reference. Comprehensive test suite with 34+ tests.
 - `2.0.0` – **V2 API Support**: Added TickTick Session API (email/password) authentication with support for undocumented V2 endpoints. New resources: Tags, Sync. New V2-only task operations: List All, List Completed, List Deleted, Move. All V1 operations now support both V1 and V2 authentication methods.
-- `1.3.0` – Major refactor: Fixed API request context, added Inbox support, expanded Task/Project fields, added Subtask support, improved Project Get modes.
-- `1.2.2` – Documentation and metadata update only
-- `1.2.1` – Inbox support, API Token credential, improved task/project operations, success messages
-- `1.1.1` – Added Luxon for date formatting (thank you [mrozekadam](https://github.com/mrozekadam))
-- `1.0.0` – Initial release

@@ -8,11 +8,7 @@ yarn.lock
 .vscode/launch.json
 
 .env
-.env.test
 .env*
 !.env.example
 
-ticktick-sdk-main
-.rules
-CLAUDE.md
 .claude
