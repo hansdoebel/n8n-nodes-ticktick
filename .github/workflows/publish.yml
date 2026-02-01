@@ -15,6 +15,17 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify tag is on main branch
+        run: |
+          # Check if the tagged commit exists on main
+          if ! git branch -r --contains ${{ github.sha }} | grep -q 'origin/main'; then
+            echo "Error: Tag is not on main branch"
+            exit 1
+          fi
+          echo "Tag verified on main branch"
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -30,4 +41,5 @@ jobs:
       - run: bun install
       - run: bun run build
       - run: bun run lint
+      - run: bun test tests/unit
       - run: npm publish --access public
