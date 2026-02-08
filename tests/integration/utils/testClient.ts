@@ -1,8 +1,11 @@
-/**
- * Test utilities for TickTick V2 API testing
- * Provides authentication and API request helpers using Bun's native fetch
- */
-
+import {
+	existsSync,
+	mkdirSync,
+	readFileSync,
+	unlinkSync,
+	writeFileSync,
+} from "node:fs";
+import { join } from "node:path";
 import { TICKTICK_URLS } from "../../../nodes/TickTick/constants/urls";
 
 export const V2_USER_AGENT =
@@ -10,17 +13,10 @@ export const V2_USER_AGENT =
 const V2_DEVICE_VERSION = 6430;
 export const API_BASE = TICKTICK_URLS.API_BASE_URL;
 
-/**
- * Convert object to JSON with spaces after colons and commas (Python-style)
- * TickTick's V2 API requires this format
- */
 export function toPythonStyleJson(obj: object): string {
 	return JSON.stringify(obj, null, 0).replace(/,/g, ", ").replace(/:/g, ": ");
 }
 
-/**
- * Generate a MongoDB-style ObjectId (24 hex chars)
- */
 export function generateObjectId(): string {
 	const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, "0");
 	const random = Array.from(crypto.getRandomValues(new Uint8Array(8)))
@@ -29,9 +25,6 @@ export function generateObjectId(): string {
 	return timestamp + random;
 }
 
-/**
- * Build the X-Device header with Python-style JSON
- */
 export function buildDeviceHeader(deviceId: string): string {
 	return toPythonStyleJson({
 		platform: "web",
@@ -54,10 +47,62 @@ export interface ApiResponse<T = unknown> {
 	headers: Headers;
 }
 
-/**
- * Authenticate with TickTick V2 API
- */
+const SESSION_CACHE_DIR = join(import.meta.dir, "..", "..", "..", ".tmp");
+const SESSION_CACHE_FILE = join(SESSION_CACHE_DIR, "test-session.json");
+const SESSION_TTL_MS = 23 * 60 * 60 * 1000; // 23 hours
+
+interface CachedSession extends AuthSession {
+	expiresAt: number;
+}
+
+function loadCachedSession(): AuthSession | null {
+	if (!existsSync(SESSION_CACHE_FILE)) return null;
+	try {
+		const data: CachedSession = JSON.parse(
+			readFileSync(SESSION_CACHE_FILE, "utf-8"),
+		);
+		if (data.expiresAt > Date.now()) {
+			return data;
+		}
+		unlinkSync(SESSION_CACHE_FILE);
+	} catch {
+		try {
+			unlinkSync(SESSION_CACHE_FILE);
+		} catch {}
+	}
+	return null;
+}
+
+function saveCachedSession(session: AuthSession): void {
+	if (!existsSync(SESSION_CACHE_DIR)) {
+		mkdirSync(SESSION_CACHE_DIR, { recursive: true });
+	}
+	const cached: CachedSession = {
+		...session,
+		expiresAt: Date.now() + SESSION_TTL_MS,
+	};
+	writeFileSync(SESSION_CACHE_FILE, JSON.stringify(cached, null, 2));
+}
+
+let authPromise: Promise<AuthSession> | null = null;
+
 export async function authenticate(): Promise<AuthSession> {
+	const cached = loadCachedSession();
+	if (cached) return cached;
+
+	if (authPromise) return authPromise;
+
+	authPromise = authenticateFresh();
+	try {
+		const session = await authPromise;
+		saveCachedSession(session);
+		return session;
+	} finally {
+		authPromise = null;
+	}
+}
+
+async function authenticateFresh(): Promise<AuthSession> {
 	const username = process.env.TICKTICK_USERNAME;
 	const password = process.env.TICKTICK_PASSWORD;
 
@@ -110,9 +155,6 @@ export async function authenticate(): Promise<AuthSession> {
 	};
 }
 
-/**
- * TickTick V2 API Test Client
- */
 export class TickTickTestClient {
 	private session: AuthSession | null = null;
 
@@ -135,9 +177,6 @@ export class TickTickTestClient {
 		return this.session;
 	}
 
-	/**
-	 * Make authenticated V2 API request
-	 */
 	async request<T = unknown>(
 		method: string,
 		endpoint: string,
@@ -204,18 +243,12 @@ export class TickTickTestClient {
 	}
 }
 
-/**
- * Create a connected test client
- */
 export async function createTestClient(): Promise<TickTickTestClient> {
 	const client = new TickTickTestClient();
 	await client.connect();
 	return client;
 }
 
-/**
- * Generate a unique test name with timestamp
- */
 export function uniqueName(prefix: string): string {
 	return `${prefix}_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 }

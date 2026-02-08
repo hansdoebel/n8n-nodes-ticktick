@@ -64,7 +64,6 @@ describe("TickTick V2 Authentication", () => {
 		const deviceId = generateObjectId();
 
 		console.log("Testing authentication...");
-		console.log("Username:", username);
 		console.log("Device ID:", deviceId);
 
 		const response = await makeAuthRequest(username!, password!, deviceId);
@@ -95,7 +94,7 @@ describe("TickTick V2 Authentication", () => {
 		expect(response.body.userId).toBeDefined();
 
 		console.log("✓ Authentication successful!");
-		console.log("  Token:", response.body.token?.substring(0, 30) + "...");
+		console.log("  Token:", "[REDACTED]");
 		console.log("  Inbox ID:", response.body.inboxId);
 		console.log("  User ID:", response.body.userId);
 	}, 30000);

@@ -1,3 +1,5 @@
+import { validatePathParam } from "../helpers/utils";
+
 export const ENDPOINTS = {
 	TASKS: "/tasks",
 	TASKS_BATCH: "/batch/task",
@@ -24,21 +26,32 @@ export const ENDPOINTS = {
 	PROJECT_ALL_COMPLETED: "/project/all/completed",
 
 	OPEN_V1_PROJECT: "/open/v1/project",
-	OPEN_V1_PROJECT_BY_ID: (projectId: string) => `/open/v1/project/${projectId}`,
+	OPEN_V1_PROJECT_BY_ID: (projectId: string) =>
+		`/open/v1/project/${validatePathParam(projectId, "projectId")}`,
 	OPEN_V1_PROJECT_DATA: (projectId: string) =>
-		`/open/v1/project/${projectId}/data`,
+		`/open/v1/project/${validatePathParam(projectId, "projectId")}/data`,
 	OPEN_V1_TASK: "/open/v1/task",
-	OPEN_V1_TASK_UPDATE: (taskId: string) => `/open/v1/task/${taskId}`,
-	OPEN_V1_TASK_ALL: (taskId: string) => `/open/v1/project/all/task/${taskId}`,
+	OPEN_V1_TASK_UPDATE: (taskId: string) =>
+		`/open/v1/task/${validatePathParam(taskId, "taskId")}`,
+	OPEN_V1_TASK_ALL: (taskId: string) =>
+		`/open/v1/project/all/task/${validatePathParam(taskId, "taskId")}`,
 	OPEN_V1_TASK_BY_PROJECT: (projectId: string, taskId: string) =>
-		`/open/v1/project/${projectId}/task/${taskId}`,
+		`/open/v1/project/${validatePathParam(projectId, "projectId")}/task/${
+			validatePathParam(taskId, "taskId")
+		}`,
 	OPEN_V1_TASK_COMPLETE: (projectId: string, taskId: string) =>
-		`/open/v1/project/${projectId}/task/${taskId}/complete`,
+		`/open/v1/project/${validatePathParam(projectId, "projectId")}/task/${
+			validatePathParam(taskId, "taskId")
+		}/complete`,
 
 	FOCUS_HEATMAP: (start: string, end: string) =>
-		`/pomodoros/statistics/heatmap/${start}/${end}`,
+		`/pomodoros/statistics/heatmap/${validatePathParam(start, "startDate")}/${
+			validatePathParam(end, "endDate")
+		}`,
 	FOCUS_DISTRIBUTION: (start: string, end: string) =>
-		`/pomodoros/statistics/dist/${start}/${end}`,
+		`/pomodoros/statistics/dist/${validatePathParam(start, "startDate")}/${
+			validatePathParam(end, "endDate")
+		}`,
 
 	SYNC: "/batch/check/0",
 
@@ -46,7 +59,8 @@ export const ENDPOINTS = {
 	USER_STATUS: "/user/status",
 	USER_PREFERENCES_SETTINGS: "/user/preferences/settings",
 
-	PROJECT_USERS: (projectId: string) => `/project/${projectId}/users`,
+	PROJECT_USERS: (projectId: string) =>
+		`/project/${validatePathParam(projectId, "projectId")}/users`,
 	TASK_ASSIGN: "/task/assign",
 	TASK_PROJECT: "/batch/taskProject",
 	TASK_PARENT: "/batch/taskParent",

@@ -26,6 +26,24 @@ export function formatTickTickDate(dateString: string): string | undefined {
 	return `${datePart}${offsetSign}${offsetHours}${offsetMinutes}`;
 }
 
+const SAFE_PATH_PARAM = /^[a-zA-Z0-9_-]+$/;
+
+/**
+ * Validates that a value is safe to use in a URL path segment.
+ * Prevents path traversal attacks (e.g. "../../admin") in dynamic endpoints.
+ * @param value - The path parameter to validate
+ * @param name - The parameter name (for error messages)
+ * @returns The validated value
+ */
+export function validatePathParam(value: string, name: string): string {
+	if (!value || !SAFE_PATH_PARAM.test(value)) {
+		throw new Error(
+			`Invalid ${name}: must contain only letters, numbers, hyphens, or underscores`,
+		);
+	}
+	return value;
+}
+
 /**
  * Extracts the string value from a resource locator or returns the string directly.
  * Resource locators are objects with { mode: string, value: string } shape from n8n UI.
