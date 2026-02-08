@@ -3,9 +3,12 @@
  * Provides authentication and API request helpers using Bun's native fetch
  */
 
-const V2_USER_AGENT = "Mozilla/5.0 (rv:145.0) Firefox/145.0";
+import { TICKTICK_URLS } from "../../../nodes/TickTick/constants/urls";
+
+export const V2_USER_AGENT =
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 const V2_DEVICE_VERSION = 6430;
-const API_BASE = "https://api.ticktick.com";
+export const API_BASE = TICKTICK_URLS.API_BASE_URL;
 
 /**
  * Convert object to JSON with spaces after colons and commas (Python-style)
@@ -76,6 +79,8 @@ export async function authenticate(): Promise<AuthSession> {
 				"User-Agent": V2_USER_AGENT,
 				"X-Device": xDevice,
 				"Content-Type": "application/json",
+				"Origin": TICKTICK_URLS.BASE_URL,
+				"Referer": `${TICKTICK_URLS.BASE_URL}/`,
 			},
 			body: bodyJson,
 		},
@@ -155,6 +160,8 @@ export class TickTickTestClient {
 				"X-Device": xDevice,
 				"Cookie": `t=${this.session.token}`,
 				"Content-Type": "application/json",
+				"Origin": TICKTICK_URLS.BASE_URL,
+				"Referer": `${TICKTICK_URLS.BASE_URL}/`,
 			},
 			body: body ? toPythonStyleJson(body) : undefined,
 		});

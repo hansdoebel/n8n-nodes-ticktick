@@ -10,7 +10,8 @@ import * as crypto from "crypto";
 import { TICKTICK_URLS } from "../constants/urls";
 
 const V2_API_BASE = `${TICKTICK_URLS.API_BASE_URL}/api/v2`;
-const DEFAULT_V2_USER_AGENT = "Mozilla/5.0 (rv:145.0) Firefox/145.0";
+const DEFAULT_V2_USER_AGENT =
+	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
 const DEFAULT_V2_DEVICE_VERSION = 6430;
 
 function toPythonStyleJson(obj: object): string {
@@ -55,6 +56,8 @@ export function buildV2Headers(
 		"User-Agent": userAgent,
 		"X-Device": buildDeviceHeader(deviceId, deviceVersion),
 		"Cookie": `t=${sessionToken}`,
+		"Origin": TICKTICK_URLS.BASE_URL,
+		"Referer": `${TICKTICK_URLS.BASE_URL}/`,
 	};
 }
 
@@ -100,6 +103,8 @@ async function authenticateV2(
 			"User-Agent": userAgent,
 			"Content-Type": "application/json",
 			"X-Device": buildDeviceHeader(deviceId, deviceVersion),
+			"Origin": TICKTICK_URLS.BASE_URL,
+			"Referer": `${TICKTICK_URLS.BASE_URL}/`,
 		},
 		body: bodyJson,
 		returnFullResponse: true,

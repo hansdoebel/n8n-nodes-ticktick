@@ -1,12 +1,12 @@
 import { beforeAll, describe, expect, test } from "bun:test";
 import {
+	API_BASE,
 	buildDeviceHeader,
 	generateObjectId,
 	toPythonStyleJson,
+	V2_USER_AGENT,
 } from "./utils/testClient";
-
-const V2_USER_AGENT = "Mozilla/5.0 (rv:145.0) Firefox/145.0";
-const API_BASE = "https://api.ticktick.com";
+import { TICKTICK_URLS } from "../../nodes/TickTick/constants/urls";
 
 interface AuthResponse {
 	token?: string;
@@ -33,6 +33,8 @@ async function makeAuthRequest(
 				"User-Agent": V2_USER_AGENT,
 				"X-Device": xDevice,
 				"Content-Type": "application/json",
+				"Origin": TICKTICK_URLS.BASE_URL,
+				"Referer": `${TICKTICK_URLS.BASE_URL}/`,
 			},
 			body: bodyJson,
 		},
