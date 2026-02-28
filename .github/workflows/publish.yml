@@ -28,8 +28,6 @@ jobs:
           echo "Tag verified on main branch"
 
       - uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: '1.3.5'
 
       - uses: actions/setup-node@v4
         with:

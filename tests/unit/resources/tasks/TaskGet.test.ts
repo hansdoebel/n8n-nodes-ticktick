@@ -6,7 +6,7 @@ import {
 import { mockSyncResponse } from "../../__mocks__/apiResponses";
 import { sampleTask } from "../../__mocks__/fixtures/tasks";
 import { taskGetExecute } from "../../../../nodes/TickTick/resources/tasks/operations/TaskGet";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskGet Operation", () => {
 	describe("taskGetExecute", () => {

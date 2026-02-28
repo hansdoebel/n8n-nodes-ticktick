@@ -8,7 +8,7 @@ import {
 	mockTaskBatchResponse,
 } from "../../__mocks__/apiResponses";
 import { taskSetParentExecute } from "../../../../nodes/TickTick/resources/tasks/operations/TaskSetParent";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskSetParent Operation", () => {
 	describe("taskSetParentExecute", () => {

@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockCompletedTasksResponse } from "../../__mocks__/apiResponses";
 import { taskListCompletedExecute } from "../../../../nodes/TickTick/resources/tasks/operations/TaskListCompleted";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskListCompleted Operation", () => {
 	describe("taskListCompletedExecute", () => {

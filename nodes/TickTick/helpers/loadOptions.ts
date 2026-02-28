@@ -9,7 +9,7 @@ import {
 	tickTickApiRequest,
 	tickTickApiRequestV2,
 } from "./apiRequest";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import { ENDPOINTS } from "./constants";
 
 interface Project {
 	id: string;
@@ -36,7 +36,7 @@ export async function getInboxProjectId(
 			(p) => p.kind === "inbox" || p.name.toLowerCase().includes("inbox"),
 		);
 		return inboxProject?.id || "inbox";
-	} catch (error) {
+	} catch {
 		return "inbox";
 	}
 }
@@ -68,18 +68,11 @@ export async function getProjects(
 				value: project.id,
 			}));
 
-		try {
-			options.unshift({ name: "Inbox", value: "" });
-		} catch (paramError) {
-			options.unshift({ name: "Inbox", value: "" });
-		}
+		options.unshift({ name: "Inbox", value: "" });
 
 		return options;
-	} catch (error) {
-		try {
-			return [{ name: "Inbox", value: "" }];
-		} catch (e) {}
-		return [];
+	} catch {
+		return [{ name: "Inbox", value: "" }];
 	}
 }
 
@@ -111,11 +104,7 @@ export async function searchProjects(
 				value: project.id,
 			}));
 
-		try {
-			options.unshift({ name: "Inbox", value: "" });
-		} catch (paramError) {
-			options.unshift({ name: "Inbox", value: "" });
-		}
+		options.unshift({ name: "Inbox", value: "" });
 
 		if (filter) {
 			const searchTerm = filter.toLowerCase();
@@ -125,11 +114,8 @@ export async function searchProjects(
 		}
 
 		return options;
-	} catch (error) {
-		try {
-			return [{ name: "Inbox", value: "" }];
-		} catch (e) {}
-		return [];
+	} catch {
+		return [{ name: "Inbox", value: "" }];
 	}
 }
 
@@ -164,13 +150,8 @@ export async function searchProjectsV2(
 				value: project.id,
 			}));
 
-		try {
-			const inboxId = response.inboxId as string;
-			options.unshift({ name: "Inbox", value: inboxId || "" });
-		} catch (paramError) {
-			const inboxId = response.inboxId as string;
-			options.unshift({ name: "Inbox", value: inboxId || "" });
-		}
+		const inboxId = response.inboxId as string;
+		options.unshift({ name: "Inbox", value: inboxId || "" });
 
 		if (filter) {
 			const searchTerm = filter.toLowerCase();
@@ -180,7 +161,7 @@ export async function searchProjectsV2(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -249,7 +230,7 @@ export async function searchProjectsForDelete(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -285,7 +266,7 @@ export async function getTasks(
 				name: task.title as string,
 				value: String(task.id),
 			}));
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -341,7 +322,7 @@ export async function searchTasks(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -399,7 +380,7 @@ export async function searchTasksV2(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -432,7 +413,7 @@ export async function getHabits(
 				name: habit.name,
 				value: habit.id,
 			}));
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -475,7 +456,7 @@ export async function searchHabits(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -506,7 +487,7 @@ export async function getTags(
 				name: tag.label || tag.name,
 				value: tag.name,
 			}));
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -547,7 +528,7 @@ export async function searchTags(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -570,8 +551,7 @@ export async function searchParentTags(
 			} else {
 				currentTagName = (tagNameParam as string) || "";
 			}
-		} catch {
-		}
+		} catch { /* ignored */ }
 
 		const response =
 			(await tickTickApiRequestV2.call(this, "GET", ENDPOINTS.SYNC)) as {
@@ -600,7 +580,7 @@ export async function searchParentTags(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -631,7 +611,7 @@ export async function getProjectGroups(
 				name: group.name,
 				value: group.id,
 			}));
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -674,7 +654,7 @@ export async function searchProjectGroups(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [{ name: "None (Remove From Group)", value: "null" }];
 	}
 }
@@ -715,7 +695,7 @@ export async function searchProjectGroupsForCreate(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -772,7 +752,7 @@ export async function searchProjectUsers(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -819,7 +799,7 @@ export async function searchSharedProjects(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }
@@ -879,7 +859,7 @@ export async function searchTaskTags(
 		}
 
 		return options;
-	} catch (error) {
+	} catch {
 		return [];
 	}
 }

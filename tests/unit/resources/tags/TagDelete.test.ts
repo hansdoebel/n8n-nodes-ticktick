@@ -4,7 +4,7 @@ import {
 	expectApiCalled,
 } from "../../__mocks__/n8nContext";
 import { tagDeleteExecute } from "../../../../nodes/TickTick/resources/tags/operations/TagDelete";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TagDelete Operation", () => {
 	describe("tagDeleteExecute", () => {

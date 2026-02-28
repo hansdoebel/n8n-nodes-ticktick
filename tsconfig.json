@@ -21,10 +21,6 @@
 		"skipLibCheck": true,
 		"outDir": "./dist/",
 		"baseUrl": ".",
-		"paths": {
-			"@ticktick/*": ["nodes/TickTick/*"],
-			"@helpers/*": ["nodes/TickTick/helpers/*"]
-		}
 	},
-	"include": ["credentials/**/*", "nodes/**/*", "nodes/**/*.json", "package.json"]
+	"include": ["credentials/**/*", "nodes/**/*", "nodes/**/*.json", "package.json"],
 }

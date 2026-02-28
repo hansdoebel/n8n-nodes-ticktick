@@ -1,4 +1,5 @@
 import type {
+	IDataObject,
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
@@ -10,8 +11,8 @@ import {
 	searchProjects,
 	searchProjectsForDelete,
 	searchSharedProjects,
-} from "@ticktick/helpers";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+} from "../../helpers";
+import { ENDPOINTS } from "../../helpers/constants";
 
 export const projectMethods = {
 	loadOptions: {
@@ -68,10 +69,11 @@ export const projectMethods = {
 							this,
 							"GET",
 							ENDPOINTS.SYNC,
-						)) as any;
+						)) as IDataObject;
 
-						const tasks = syncResponse?.syncTaskBean?.update || [];
-						const task = tasks.find((t: any) => String(t.id) === taskId);
+						const syncTaskBean = syncResponse?.syncTaskBean as IDataObject | undefined;
+						const tasks = (syncTaskBean?.update as IDataObject[]) || [];
+						const task = tasks.find((t: IDataObject) => String(t.id) === taskId);
 
 						if (task && task.projectId) {
 							return {
@@ -80,8 +82,7 @@ export const projectMethods = {
 						}
 					}
 				}
-			} catch (error) {
-			}
+			} catch { /* ignored */ }
 
 			return { results };
 		},
@@ -137,10 +138,10 @@ export const projectMethods = {
 							this,
 							"GET",
 							ENDPOINTS.SYNC,
-						)) as any;
+						)) as IDataObject;
 
-						const projects = syncResponse?.projectProfiles || [];
-						const project = projects.find((p: any) =>
+						const projects = (syncResponse?.projectProfiles as IDataObject[]) || [];
+						const project = projects.find((p: IDataObject) =>
 							String(p.id) === projectId
 						);
 
@@ -151,8 +152,7 @@ export const projectMethods = {
 						}
 					}
 				}
-			} catch (error) {
-			}
+			} catch { /* ignored */ }
 
 			return { results };
 		},

@@ -3,14 +3,13 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { ENDPOINTS } from "../../../helpers/constants";
 
 export const projectGroupListFields: INodeProperties[] = [];
 
 export async function projectGroupListExecute(
 	this: IExecuteFunctions,
-	index: number,
 ): Promise<INodeExecutionData[]> {
 	const response = await tickTickApiRequestV2.call(
 		this,

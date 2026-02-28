@@ -32,16 +32,15 @@
 		"node": ">=18.10"
 	},
 	"scripts": {
-		"build": "tsc && tsc-alias && bun run build-icons.ts",
+		"build": "n8n-node build",
+		"build:watch": "tsc --watch",
 		"dev": "n8n-node dev",
-		"format": "prettier nodes credentials --write",
-		"lint": "eslint nodes credentials package.json",
-		"lintfix": "eslint nodes credentials package.json --fix",
+		"lint": "n8n-node lint",
+		"lint:fix": "n8n-node lint --fix",
+		"release": "n8n-node release",
 		"test": "bun test",
 		"test:unit": "bun test tests/unit",
-		"test:integration": "bun test tests/integration",
-		"test:watch": "bun test --watch",
-		"prepublishOnly": "bun run build && bun run lint -c .eslintrc.prepublish.js nodes credentials package.json"
+		"test:integration": "bun test tests/integration"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -65,18 +64,13 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "^0.19.0",
-		"@types/bun": "latest",
-		"@types/luxon": "^3.7.1",
-		"@types/node": "^25.2.2",
-		"@typescript-eslint/parser": "^7.18.0",
-		"eslint": "^8.57.1",
-		"eslint-plugin-n8n-nodes-base": "^1.16.6",
+		"@n8n/node-cli": "^0.21.0",
+		"@types/node": "^25.3.2",
+		"eslint": "^9.29.0",
 		"prettier": "^3.8.1",
-		"tsc-alias": "^1.8.16",
 		"typescript": "^5.9.3"
 	},
 	"peerDependencies": {
-		"n8n-workflow": "^2.2.1"
+		"n8n-workflow": "*"
 	}
 }

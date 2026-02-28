@@ -1,4 +1,4 @@
-import type { ResourceDefinition } from "../../types/registry";
+import type { ResourceDefinition } from "../../helpers/types";
 import { taskFields, taskOperations } from "./TasksDescription";
 import * as operations from "./operations";
 import { taskMethods } from "./methods";

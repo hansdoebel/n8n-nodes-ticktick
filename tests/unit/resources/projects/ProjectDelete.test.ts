@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockProjectBatchResponse } from "../../__mocks__/apiResponses";
 import { projectDeleteExecute } from "../../../../nodes/TickTick/resources/projects/operations/ProjectDelete";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("ProjectDelete Operation", () => {
 	describe("projectDeleteExecute", () => {

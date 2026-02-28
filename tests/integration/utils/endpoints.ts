@@ -1,1 +1,1 @@
-export { ENDPOINTS } from "../../../nodes/TickTick/constants/endpoints";
+export { ENDPOINTS } from "../../../nodes/TickTick/helpers/constants";

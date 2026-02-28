@@ -4,8 +4,8 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { ENDPOINTS } from "../../../helpers/constants";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
 
 export const taskListCompletedFields: INodeProperties[] = [
 	{

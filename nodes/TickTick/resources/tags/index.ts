@@ -1,4 +1,4 @@
-import type { ResourceDefinition } from "../../types/registry";
+import type { ResourceDefinition } from "../../helpers/types";
 import { tagFields, tagOperations } from "./TagsDescription";
 import * as operations from "./operations";
 import { tagMethods } from "./methods";

@@ -8,7 +8,7 @@ import {
 	mockSyncResponse,
 } from "../../__mocks__/apiResponses";
 import { taskListAllExecute } from "../../../../nodes/TickTick/resources/tasks/operations/TaskListAll";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskListAll Operation", () => {
 	describe("taskListAllExecute", () => {

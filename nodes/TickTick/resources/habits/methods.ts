@@ -2,7 +2,7 @@ import type {
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
-import { getHabits, searchHabits } from "@ticktick/helpers";
+import { getHabits, searchHabits } from "../../helpers";
 
 export const habitMethods = {
 	loadOptions: {

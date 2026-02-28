@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockSyncResponse } from "../../__mocks__/apiResponses";
 import { projectGetUsersExecute } from "../../../../nodes/TickTick/resources/projects/operations/ProjectGetUsers";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("ProjectGetUsers Operation", () => {
 	describe("projectGetUsersExecute", () => {

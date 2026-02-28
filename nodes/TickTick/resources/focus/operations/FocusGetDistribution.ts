@@ -3,10 +3,10 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { formatDateYYYYMMDD } from "@helpers/dates";
-import type { FocusDistribution } from "@ticktick/types/api";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { formatDateYYYYMMDD } from "../../../helpers/dates";
+import type { FocusDistribution } from "../../../helpers/types";
+import { ENDPOINTS } from "../../../helpers/constants";
 
 export const focusGetDistributionFields: INodeProperties[] = [
 	{

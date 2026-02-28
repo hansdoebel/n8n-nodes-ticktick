@@ -6,7 +6,7 @@ import {
 	toPythonStyleJson,
 	V2_USER_AGENT,
 } from "./utils/testClient";
-import { TICKTICK_URLS } from "../../nodes/TickTick/constants/urls";
+import { TICKTICK_URLS } from "../../nodes/TickTick/helpers/constants";
 
 interface AuthResponse {
 	token?: string;

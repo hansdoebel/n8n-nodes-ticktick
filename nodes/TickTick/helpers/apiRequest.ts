@@ -7,7 +7,7 @@ import type {
 	ILoadOptionsFunctions,
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
-import { TICKTICK_URLS } from "../constants/urls";
+import { TICKTICK_URLS } from "./constants";
 import {
 	buildV2Headers,
 	clearV2Session,
@@ -37,7 +37,7 @@ export async function tickTickApiRequest(
 		} else {
 			authentication = "tickTickTokenApi";
 		}
-	} catch (error) {
+	} catch {
 		authentication = "tickTickTokenApi";
 	}
 
@@ -66,19 +66,13 @@ export async function tickTickApiRequest(
 		let response;
 
 		if (authentication === "tickTickOAuth2Api") {
-			if (!this.helpers.requestOAuth2) {
-				throw new Error("OAuth2 helper is not available");
-			}
-			response = await this.helpers.requestOAuth2.call(
+			response = await this.helpers.httpRequestWithAuthentication.call(
 				this,
 				"tickTickOAuth2Api",
 				options,
 			);
 		} else if (authentication === "tickTickTokenApi") {
-			if (!this.helpers.requestWithAuthentication) {
-				throw new Error("Auth helper is not available");
-			}
-			response = await this.helpers.requestWithAuthentication.call(
+			response = await this.helpers.httpRequestWithAuthentication.call(
 				this,
 				"tickTickTokenApi",
 				options,
@@ -133,8 +127,7 @@ export async function tickTickApiRequestV2(
 			try {
 				const credentials = await this.getCredentials("tickTickSessionApi");
 				clearV2Session(credentials.username as string);
-			} catch {
-			}
+			} catch { /* ignored */ }
 		}
 		throw new NodeApiError(this.getNode(), error);
 	}
@@ -155,8 +148,7 @@ export function getAuthenticationType(
 				itemIndex,
 			) as string;
 		}
-	} catch {
-	}
+	} catch { /* ignored */ }
 	return "tickTickTokenApi";
 }
 

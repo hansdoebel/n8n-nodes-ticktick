@@ -4,7 +4,7 @@ import {
 	expectApiCalled,
 } from "../../__mocks__/n8nContext";
 import { projectGroupUpdateExecute } from "../../../../nodes/TickTick/resources/projectGroups/operations/ProjectGroupUpdate";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("ProjectGroupUpdate Operation", () => {
 	describe("projectGroupUpdateExecute", () => {

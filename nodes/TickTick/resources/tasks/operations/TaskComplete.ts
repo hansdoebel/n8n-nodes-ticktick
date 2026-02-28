@@ -3,9 +3,9 @@ import type {
 	IExecuteFunctions,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequest } from "@ticktick/helpers";
-import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import { tickTickApiRequest } from "../../../helpers";
+import { isV2Auth, tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { ENDPOINTS } from "../../../helpers/constants";
 
 export const taskCompleteFields: INodeProperties[] = [
 	{

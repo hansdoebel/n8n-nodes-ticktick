@@ -3,9 +3,9 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { generateHabitId } from "@helpers/generators";
-import type { BatchResponse } from "@ticktick/types/api";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { generateHabitId } from "../../../helpers/generators";
+import type { BatchResponse } from "../../../helpers/types";
 import {
 	DEFAULT_HABIT_COLOR,
 	DEFAULT_HABIT_ENCOURAGEMENT,
@@ -16,8 +16,8 @@ import {
 	DEFAULT_HABIT_TARGET_DAYS,
 	DEFAULT_HABIT_TYPE,
 	DEFAULT_HABIT_UNIT,
-} from "@ticktick/constants/defaults";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+	ENDPOINTS,
+} from "../../../helpers/constants";
 
 export const habitCreateFields: INodeProperties[] = [
 	{

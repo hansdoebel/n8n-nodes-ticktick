@@ -7,8 +7,8 @@ import {
 	isV2Auth,
 	tickTickApiRequest,
 	tickTickApiRequestV2,
-} from "@helpers/apiRequest";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+} from "../../../helpers/apiRequest";
+import { ENDPOINTS } from "../../../helpers/constants";
 
 export const taskGetFields: INodeProperties[] = [
 	{

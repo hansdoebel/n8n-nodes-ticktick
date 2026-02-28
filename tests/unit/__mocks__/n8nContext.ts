@@ -32,6 +32,7 @@ export interface MockExecuteFunctions {
 	getNode: ReturnType<typeof mock>;
 	helpers: {
 		httpRequest: ReturnType<typeof mock>;
+		httpRequestWithAuthentication: ReturnType<typeof mock>;
 		requestWithAuthentication: ReturnType<typeof mock>;
 		requestOAuth2: ReturnType<typeof mock>;
 	};
@@ -162,6 +163,26 @@ export function createMockExecuteFunctions(
 						requestOptions.url,
 						requestOptions.body,
 						requestOptions.returnFullResponse,
+						requestOptions.qs,
+					);
+				},
+			),
+
+			httpRequestWithAuthentication: mock(
+				async (
+					_credType: string,
+					requestOptions: {
+						method: string;
+						url: string;
+						body?: unknown;
+						qs?: unknown;
+					},
+				) => {
+					return handleRequest(
+						requestOptions.method,
+						requestOptions.url,
+						requestOptions.body,
+						undefined,
 						requestOptions.qs,
 					);
 				},

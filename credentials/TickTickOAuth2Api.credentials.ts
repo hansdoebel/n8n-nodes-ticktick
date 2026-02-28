@@ -1,5 +1,5 @@
 import { Icon, ICredentialType, INodeProperties } from "n8n-workflow";
-import { TICKTICK_URLS } from "../nodes/TickTick/constants/urls";
+import { TICKTICK_URLS } from "../nodes/TickTick/helpers/constants";
 
 export class TickTickOAuth2Api implements ICredentialType {
 	name = "tickTickOAuth2Api";

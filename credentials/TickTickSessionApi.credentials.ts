@@ -1,4 +1,9 @@
-import type { Icon, ICredentialType, INodeProperties } from "n8n-workflow";
+import type {
+	Icon,
+	ICredentialTestRequest,
+	ICredentialType,
+	INodeProperties,
+} from "n8n-workflow";
 
 export class TickTickSessionApi implements ICredentialType {
 	name = "tickTickSessionApi";
@@ -33,4 +38,13 @@ export class TickTickSessionApi implements ICredentialType {
 			default: "",
 		},
 	];
+
+	test: ICredentialTestRequest = {
+		request: {
+			baseURL: "https://ticktick.com",
+			url: "/",
+			method: "GET",
+			skipSslCertificateValidation: true,
+		},
+	};
 }

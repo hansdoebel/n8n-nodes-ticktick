@@ -1,4 +1,4 @@
-import type { ResourceDefinition } from "../../types/registry";
+import type { ResourceDefinition } from "../../helpers/types";
 import { userFields, userOperations } from "./UserDescription";
 import * as operations from "./operations";
 

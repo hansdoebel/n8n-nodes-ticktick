@@ -7,7 +7,7 @@ import {
 	searchProjectUsers,
 	searchSharedProjects,
 	searchTaskTags,
-} from "@ticktick/helpers";
+} from "../../helpers";
 
 export const taskMethods = {
 	loadOptions: {

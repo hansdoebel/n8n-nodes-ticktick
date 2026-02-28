@@ -6,7 +6,7 @@ import {
 import { mockSyncResponse } from "../../__mocks__/apiResponses";
 import { sampleProject } from "../../__mocks__/fixtures/projects";
 import { projectGetExecute } from "../../../../nodes/TickTick/resources/projects/operations/ProjectGet";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("ProjectGet Operation", () => {
 	describe("projectGetExecute", () => {

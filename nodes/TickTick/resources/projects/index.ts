@@ -1,4 +1,4 @@
-import type { ResourceDefinition } from "../../types/registry";
+import type { ResourceDefinition } from "../../helpers/types";
 import { projectFields, projectOperations } from "./ProjectsDescription";
 import * as operations from "./operations";
 import { projectMethods } from "./methods";

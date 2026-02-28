@@ -3,10 +3,9 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-import type { Habit } from "@ticktick/types/api";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
-import { HABIT_STATUS } from "@ticktick/constants/defaults";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import type { Habit } from "../../../helpers/types";
+import { ENDPOINTS, HABIT_STATUS } from "../../../helpers/constants";
 
 export const habitListFields: INodeProperties[] = [
 	{

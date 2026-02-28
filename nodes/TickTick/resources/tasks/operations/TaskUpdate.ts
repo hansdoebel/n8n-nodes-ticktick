@@ -10,14 +10,14 @@ import {
 	parseReminders,
 	tickTickApiRequest,
 	TimeZones,
-} from "@ticktick/helpers";
-import { isV2Auth, tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+} from "../../../helpers";
+import { isV2Auth, tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { ENDPOINTS } from "../../../helpers/constants";
 import type {
 	ChecklistItem,
 	ResourceLocatorValue,
 	TaskBody,
-} from "@ticktick/types/api";
+} from "../../../helpers/types";
 
 export const taskUpdateFields: INodeProperties[] = [
 	{

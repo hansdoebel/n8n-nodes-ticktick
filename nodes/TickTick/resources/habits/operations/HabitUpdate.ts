@@ -3,10 +3,10 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
 import { NodeOperationError } from "n8n-workflow";
-import type { BatchResponse, Habit } from "@ticktick/types/api";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import type { BatchResponse, Habit } from "../../../helpers/types";
+import { ENDPOINTS } from "../../../helpers/constants";
 
 export const habitUpdateFields: INodeProperties[] = [
 	{

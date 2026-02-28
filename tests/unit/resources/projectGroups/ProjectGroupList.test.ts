@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockProjectGroupsResponse } from "../../__mocks__/apiResponses";
 import { projectGroupListExecute } from "../../../../nodes/TickTick/resources/projectGroups/operations/ProjectGroupList";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("ProjectGroupList Operation", () => {
 	describe("projectGroupListExecute", () => {

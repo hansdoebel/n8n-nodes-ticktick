@@ -7,7 +7,7 @@ import type {
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
 import * as crypto from "crypto";
-import { TICKTICK_URLS } from "../constants/urls";
+import { TICKTICK_URLS } from "./constants";
 
 const V2_API_BASE = `${TICKTICK_URLS.API_BASE_URL}/api/v2`;
 const DEFAULT_V2_USER_AGENT =
@@ -167,7 +167,7 @@ export async function getV2Session(
 	const userAgent = DEFAULT_V2_USER_AGENT;
 	const deviceVersion = DEFAULT_V2_DEVICE_VERSION;
 
-	let cached = sessionCache.get(username);
+	const cached = sessionCache.get(username);
 
 	if (cached && cached.expiresAt > Date.now()) {
 		return {

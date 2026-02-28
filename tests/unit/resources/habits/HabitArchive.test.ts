@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockHabitsResponse } from "../../__mocks__/apiResponses";
 import { habitArchiveExecute } from "../../../../nodes/TickTick/resources/habits/operations/HabitArchive";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("HabitArchive Operation", () => {
 	describe("habitArchiveExecute", () => {

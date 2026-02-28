@@ -6,7 +6,7 @@ import {
 import { mockProjectBatchResponse } from "../../__mocks__/apiResponses";
 import { sampleProject } from "../../__mocks__/fixtures/projects";
 import { projectUpdateExecute } from "../../../../nodes/TickTick/resources/projects/operations/ProjectUpdate";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("ProjectUpdate Operation", () => {
 	describe("projectUpdateExecute", () => {

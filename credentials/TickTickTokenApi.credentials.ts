@@ -5,8 +5,7 @@ import {
 	ICredentialType,
 	INodeProperties,
 } from "n8n-workflow";
-import { ENDPOINTS } from "../nodes/TickTick/constants/endpoints";
-import { TICKTICK_URLS } from "../nodes/TickTick/constants/urls";
+import { ENDPOINTS, TICKTICK_URLS } from "../nodes/TickTick/helpers/constants";
 
 export class TickTickTokenApi implements ICredentialType {
 	name = "tickTickTokenApi";

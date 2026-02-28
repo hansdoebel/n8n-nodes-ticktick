@@ -5,7 +5,7 @@ import type {
 import {
 	getProjectGroups,
 	searchProjectGroupsForCreate,
-} from "@ticktick/helpers";
+} from "../../helpers";
 
 export const projectGroupMethods = {
 	loadOptions: {

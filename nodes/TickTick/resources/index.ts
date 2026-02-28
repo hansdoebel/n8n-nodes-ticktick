@@ -1,4 +1,4 @@
-import { ResourceRegistry } from "../types/registry";
+import { ResourceRegistry } from "../helpers/types";
 import { taskResource } from "./tasks";
 import { projectResource } from "./projects";
 import { tagResource } from "./tags";

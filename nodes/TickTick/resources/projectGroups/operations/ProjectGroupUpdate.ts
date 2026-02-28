@@ -3,10 +3,10 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { extractResourceLocatorValue } from "@ticktick/helpers";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
-import type { ResourceLocatorValue } from "@ticktick/types/api";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { extractResourceLocatorValue } from "../../../helpers";
+import { ENDPOINTS } from "../../../helpers/constants";
+import type { ResourceLocatorValue } from "../../../helpers/types";
 
 export const projectGroupUpdateFields: INodeProperties[] = [
 	{

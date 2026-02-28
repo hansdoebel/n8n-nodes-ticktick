@@ -4,7 +4,7 @@ import {
 	expectApiCalled,
 } from "../../__mocks__/n8nContext";
 import { habitDeleteExecute } from "../../../../nodes/TickTick/resources/habits/operations/HabitDelete";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("HabitDelete Operation", () => {
 	describe("habitDeleteExecute", () => {

@@ -4,7 +4,7 @@ import {
 	expectApiCalled,
 } from "../../__mocks__/n8nContext";
 import { projectGroupDeleteExecute } from "../../../../nodes/TickTick/resources/projectGroups/operations/ProjectGroupDelete";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("ProjectGroupDelete Operation", () => {
 	describe("projectGroupDeleteExecute", () => {

@@ -6,7 +6,7 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { join } from "node:path";
-import { TICKTICK_URLS } from "../../../nodes/TickTick/constants/urls";
+import { TICKTICK_URLS } from "../../../nodes/TickTick/helpers/constants";
 
 export const V2_USER_AGENT =
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";

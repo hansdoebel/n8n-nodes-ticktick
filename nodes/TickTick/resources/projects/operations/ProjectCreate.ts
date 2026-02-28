@@ -3,10 +3,10 @@ import {
 	isV2Auth,
 	tickTickApiRequest,
 	tickTickApiRequestV2,
-} from "@helpers/apiRequest";
-import { extractResourceLocatorValue, setIfDefined } from "@ticktick/helpers";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
-import type { ProjectBody, ResourceLocatorValue } from "@ticktick/types/api";
+} from "../../../helpers/apiRequest";
+import { extractResourceLocatorValue, setIfDefined } from "../../../helpers";
+import { ENDPOINTS } from "../../../helpers/constants";
+import type { ProjectBody, ResourceLocatorValue } from "../../../helpers/types";
 
 export const projectCreateFields: INodeProperties[] = [
 	{

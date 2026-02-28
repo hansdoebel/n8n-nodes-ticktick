@@ -4,8 +4,8 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { ENDPOINTS } from "../../../helpers/constants";
 
 export const taskListAllFields: INodeProperties[] = [
 	{
@@ -131,7 +131,7 @@ export async function taskListAllExecute(
 			qs,
 		)) as IDataObject[];
 
-		let allTasks = Array.isArray(completedTasks) ? completedTasks : [];
+		const allTasks = Array.isArray(completedTasks) ? completedTasks : [];
 
 		if (filters.includeDeleted) {
 			const deletedQs = {

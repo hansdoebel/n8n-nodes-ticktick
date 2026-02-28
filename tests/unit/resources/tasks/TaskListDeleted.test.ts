@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockDeletedTasksResponse } from "../../__mocks__/apiResponses";
 import { taskListDeletedExecute } from "../../../../nodes/TickTick/resources/tasks/operations/TaskListDeleted";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskListDeleted Operation", () => {
 	describe("taskListDeletedExecute", () => {

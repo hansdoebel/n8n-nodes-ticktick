@@ -3,15 +3,14 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
-import { tickTickApiRequestV2 } from "@helpers/apiRequest";
-import { generateCheckinId } from "@helpers/generators";
+import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
+import { generateCheckinId } from "../../../helpers/generators";
 import {
 	formatDateStampYYYYMMDD,
 	formatISO8601WithMillis,
-} from "@helpers/dates";
-import type { BatchResponse } from "@ticktick/types/api";
-import { CHECKIN_STATUS } from "@ticktick/constants/defaults";
-import { ENDPOINTS } from "@ticktick/constants/endpoints";
+} from "../../../helpers/dates";
+import type { BatchResponse } from "../../../helpers/types";
+import { CHECKIN_STATUS, ENDPOINTS } from "../../../helpers/constants";
 
 export const habitCheckinFields: INodeProperties[] = [
 	{

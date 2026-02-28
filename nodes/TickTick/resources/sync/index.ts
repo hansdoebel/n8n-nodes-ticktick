@@ -1,4 +1,4 @@
-import type { ResourceDefinition } from "../../types/registry";
+import type { ResourceDefinition } from "../../helpers/types";
 import { syncFields, syncOperations } from "./SyncDescription";
 import * as operations from "./operations";
 

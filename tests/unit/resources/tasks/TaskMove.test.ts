@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockSyncResponse } from "../../__mocks__/apiResponses";
 import { taskMoveExecute } from "../../../../nodes/TickTick/resources/tasks/operations/TaskMove";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskMove Operation", () => {
 	describe("taskMoveExecute", () => {

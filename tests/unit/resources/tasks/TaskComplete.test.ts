@@ -8,7 +8,7 @@ import {
 	mockTaskBatchResponse,
 } from "../../__mocks__/apiResponses";
 import { taskCompleteExecute } from "../../../../nodes/TickTick/resources/tasks/operations/TaskComplete";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskComplete Operation", () => {
 	describe("taskCompleteExecute", () => {

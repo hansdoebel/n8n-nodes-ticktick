@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockUserPreferencesResponse } from "../../__mocks__/apiResponses";
 import { userGetPreferencesExecute } from "../../../../nodes/TickTick/resources/user/operations/UserGetPreferences";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("UserGetPreferences Operation", () => {
 	describe("userGetPreferencesExecute", () => {

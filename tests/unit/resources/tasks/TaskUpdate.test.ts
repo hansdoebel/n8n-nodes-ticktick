@@ -20,7 +20,7 @@ import {
 	extractTagValue,
 	parseReminders,
 } from "../../../../nodes/TickTick/helpers/utils";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TaskUpdate Operation", () => {
 	describe("Helper Functions", () => {

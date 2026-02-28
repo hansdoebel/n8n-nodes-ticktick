@@ -1,4 +1,4 @@
-import type { ResourceDefinition } from "../../types/registry";
+import type { ResourceDefinition } from "../../helpers/types";
 import { habitFields, habitOperations } from "./HabitsDescription";
 import * as operations from "./operations";
 import { habitMethods } from "./methods";

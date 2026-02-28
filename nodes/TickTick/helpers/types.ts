@@ -1,21 +1,18 @@
-import type { IDataObject } from "n8n-workflow";
+import type {
+	IDataObject,
+	IExecuteFunctions,
+	ILoadOptionsFunctions,
+	INodeExecutionData,
+	INodeListSearchResult,
+	INodeProperties,
+} from "n8n-workflow";
 
-// ============================================================================
-// Common Types
-// ============================================================================
-
-/** Resource locator value from n8n UI components */
 export interface ResourceLocatorValue {
 	mode: string;
 	value: string;
 }
 
-/** User ID - represented as number in API responses */
 export type UserId = number;
-
-// ============================================================================
-// Task Related Types
-// ============================================================================
 
 export interface TaskReminder {
 	id?: string;
@@ -33,14 +30,12 @@ export interface ChecklistItem {
 	sortOrder?: number;
 }
 
-/** Task assignee information */
 export interface TaskAssignee {
 	userId: UserId;
 	displayName?: string;
 	username?: string;
 }
 
-/** Attachment on a task */
 export interface TaskAttachment {
 	id: string;
 	name?: string;
@@ -50,7 +45,6 @@ export interface TaskAttachment {
 	createdTime?: string;
 }
 
-/** Focus session summary for a task */
 export interface FocusSummary {
 	pomoCount?: number;
 	pomoDuration?: number;
@@ -58,7 +52,6 @@ export interface FocusSummary {
 	focusDuration?: number;
 }
 
-/** Pomodoro session summary for a task */
 export interface PomodoroSummary {
 	pomoCount?: number;
 	pomoDuration?: number;
@@ -108,17 +101,11 @@ export interface Task extends IDataObject {
 	pomodoroSummaries?: PomodoroSummary[];
 }
 
-// ============================================================================
-// Project Related Types
-// ============================================================================
-
-/** Project closure information */
 export interface ProjectClosure {
 	closedTime?: string;
 	closedBy?: UserId;
 }
 
-/** Project transfer information */
 export interface ProjectTransfer {
 	transferredTime?: string;
 	fromUserId?: UserId;
@@ -237,16 +224,11 @@ export interface UserPreferences extends IDataObject {
 	timeZone?: string;
 }
 
-// ============================================================================
-// Batch & Sync Types
-// ============================================================================
-
 export interface BatchResponse extends IDataObject {
 	id2etag: Record<string, string>;
 	id2error: Record<string, string>;
 }
 
-/** Deleted item reference in sync response */
 export interface DeletedItem {
 	taskId: string;
 	projectId?: string;
@@ -260,7 +242,6 @@ export interface SyncTaskBean extends IDataObject {
 	empty?: boolean;
 }
 
-/** User-defined filter/smart list */
 export interface UserFilter {
 	id: string;
 	name: string;
@@ -289,11 +270,6 @@ export type FocusDistribution = IDataObject & {
 	[tagName: string]: number;
 };
 
-// ============================================================================
-// Request Body Types
-// ============================================================================
-
-/** Base fields for creating/updating a task */
 export interface TaskBody extends IDataObject {
 	id?: string;
 	projectId?: string;
@@ -315,7 +291,6 @@ export interface TaskBody extends IDataObject {
 	sortOrder?: number;
 }
 
-/** Base fields for creating/updating a project */
 export interface ProjectBody extends IDataObject {
 	id?: string;
 	name?: string;
@@ -326,31 +301,111 @@ export interface ProjectBody extends IDataObject {
 	sortOrder?: number;
 }
 
-/** Batch request for tasks */
 export interface TaskBatchRequest {
 	add?: TaskBody[];
 	update?: TaskBody[];
 	delete?: Array<{ taskId: string; projectId: string }>;
 }
 
-/** Batch request for projects */
 export interface ProjectBatchRequest {
 	add?: ProjectBody[];
 	update?: ProjectBody[];
 	delete?: Array<{ projectId: string }>;
 }
 
-/** Task assignment request body */
 export interface TaskAssignRequest {
 	assignee: string;
 	projectId: string;
 	taskId: string;
 }
 
-/** Project user in shared project */
 export interface ProjectUser {
 	userId: UserId;
 	displayName?: string;
 	username?: string;
 	permission?: string;
+}
+
+export type OperationHandler = (
+	this: IExecuteFunctions,
+	index: number,
+) => Promise<INodeExecutionData[]>;
+
+export type LoadOptionsFunction = (
+	this: ILoadOptionsFunctions,
+) => Promise<{ name: string; value: string }[]>;
+
+export type ListSearchFunction = (
+	this: ILoadOptionsFunctions,
+	filter?: string,
+) => Promise<INodeListSearchResult>;
+
+export interface ResourceMethods {
+	loadOptions?: Record<string, LoadOptionsFunction>;
+	listSearch?: Record<string, ListSearchFunction>;
+}
+
+export interface ResourceDefinition {
+	name: string;
+	operations: INodeProperties[];
+	fields: INodeProperties[];
+	handlers: Record<string, OperationHandler>;
+	methods?: ResourceMethods;
+}
+
+export class ResourceRegistry {
+	private resources = new Map<string, ResourceDefinition>();
+
+	register(resource: ResourceDefinition): void {
+		this.resources.set(resource.name, resource);
+	}
+
+	getHandler(
+		resource: string,
+		operation: string,
+	): OperationHandler | undefined {
+		const resourceDef = this.resources.get(resource);
+		return resourceDef?.handlers[operation];
+	}
+
+	getAllOperations(): INodeProperties[] {
+		return Array.from(this.resources.values()).flatMap((r) => r.operations);
+	}
+
+	getAllFields(): INodeProperties[] {
+		return Array.from(this.resources.values()).flatMap((r) => r.fields);
+	}
+
+	getAllProperties(): INodeProperties[] {
+		const properties: INodeProperties[] = [];
+		for (const resource of this.resources.values()) {
+			properties.push(...resource.operations);
+			properties.push(...resource.fields);
+		}
+		return properties;
+	}
+
+	getAllLoadOptions(): Record<string, LoadOptionsFunction> {
+		const allOptions: Record<string, LoadOptionsFunction> = {};
+		for (const resource of this.resources.values()) {
+			if (resource.methods?.loadOptions) {
+				Object.assign(allOptions, resource.methods.loadOptions);
+			}
+		}
+		return allOptions;
+	}
+
+	getAllListSearch(): Record<string, ListSearchFunction> {
+		const allSearch: Record<string, ListSearchFunction> = {};
+		for (const resource of this.resources.values()) {
+			if (resource.methods?.listSearch) {
+				Object.assign(allSearch, resource.methods.listSearch);
+			}
+		}
+		return allSearch;
+	}
+
+	getResourceNames(): string[] {
+		return Array.from(this.resources.keys());
+	}
 }

@@ -4,7 +4,7 @@ import {
 	expectApiCalled,
 } from "../../__mocks__/n8nContext";
 import { tagMergeExecute } from "../../../../nodes/TickTick/resources/tags/operations/TagMerge";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("TagMerge Operation", () => {
 	describe("tagMergeExecute", () => {

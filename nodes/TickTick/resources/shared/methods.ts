@@ -2,7 +2,7 @@ import type {
 	ILoadOptionsFunctions,
 	INodeListSearchResult,
 } from "n8n-workflow";
-import { searchTasks } from "@ticktick/helpers";
+import { searchTasks } from "../../helpers";
 
 export const sharedMethods = {
 	listSearch: {

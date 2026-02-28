@@ -4,6 +4,7 @@ import {
 	formatDateYYYYMMDD,
 	formatISO8601WithMillis,
 } from "../../../nodes/TickTick/helpers/dates";
+import { formatTickTickDate } from "../../../nodes/TickTick/helpers/utils";
 
 describe("Date Helper Functions", () => {
 	describe("formatDateYYYYMMDD", () => {
@@ -99,6 +100,57 @@ describe("Date Helper Functions", () => {
 			expect(formatISO8601WithMillis(date)).toBe(
 				"2024-03-15T23:59:59.000+0000",
 			);
+		});
+	});
+
+	describe("formatTickTickDate", () => {
+		test("formats ISO date string to TickTick format with offset", () => {
+			const result = formatTickTickDate("2026-03-15T10:30:00Z");
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{4}$/);
+		});
+
+		test("returns undefined for empty string", () => {
+			expect(formatTickTickDate("")).toBeUndefined();
+		});
+
+		test("returns undefined for invalid date string", () => {
+			expect(formatTickTickDate("not-a-date")).toBeUndefined();
+		});
+
+		test("returns undefined for garbage input", () => {
+			expect(formatTickTickDate("abc123xyz")).toBeUndefined();
+		});
+
+		test("preserves correct date components", () => {
+			const result = formatTickTickDate("2026-03-15T10:30:45Z");
+			expect(result).toBeDefined();
+			expect(result).toContain("2026-");
+			expect(result).toContain("T");
+		});
+
+		test("offset is 4 digits with sign", () => {
+			const result = formatTickTickDate("2026-06-15T12:00:00Z");
+			expect(result).toBeDefined();
+			const offset = result!.slice(-5);
+			expect(offset).toMatch(/^[+-]\d{4}$/);
+		});
+
+		test("handles date with timezone offset in input", () => {
+			const result = formatTickTickDate("2026-03-15T10:30:00+05:30");
+			expect(result).toBeDefined();
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{4}$/);
+		});
+
+		test("handles date-only input", () => {
+			const result = formatTickTickDate("2026-03-15");
+			expect(result).toBeDefined();
+			expect(result).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{4}$/);
+		});
+
+		test("handles midnight in local timezone", () => {
+			const result = formatTickTickDate("2026-01-01T00:00:00");
+			expect(result).toBeDefined();
+			expect(result).toContain("T00:00:00");
 		});
 	});
 });

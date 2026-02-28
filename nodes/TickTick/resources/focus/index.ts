@@ -1,4 +1,4 @@
-import type { ResourceDefinition } from "../../types/registry";
+import type { ResourceDefinition } from "../../helpers/types";
 import { focusFields, focusOperations } from "./FocusDescription";
 import * as operations from "./operations";
 

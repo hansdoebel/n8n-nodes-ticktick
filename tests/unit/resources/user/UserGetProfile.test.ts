@@ -5,7 +5,7 @@ import {
 } from "../../__mocks__/n8nContext";
 import { mockUserProfileResponse } from "../../__mocks__/apiResponses";
 import { userGetProfileExecute } from "../../../../nodes/TickTick/resources/user/operations/UserGetProfile";
-import { ENDPOINTS } from "../../../../nodes/TickTick/constants/endpoints";
+import { ENDPOINTS } from "../../../../nodes/TickTick/helpers/constants";
 
 describe("UserGetProfile Operation", () => {
 	describe("userGetProfileExecute", () => {
