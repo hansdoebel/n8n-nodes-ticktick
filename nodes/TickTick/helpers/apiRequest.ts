@@ -96,10 +96,11 @@ export async function tickTickApiRequestV2(
 	body: IDataObject = {},
 	qs: IDataObject = {},
 ) {
+	let sessionUsername: string | undefined;
 	try {
-		const { token, deviceId, userAgent, deviceVersion } = await getV2Session(
-			this,
-		);
+		const { token, deviceId, userAgent, deviceVersion, username } =
+			await getV2Session(this);
+		sessionUsername = username;
 
 		const options: IHttpRequestOptions = {
 			method,
@@ -123,11 +124,8 @@ export async function tickTickApiRequestV2(
 	} catch (error) {
 		const statusCode = error.statusCode || error.response?.status ||
 			error.httpCode;
-		if (statusCode === 401 || statusCode === 403) {
-			try {
-				const credentials = await this.getCredentials("tickTickSessionApi");
-				clearV2Session(credentials.username as string);
-			} catch { /* ignored */ }
+		if ((statusCode === 401 || statusCode === 403) && sessionUsername) {
+			clearV2Session(sessionUsername);
 		}
 		throw new NodeApiError(this.getNode(), error);
 	}

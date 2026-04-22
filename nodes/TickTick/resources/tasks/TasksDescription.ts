@@ -48,6 +48,12 @@ export const taskOperations: INodeProperties[] = [
 				description: "Move a task to another project (V2 API only)",
 			},
 			{
+				name: "Search",
+				value: "search",
+				action: "Search tasks",
+				description: "Search tasks by keyword (V2 API only)",
+			},
+			{
 				name: "Set Parent",
 				value: "setParent",
 				action: "Set parent task",

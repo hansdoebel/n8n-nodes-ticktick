@@ -19,6 +19,7 @@ Operations are organized by resource. Each operation indicates which API version
 | List Completed | V2 | Get completed tasks in date range |
 | List Deleted | V2 | Get deleted/trashed tasks |
 | Move | V2 | Move task to different project |
+| Search | V2 | Search tasks by keyword across all projects |
 | Set Parent | V2 | Set a parent task (create subtask relationship) |
 
 ## Projects

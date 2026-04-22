@@ -19,6 +19,7 @@ export const taskResource: ResourceDefinition = {
 		listDeleted: operations.taskListDeletedExecute,
 		move: operations.taskMoveExecute,
 		setParent: operations.taskSetParentExecute,
+		search: operations.taskSearchExecute,
 	},
 	methods: taskMethods,
 };

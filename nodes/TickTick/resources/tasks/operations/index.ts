@@ -9,3 +9,4 @@ export * from "./TaskListDeleted";
 export * from "./TaskMove";
 export * from "./TaskSetParent";
 export * from "./TaskAssign";
+export * from "./TaskSearch";

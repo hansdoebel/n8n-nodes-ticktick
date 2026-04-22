@@ -57,6 +57,7 @@ This node supports three authentication methods:
 | List Completed | Get completed tasks in date range |
 | List Deleted | Get deleted/trashed tasks |
 | Move | Move task to different project |
+| Search | Search tasks by keyword across all projects (V2 API only) |
 | Set Parent | Set a parent task (create subtask relationship) |
 
 </details>

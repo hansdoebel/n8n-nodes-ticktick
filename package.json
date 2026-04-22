@@ -64,7 +64,7 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "^0.21.0",
+		"@n8n/node-cli": "^0.23.1",
 		"@types/node": "^25.3.2",
 		"eslint": "^9.29.0",
 		"prettier": "^3.8.1",
@@ -72,5 +72,8 @@
 	},
 	"peerDependencies": {
 		"n8n-workflow": "*"
+	},
+	"patchedDependencies": {
+		"@n8n/node-cli@0.23.1": "patches/@n8n%2Fnode-cli@0.23.1.patch"
 	}
 }

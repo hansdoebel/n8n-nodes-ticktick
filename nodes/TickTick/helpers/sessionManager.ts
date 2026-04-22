@@ -160,6 +160,7 @@ export async function getV2Session(
 	deviceId: string;
 	userAgent: string;
 	deviceVersion: number;
+	username: string;
 }> {
 	const credentials = await context.getCredentials("tickTickSessionApi");
 	const username = credentials.username as string;
@@ -176,6 +177,7 @@ export async function getV2Session(
 			deviceId: cached.deviceId,
 			userAgent,
 			deviceVersion,
+			username,
 		};
 	}
 
@@ -197,7 +199,7 @@ export async function getV2Session(
 		expiresAt: Date.now() + SESSION_TTL_MS,
 	});
 
-	return { token, inboxId, deviceId, userAgent, deviceVersion };
+	return { token, inboxId, deviceId, userAgent, deviceVersion, username };
 }
 
 export function clearV2Session(username: string): void {

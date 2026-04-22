@@ -417,6 +417,62 @@ describe("TickTick V2 Tasks Resource", () => {
 		await client.delete(`/tag?name=${encodeURIComponent(tagName)}`);
 	}, 30000);
 
+	test("GET /search/all - search tasks by keyword", async () => {
+		const generateId = (length: number = 24): string => {
+			return Array.from(
+				{ length },
+				() => Math.floor(Math.random() * 16).toString(16),
+			).join("");
+		};
+
+		const taskTitle = uniqueName("SearchableTask");
+		const taskId = generateId(24);
+
+		const createBody = {
+			add: [
+				{
+					id: taskId,
+					projectId: inboxId,
+					title: taskTitle,
+					status: 0,
+					sortOrder: 0,
+				},
+			],
+			update: [],
+			delete: [],
+		};
+
+		const createResponse = await client.post(ENDPOINTS.TASKS_BATCH, createBody);
+		expect(createResponse.statusCode).toBe(200);
+
+		let found: any;
+		let lastStatus = 0;
+		const deadline = Date.now() + 20000;
+		while (Date.now() < deadline) {
+			await new Promise((resolve) => setTimeout(resolve, 2000));
+			const searchResponse = await client.get(
+				`${ENDPOINTS.SEARCH_ALL}?keywords=${encodeURIComponent(taskTitle)}`,
+			);
+			lastStatus = searchResponse.statusCode;
+			if (searchResponse.statusCode !== 200) continue;
+			const data = searchResponse.data as any;
+			const tasks = Array.isArray(data) ? data : (data?.tasks ?? []);
+			found = tasks.find((t: any) => t.id === taskId);
+			if (found) break;
+		}
+
+		expect(lastStatus).toBe(200);
+		expect(found).toBeDefined();
+		expect(found.title).toBe(taskTitle);
+
+		const deleteBody = {
+			add: [],
+			update: [],
+			delete: [{ taskId, projectId: inboxId }],
+		};
+		await client.post(ENDPOINTS.TASKS_BATCH, deleteBody);
+	}, 45000);
+
 	test("Task setParent - set and unset parent task", async () => {
 		const generateId = (length: number = 24): string => {
 			return Array.from(

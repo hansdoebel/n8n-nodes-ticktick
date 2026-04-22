@@ -32,6 +32,8 @@ export const ENDPOINTS = {
 	PROJECT_ALL_TRASH_PAGINATION: "/project/all/trash/pagination",
 	PROJECT_ALL_COMPLETED: "/project/all/completed",
 
+	SEARCH_ALL: "/search/all",
+
 	OPEN_V1_PROJECT: "/open/v1/project",
 	OPEN_V1_PROJECT_BY_ID: (projectId: string) =>
 		`/open/v1/project/${validatePathParam(projectId, "projectId")}`,

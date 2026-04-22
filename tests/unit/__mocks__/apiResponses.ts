@@ -155,3 +155,24 @@ export const mockFocusDistributionResponse = {
 		{ projectId: "inbox", duration: 18000 },
 	],
 };
+
+export const mockSearchResponse = {
+	tasks: [
+		{
+			id: "search1",
+			projectId: "project456",
+			title: "Buy groceries",
+			content: "milk, eggs, bread",
+			status: 0,
+			priority: 0,
+		},
+		{
+			id: "search2",
+			projectId: "project456",
+			title: "Plan grocery list",
+			content: "",
+			status: 2,
+			priority: 1,
+		},
+	],
+};
