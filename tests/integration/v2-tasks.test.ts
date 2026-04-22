@@ -510,47 +510,49 @@ describe("TickTick V2 Tasks Resource", () => {
 		const createResponse = await client.post(ENDPOINTS.TASKS_BATCH, createBody);
 		expect(createResponse.statusCode).toBe(200);
 
-		const setParentBody = {
-			add: [],
-			update: [
-				{
-					id: childId,
-					projectId: inboxId,
-					title: childTitle,
-					parentId: parentId,
-					status: 0,
-					sortOrder: 1,
-				},
-			],
-			delete: [],
+		const findChild = async (): Promise<Record<string, unknown> | undefined> => {
+			const syncResponse = await client.get(ENDPOINTS.SYNC);
+			expect(syncResponse.statusCode).toBe(200);
+			const tasks = ((syncResponse.data as { syncTaskBean?: { update?: unknown[] } })
+				?.syncTaskBean?.update ?? []) as Array<Record<string, unknown>>;
+			return tasks.find((t) => String(t.id) === childId);
 		};
 
+		const setParentBody = [
+			{
+				taskId: childId,
+				parentId,
+				projectId: inboxId,
+			},
+		];
+
 		const setParentResponse = await client.post(
-			ENDPOINTS.TASKS_BATCH,
+			ENDPOINTS.TASK_PARENT,
 			setParentBody,
 		);
 		expect(setParentResponse.statusCode).toBe(200);
 
-		const unsetParentBody = {
-			add: [],
-			update: [
-				{
-					id: childId,
-					projectId: inboxId,
-					title: childTitle,
-					parentId: "",
-					status: 0,
-					sortOrder: 1,
-				},
-			],
-			delete: [],
-		};
+		const childAfterSet = await findChild();
+		expect(childAfterSet).toBeDefined();
+		expect(childAfterSet?.parentId).toBe(parentId);
+
+		const unsetParentBody = [
+			{
+				taskId: childId,
+				oldParentId: parentId,
+				projectId: inboxId,
+			},
+		];
 
 		const unsetParentResponse = await client.post(
-			ENDPOINTS.TASKS_BATCH,
+			ENDPOINTS.TASK_PARENT,
 			unsetParentBody,
 		);
 		expect(unsetParentResponse.statusCode).toBe(200);
+
+		const childAfterUnset = await findChild();
+		expect(childAfterUnset).toBeDefined();
+		expect(childAfterUnset?.parentId ?? "").toBe("");
 
 		const deleteBody = {
 			add: [],

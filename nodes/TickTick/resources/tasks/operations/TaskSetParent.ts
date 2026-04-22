@@ -45,8 +45,7 @@ export const taskSetParentFields: INodeProperties[] = [
 		name: "parentId",
 		type: "resourceLocator",
 		default: { mode: "list", value: "" },
-		required: true,
-		description: "The parent task. Both tasks must be in the same project.",
+		description: "The parent task. Both tasks must be in the same project. Leave empty to remove the task's current parent.",
 		modes: [
 			{
 				displayName: "From List",
@@ -133,24 +132,43 @@ export async function taskSetParentExecute(
 		}
 	}
 
-	const updatedTask = {
-		...currentTask,
-		id: taskId,
+	const currentParentId = (currentTask.parentId as string) || "";
+
+	const operation: IDataObject = {
+		taskId,
 		projectId: taskProjectId,
-		parentId: isRemovingParent ? "" : parentId,
 	};
+
+	if (isRemovingParent) {
+		if (!currentParentId) {
+			return [{
+				json: {
+					success: true,
+					taskId,
+					parentId: null,
+					response: { id2etag: {}, id2error: {} },
+				},
+			}];
+		}
+		operation.oldParentId = currentParentId;
+	} else {
+		operation.parentId = parentId;
+		if (currentParentId && currentParentId !== parentId) {
+			operation.oldParentId = currentParentId;
+		}
+	}
 
 	const response = await tickTickApiRequestV2.call(
 		this,
 		"POST",
-		ENDPOINTS.TASKS_BATCH,
-		{ update: [updatedTask] } as unknown as IDataObject,
+		ENDPOINTS.TASK_PARENT,
+		[operation] as unknown as IDataObject,
 	);
 
 	return [{
 		json: {
 			success: true,
-			taskId: taskId,
+			taskId,
 			parentId: isRemovingParent ? null : parentId,
 			response,
 		},
