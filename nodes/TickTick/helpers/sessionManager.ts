@@ -10,11 +10,11 @@ import * as crypto from "crypto";
 import { TICKTICK_URLS } from "./constants";
 
 const V2_API_BASE = `${TICKTICK_URLS.API_BASE_URL}/api/v2`;
-const DEFAULT_V2_USER_AGENT =
+export const DEFAULT_V2_USER_AGENT =
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-const DEFAULT_V2_DEVICE_VERSION = 6430;
+export const DEFAULT_V2_DEVICE_VERSION = 6430;
 
-function toPythonStyleJson(obj: object): string {
+export function toPythonStyleJson(obj: object): string {
 	return JSON.stringify(obj, null, 0).replace(/,/g, ", ").replace(/:/g, ": ");
 }
 

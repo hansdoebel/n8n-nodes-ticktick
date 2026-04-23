@@ -1,9 +1,4 @@
-import type {
-	Icon,
-	ICredentialTestRequest,
-	ICredentialType,
-	INodeProperties,
-} from "n8n-workflow";
+import type { Icon, ICredentialType, INodeProperties } from "n8n-workflow";
 
 export class TickTickSessionApi implements ICredentialType {
 	name = "tickTickSessionApi";
@@ -32,19 +27,10 @@ export class TickTickSessionApi implements ICredentialType {
 		},
 		{
 			displayName:
-				"Session auth uses TickTick's unofficial V2 API. Credential testing is disabled; validation happens when used in a workflow. 2FA is not supported.",
+				"Session auth uses TickTick's unofficial V2 API. 2FA is not supported.",
 			name: "notice",
 			type: "notice",
 			default: "",
 		},
 	];
-
-	test: ICredentialTestRequest = {
-		request: {
-			baseURL: "https://ticktick.com",
-			url: "/",
-			method: "GET",
-			skipSslCertificateValidation: true,
-		},
-	};
 }

@@ -3,6 +3,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { DateTime } from "luxon";
 import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
 import { formatDateYYYYMMDD } from "../../../helpers/dates";
 import type { FocusDistribution } from "../../../helpers/types";
@@ -54,10 +55,10 @@ export async function focusGetDistributionExecute(
 		throw new Error("End date is required");
 	}
 
-	const startDateObj = new Date(startDate);
-	const endDateObj = new Date(endDate);
+	const startDt = DateTime.fromISO(startDate, { setZone: true });
+	const endDt = DateTime.fromISO(endDate, { setZone: true });
 
-	if (startDateObj > endDateObj) {
+	if (startDt > endDt) {
 		throw new Error("Start date must be before or equal to end date");
 	}
 

@@ -3,6 +3,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { DateTime } from "luxon";
 import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
 import { generateCheckinId } from "../../../helpers/generators";
 import {
@@ -110,8 +111,9 @@ export async function habitCheckinExecute(
 	const checkinDate = this.getNodeParameter("checkinDate", index, "") as string;
 	const goal = this.getNodeParameter("goal", index, 1) as number;
 
-	const date = checkinDate ? new Date(checkinDate) : new Date();
-	const checkinStamp = formatDateStampYYYYMMDD(date);
+	const checkinStamp = formatDateStampYYYYMMDD(
+		checkinDate || (DateTime.now().toISO() as string),
+	);
 	const timestamp = formatISO8601WithMillis(new Date());
 
 	const checkin = {

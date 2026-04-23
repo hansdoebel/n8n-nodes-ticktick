@@ -6,6 +6,7 @@ import type {
 } from "n8n-workflow";
 import { NodeApiError, NodeOperationError } from "n8n-workflow";
 
+import { testTickTickSessionApi } from "./helpers/credentialTest";
 import { registry, sharedMethods } from "./resources";
 
 export class TickTick implements INodeType {
@@ -41,6 +42,7 @@ export class TickTick implements INodeType {
 			{
 				name: "tickTickSessionApi",
 				required: true,
+				testedBy: "tickTickSessionApiTest",
 				displayOptions: {
 					show: { authentication: ["tickTickSessionApi"] },
 				},
@@ -84,6 +86,9 @@ export class TickTick implements INodeType {
 		listSearch: {
 			...registry.getAllListSearch(),
 			...sharedMethods.listSearch,
+		},
+		credentialTest: {
+			tickTickSessionApiTest: testTickTickSessionApi,
 		},
 	};
 

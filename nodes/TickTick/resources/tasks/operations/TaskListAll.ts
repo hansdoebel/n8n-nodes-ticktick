@@ -4,6 +4,7 @@ import type {
 	INodeExecutionData,
 	INodeProperties,
 } from "n8n-workflow";
+import { DateTime } from "luxon";
 import { tickTickApiRequestV2 } from "../../../helpers/apiRequest";
 import { ENDPOINTS } from "../../../helpers/constants";
 
@@ -106,15 +107,11 @@ export async function taskListAllExecute(
 	}
 
 	if (filters.status === "completed") {
-		const now = new Date();
-		const thirtyDaysAgo = new Date(now);
-		thirtyDaysAgo.setDate(now.getDate() - 30);
+		const now = DateTime.utc();
+		const thirtyDaysAgo = now.minus({ days: 30 });
 
-		const fromStr = thirtyDaysAgo.toISOString().replace("T", " ").substring(
-			0,
-			19,
-		);
-		const toStr = now.toISOString().replace("T", " ").substring(0, 19);
+		const fromStr = thirtyDaysAgo.toFormat("yyyy-MM-dd HH:mm:ss");
+		const toStr = now.toFormat("yyyy-MM-dd HH:mm:ss");
 
 		const qs = {
 			from: fromStr,

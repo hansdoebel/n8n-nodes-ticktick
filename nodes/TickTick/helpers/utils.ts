@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import type {
 	ProjectBody,
 	ResourceLocatorValue,
@@ -7,19 +8,10 @@ import type {
 export function formatTickTickDate(dateString: string): string | undefined {
 	if (!dateString) return undefined;
 
-	const date = new Date(dateString);
-	if (isNaN(date.getTime())) return undefined;
+	const dt = DateTime.fromISO(dateString, { setZone: true });
+	if (!dt.isValid) return undefined;
 
-	const pad = (n: number) => String(n).padStart(2, "0");
-
-	const datePart = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-
-	const offset = -date.getTimezoneOffset();
-	const offsetSign = offset >= 0 ? "+" : "-";
-	const offsetHours = pad(Math.floor(Math.abs(offset) / 60));
-	const offsetMinutes = pad(Math.abs(offset) % 60);
-
-	return `${datePart}${offsetSign}${offsetHours}${offsetMinutes}`;
+	return dt.toFormat("yyyy-MM-dd'T'HH:mm:ssZZZ");
 }
 
 const SAFE_PATH_PARAM = /^[a-zA-Z0-9_-]+$/;
