@@ -63,14 +63,12 @@
 			"dist/nodes/TickTick/TickTick.node.js"
 		]
 	},
-	"dependencies": {
-		"luxon": "^3.5.0"
-	},
 	"devDependencies": {
 		"@n8n/node-cli": "^0.23.1",
 		"@types/luxon": "^3.4.2",
 		"@types/node": "^25.3.2",
 		"eslint": "^9.29.0",
+		"luxon": "^3.5.0",
 		"prettier": "^3.8.1",
 		"typescript": "^5.9.3"
 	},

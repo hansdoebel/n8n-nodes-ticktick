@@ -29,30 +29,27 @@ export async function testTickTickSessionApi(
 	const body = toPythonStyleJson({ username, password });
 
 	try {
-		// eslint-disable-next-line @n8n/community-nodes/no-deprecated-workflow-functions -- ICredentialTestFunctions only exposes helpers.request; httpRequest is not typed here
-		const response = await this.helpers.request({
-			method: "POST",
-			uri: `${TICKTICK_URLS.API_BASE_URL}/api/v2/user/signon?wc=true&remember=true`,
-			headers: {
-				"Accept-Encoding": "identity",
-				"User-Agent": DEFAULT_V2_USER_AGENT,
-				"Content-Type": "application/json",
-				"X-Device": xDevice,
-				Origin: TICKTICK_URLS.BASE_URL,
-				Referer: `${TICKTICK_URLS.BASE_URL}/`,
+		const response = await fetch(
+			`${TICKTICK_URLS.API_BASE_URL}/api/v2/user/signon?wc=true&remember=true`,
+			{
+				method: "POST",
+				headers: {
+					"Accept-Encoding": "identity",
+					"User-Agent": DEFAULT_V2_USER_AGENT,
+					"Content-Type": "application/json",
+					"X-Device": xDevice,
+					Origin: TICKTICK_URLS.BASE_URL,
+					Referer: `${TICKTICK_URLS.BASE_URL}/`,
+				},
+				body,
 			},
-			body,
-			json: false,
-			simple: false,
-			resolveWithFullResponse: true,
-		});
+		);
 
-		const statusCode = (response as { statusCode?: number })?.statusCode ?? 0;
-		const rawBody = (response as { body?: unknown })?.body ?? response;
-		const parsed =
-			typeof rawBody === "string"
-				? (JSON.parse(rawBody) as Record<string, unknown>)
-				: (rawBody as Record<string, unknown>);
+		const statusCode = response.status;
+		const rawBody = await response.text();
+		const parsed = rawBody
+			? (JSON.parse(rawBody) as Record<string, unknown>)
+			: ({} as Record<string, unknown>);
 
 		if (statusCode >= 400) {
 			return {
