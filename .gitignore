@@ -1,8 +1,8 @@
-node_modules
+node_modules/
 .DS_Store
 .tmp
-tmp
-dist
+tmp/
+dist/
 npm-debug.log*
 yarn.lock
 .vscode/launch.json
@@ -10,5 +10,3 @@ yarn.lock
 .env
 .env*
 !.env.example
-
-.claude

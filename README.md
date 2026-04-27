@@ -9,7 +9,7 @@
 	<img alt="GitHub License" src="https://img.shields.io/github/license/hansdoebel/n8n-nodes-ticktick">
 	<img alt="NPM Downloads" src="https://img.shields.io/npm/dm/n8n-nodes-ticktick">
 	<img alt="NPM Last Update" src="https://img.shields.io/npm/last-update/n8n-nodes-ticktick">
-	<img alt="Static Badge" src="https://img.shields.io/badge/n8n-2.9.4-EA4B71?logo=n8n">
+	<img alt="Static Badge" src="https://img.shields.io/badge/n8n-2.18.1-EA4B71?logo=n8n">
 </p>
 
 <p align="center">

@@ -757,6 +757,68 @@ export async function searchProjectUsers(
 	}
 }
 
+function extractFixedCollectionProjectIds(raw: unknown): string[] {
+	const items =
+		(raw as { project?: Array<{ value?: unknown }> } | undefined)?.project ??
+			[];
+	return items
+		.map((row) => {
+			const v = row?.value;
+			if (v && typeof v === "object") {
+				return String((v as { value?: unknown }).value ?? "");
+			}
+			return v !== undefined && v !== null ? String(v) : "";
+		})
+		.filter((id) => id.length > 0);
+}
+
+export async function searchAssigneesForSelectedProjects(
+	this: ILoadOptionsFunctions,
+	filter?: string,
+): Promise<{ name: string; value: string }[]> {
+	const rawProjects = this.getCurrentNodeParameter("options.projectIds");
+	const projectIds = extractFixedCollectionProjectIds(rawProjects);
+	if (projectIds.length === 0) {
+		return [];
+	}
+
+	const seen = new Map<string, string>();
+	for (const pid of projectIds) {
+		try {
+			const response = (await tickTickApiRequestV2.call(
+				this,
+				"GET",
+				ENDPOINTS.PROJECT_USERS(pid),
+			)) as Array<{
+				userId: number | string;
+				displayName?: string;
+				username?: string;
+			}>;
+
+			if (!Array.isArray(response)) continue;
+
+			for (const user of response) {
+				if (!user || user.userId === undefined || user.userId === null) {
+					continue;
+				}
+				const value = String(user.userId);
+				if (!seen.has(value)) {
+					seen.set(value, user.displayName || user.username || value);
+				}
+			}
+		} catch {
+			// Skip projects we cannot enumerate (e.g. V1 auth or non-shared projects)
+		}
+	}
+
+	let options = Array.from(seen, ([value, name]) => ({ name, value }));
+	if (filter) {
+		const term = filter.toLowerCase();
+		options = options.filter((o) => o.name.toLowerCase().includes(term));
+	}
+	return options;
+}
+
 export async function searchSharedProjects(
 	this: ILoadOptionsFunctions,
 	filter?: string,

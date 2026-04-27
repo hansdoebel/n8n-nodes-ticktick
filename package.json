@@ -60,7 +60,8 @@
 			"dist/credentials/TickTickSessionApi.credentials.js"
 		],
 		"nodes": [
-			"dist/nodes/TickTick/TickTick.node.js"
+			"dist/nodes/TickTick/TickTick.node.js",
+			"dist/nodes/TickTick/TickTickTrigger.node.js"
 		]
 	},
 	"devDependencies": {

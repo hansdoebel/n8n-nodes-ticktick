@@ -3,6 +3,7 @@ import type {
 	IExecuteFunctions,
 	IHookFunctions,
 	ILoadOptionsFunctions,
+	IPollFunctions,
 	JsonObject,
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
@@ -86,7 +87,11 @@ function extractCookies(
 }
 
 async function authenticateV2(
-	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	context:
+		| IExecuteFunctions
+		| ILoadOptionsFunctions
+		| IHookFunctions
+		| IPollFunctions,
 	username: string,
 	password: string,
 	deviceId: string,
@@ -153,7 +158,11 @@ async function authenticateV2(
 }
 
 export async function getV2Session(
-	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	context:
+		| IExecuteFunctions
+		| ILoadOptionsFunctions
+		| IHookFunctions
+		| IPollFunctions,
 ): Promise<{
 	token: string;
 	inboxId: string;

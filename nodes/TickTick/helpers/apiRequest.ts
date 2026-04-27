@@ -5,6 +5,7 @@ import type {
 	IHttpRequestMethods,
 	IHttpRequestOptions,
 	ILoadOptionsFunctions,
+	IPollFunctions,
 } from "n8n-workflow";
 import { NodeApiError } from "n8n-workflow";
 import { TICKTICK_URLS } from "./constants";
@@ -16,7 +17,11 @@ import {
 } from "./sessionManager";
 
 export async function tickTickApiRequest(
-	this: IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions,
+	this:
+		| IExecuteFunctions
+		| IHookFunctions
+		| ILoadOptionsFunctions
+		| IPollFunctions,
 	method: IHttpRequestMethods,
 	endpoint: string,
 	body: IDataObject = {},
@@ -90,7 +95,11 @@ export async function tickTickApiRequest(
 }
 
 export async function tickTickApiRequestV2(
-	this: IExecuteFunctions | IHookFunctions | ILoadOptionsFunctions,
+	this:
+		| IExecuteFunctions
+		| IHookFunctions
+		| ILoadOptionsFunctions
+		| IPollFunctions,
 	method: IHttpRequestMethods,
 	endpoint: string,
 	body: IDataObject = {},
@@ -132,7 +141,11 @@ export async function tickTickApiRequestV2(
 }
 
 export function getAuthenticationType(
-	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	context:
+		| IExecuteFunctions
+		| ILoadOptionsFunctions
+		| IHookFunctions
+		| IPollFunctions,
 	itemIndex = 0,
 ): string {
 	try {
@@ -151,7 +164,11 @@ export function getAuthenticationType(
 }
 
 export function isV2Auth(
-	context: IExecuteFunctions | ILoadOptionsFunctions | IHookFunctions,
+	context:
+		| IExecuteFunctions
+		| ILoadOptionsFunctions
+		| IHookFunctions
+		| IPollFunctions,
 	itemIndex = 0,
 ): boolean {
 	return getAuthenticationType(context, itemIndex) === "tickTickSessionApi";
