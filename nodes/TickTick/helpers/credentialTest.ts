@@ -9,6 +9,7 @@ import {
 	DEFAULT_V2_USER_AGENT,
 	generateDeviceId,
 	toPythonStyleJson,
+	v2SignonFailureMessage,
 } from "./sessionManager";
 
 export async function testTickTickSessionApi(
@@ -52,11 +53,14 @@ export async function testTickTickSessionApi(
 			: ({} as Record<string, unknown>);
 
 		if (statusCode >= 400) {
+			const errorCode = parsed?.errorCode as string | undefined;
+			const errorMessage = parsed?.errorMessage as string | undefined;
 			return {
 				status: "Error",
 				message:
-					(parsed?.errorMessage as string) ||
-					`Authentication failed (HTTP ${statusCode})`,
+					errorCode === "need_upgrade_client"
+						? v2SignonFailureMessage(errorCode, errorMessage)
+						: errorMessage || `Authentication failed (HTTP ${statusCode})`,
 			};
 		}
 

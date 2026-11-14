@@ -13,7 +13,23 @@ import { TICKTICK_URLS } from "./constants";
 const V2_API_BASE = `${TICKTICK_URLS.API_BASE_URL}/api/v2`;
 export const DEFAULT_V2_USER_AGENT =
 	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+// TickTick web client's device version, taken from the X-Device header on ticktick.com.
+// An outdated value makes v2 sign-on fail with errorCode "need_upgrade_client" (see #25 / #26).
 export const DEFAULT_V2_DEVICE_VERSION = 8240;
+
+export const NEED_UPGRADE_CLIENT_CODE = "need_upgrade_client";
+export const NEED_UPGRADE_CLIENT_MESSAGE =
+	"TickTick requires a newer client version. Update DEFAULT_V2_DEVICE_VERSION in sessionManager.ts to match the current TickTick web client.";
+
+export function v2SignonFailureMessage(
+	errorCode?: string,
+	errorMessage?: string,
+): string {
+	if (errorCode === NEED_UPGRADE_CLIENT_CODE) {
+		return NEED_UPGRADE_CLIENT_MESSAGE;
+	}
+	return errorMessage || "Please check your credentials.";
+}
 
 export function toPythonStyleJson(obj: object): string {
 	return JSON.stringify(obj, null, 0).replace(/,/g, ", ").replace(/:/g, ": ");
@@ -119,6 +135,19 @@ async function authenticateV2(
 		? JSON.parse(signonResponse.body)
 		: signonResponse.body;
 
+	if (responseBody.errorCode === NEED_UPGRADE_CLIENT_CODE) {
+		throw new NodeApiError(
+			context.getNode(),
+			{
+				message: v2SignonFailureMessage(
+					responseBody.errorCode,
+					responseBody.errorMessage,
+				),
+				description: `Error code: ${responseBody.errorCode}`,
+			} as JsonObject,
+		);
+	}
+
 	if (responseBody.authId && !responseBody.token) {
 		throw new NodeApiError(
 			context.getNode(),
@@ -143,7 +172,10 @@ async function authenticateV2(
 			context.getNode(),
 			{
 				message: `Failed to obtain session token from TickTick. ${
-					responseBody.errorMessage || "Please check your credentials."
+					v2SignonFailureMessage(
+						responseBody.errorCode,
+						responseBody.errorMessage,
+					)
 				}`,
 				description: responseBody.errorCode
 					? `Error code: ${responseBody.errorCode}`

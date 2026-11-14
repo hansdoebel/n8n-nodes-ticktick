@@ -7,15 +7,22 @@ import {
 } from "node:fs";
 import { join } from "node:path";
 import { TICKTICK_URLS } from "../../../nodes/TickTick/helpers/constants";
+import {
+	DEFAULT_V2_DEVICE_VERSION,
+	DEFAULT_V2_USER_AGENT,
+	buildDeviceHeader,
+	toPythonStyleJson,
+	v2SignonFailureMessage,
+} from "../../../nodes/TickTick/helpers/sessionManager";
 
-export const V2_USER_AGENT =
-	"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
-const V2_DEVICE_VERSION = 6430;
+export {
+	DEFAULT_V2_DEVICE_VERSION,
+	buildDeviceHeader,
+	toPythonStyleJson,
+};
+
+export const V2_USER_AGENT = DEFAULT_V2_USER_AGENT;
 export const API_BASE = TICKTICK_URLS.API_BASE_URL;
-
-export function toPythonStyleJson(obj: object): string {
-	return JSON.stringify(obj, null, 0).replace(/,/g, ", ").replace(/:/g, ": ");
-}
 
 export function generateObjectId(): string {
 	const timestamp = Math.floor(Date.now() / 1000).toString(16).padStart(8, "0");
@@ -23,14 +30,6 @@ export function generateObjectId(): string {
 		.map((b) => b.toString(16).padStart(2, "0"))
 		.join("");
 	return timestamp + random;
-}
-
-export function buildDeviceHeader(deviceId: string): string {
-	return toPythonStyleJson({
-		platform: "web",
-		version: V2_DEVICE_VERSION,
-		id: deviceId,
-	});
 }
 
 export interface AuthSession {
@@ -138,7 +137,9 @@ async function authenticateFresh(): Promise<AuthSession> {
 			throw new Error("Account temporarily locked. Wait 15-30 minutes.");
 		}
 		throw new Error(
-			`Authentication failed: ${data.errorMessage || data.errorCode}`,
+			`Authentication failed: ${
+				v2SignonFailureMessage(data.errorCode, data.errorMessage)
+			}`,
 		);
 	}
 
