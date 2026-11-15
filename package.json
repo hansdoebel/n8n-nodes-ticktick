@@ -65,12 +65,12 @@
 		]
 	},
 	"devDependencies": {
-		"@n8n/node-cli": "^0.31.0",
-		"@types/luxon": "^3.4.2",
-		"@types/node": "^25.9.1",
-		"eslint": "^9.39.4",
-		"luxon": "^3.5.0",
-		"prettier": "^3.8.3",
+		"@n8n/node-cli": "^0.56.4",
+		"@types/luxon": "^3.7.6",
+		"@types/node": "^25.9.9",
+		"eslint": "^9.39.5",
+		"luxon": "^3.7.2",
+		"prettier": "^3.10.1",
 		"typescript": "^5.9.3"
 	},
 	"peerDependencies": {
