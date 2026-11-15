@@ -11,6 +11,7 @@ import {
 	DEFAULT_V2_DEVICE_VERSION,
 	DEFAULT_V2_USER_AGENT,
 	buildDeviceHeader,
+	redactCredentialSecrets,
 	toPythonStyleJson,
 	v2SignonFailureMessage,
 } from "../../../nodes/TickTick/helpers/sessionManager";
@@ -136,11 +137,17 @@ async function authenticateFresh(): Promise<AuthSession> {
 		if (data.errorCode === "incorrect_password_too_many_times") {
 			throw new Error("Account temporarily locked. Wait 15-30 minutes.");
 		}
-		throw new Error(
-			`Authentication failed: ${
-				v2SignonFailureMessage(data.errorCode, data.errorMessage)
-			}`,
+		const scrubbedMessage = redactCredentialSecrets(
+			typeof data.errorMessage === "string" ? data.errorMessage : undefined,
+			[username],
+			[password],
 		);
+		const detail = v2SignonFailureMessage(
+			data.errorCode,
+			scrubbedMessage || undefined,
+		);
+		const code = data.errorCode ? ` (${data.errorCode})` : "";
+		throw new Error(`Authentication failed: ${detail}${code}`);
 	}
 
 	if (!data.token) {

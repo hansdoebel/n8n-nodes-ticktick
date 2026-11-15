@@ -44,15 +44,23 @@ An n8n community node for integrating [TickTick](https://ticktick.com) with your
 
 This node supports three authentication methods:
 
-1. **TickTick Session API (V2)** -- Enter your TickTick email and password in n8n. Provides access to all features including V2 API operations. Session tokens are managed automatically.
+1. **TickTick Session API (V2)** -- Enter your TickTick email and password in n8n. Provides access to all features including V2 API operations. A successful sign-on is cached in memory for about 23 hours and is keyed by the email and password, so changing the password signs on again. Failed sign-ons are cached too: rejected credentials for 10 minutes, and network or server errors for 30 seconds. That backoff avoids repeated attempts that can lock the TickTick account. Sign-on errors keep TickTick's error code and the HTTP status, and they do not include the email or the password.
 2. **TickTick API Token (V1)** -- Go to TickTick Account Settings, then API Token, then Manage. Copy the token and paste it into a new TickTick API Token credential in n8n.
-3. **TickTick OAuth2 (V1)** -- Visit [developer.ticktick.com](https://developer.ticktick.com/), go to Manage Apps, create a new app, copy the Client ID and Client Secret, and paste them into a new TickTick OAuth2 API credential in n8n.
+3. **TickTick OAuth2 (V1)** -- Visit [developer.ticktick.com](https://developer.ticktick.com/), go to Manage Apps, create a new app, copy the Client ID and Client Secret, and paste them into a new TickTick OAuth2 API credential in n8n. New credentials request the `tasks:read` and `tasks:write` scopes.
 
 ## Troubleshooting
 
 **Sign-in fails with `need_upgrade_client`**
 
 TickTick rejects an outdated V2 web client during session sign-on. The response is HTTP 500 with error code `need_upgrade_client`. This node sends device version `8240` in the `X-Device` header, matching the current TickTick web client. If TickTick still returns that error, the node reports: "TickTick requires a newer client version…"
+
+**Wrong email or password**
+
+TickTick often answers `username_password_not_match` and puts the account email in `errorMessage`. The node reports the error code and HTTP status without the email or the password. A rejected sign-on is not retried for 10 minutes. TickTick itself can lock the account after repeated wrong passwords, including attempts made outside n8n.
+
+**TickTick Trigger**
+
+The trigger polls for newly created tasks. It is not offered as an AI tool. The TickTick action node still is.
 
 ## Resources
 
@@ -167,12 +175,23 @@ TickTick rejects an outdated V2 web client during session sign-on. The response 
 ```bash
 git clone https://github.com/hansdoebel/n8n-nodes-ticktick.git
 cd n8n-nodes-ticktick
-npm install
-npm run build
-npm run lint
+bun install
+bun run build
+bun run lint
+bun test tests/unit
 ```
 
+Use Bun 1.4 or newer. The lockfile is version 2.
+
 ## Version history
+
+### 2.3.0
+
+- V2 session sign-on no longer puts the account email or the password in errors or in the credential test result. TickTick's error code and the HTTP status are kept. `username_password_not_match` often sends the email back as `errorMessage`; that value is removed.
+- V2 sessions are cached in memory by email and password. Rejected credentials are not retried for 10 minutes. Network and server errors are not retried for 30 seconds. Concurrent calls share one in-flight sign-on.
+- OAuth2 credentials request `tasks:read tasks:write`.
+- The TickTick Trigger node is no longer available as an AI tool.
+- Publish workflow uses pinned GitHub Actions, including checkout 7.0.1 and setup-node 7.1.0, and publishes with npm trusted publishing.
 
 ### 2.2.3
 

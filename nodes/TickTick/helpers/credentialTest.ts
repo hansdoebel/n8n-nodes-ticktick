@@ -10,6 +10,7 @@ import {
 	DEFAULT_V2_USER_AGENT,
 	generateDeviceId,
 	NEED_UPGRADE_CLIENT_CODE,
+	redactCredentialSecrets,
 	toPythonStyleJson,
 	v2SignonFailureMessage,
 } from "./sessionManager";
@@ -38,9 +39,52 @@ function signonErrorFields(parsed: Record<string, unknown>): {
 	return { errorCode, errorMessage };
 }
 
-function safeMessage(message: string, password: string): string {
-	if (password && message.includes(password)) return "Authentication failed";
-	return message;
+function containsPassword(text: string, password: string): boolean {
+	if (!password || !text) return false;
+	if (text.includes(password)) return true;
+	const encoded = encodeURIComponent(password);
+	return encoded !== password && text.includes(encoded);
+}
+
+function withErrorCode(text: string, errorCode: string | undefined, username: string): string {
+	if (!errorCode) return text;
+	const safeCode = redactCredentialSecrets(errorCode, [username], []).trim();
+	if (!safeCode || text.includes(safeCode)) return text;
+	return `${text} Error code: ${safeCode}`;
+}
+
+function presentedSignonMessage(
+	statusCode: number,
+	errorCode: string | undefined,
+	errorMessage: string | undefined,
+	username: string,
+	password: string,
+	fallback: string,
+): string {
+	if (errorCode === NEED_UPGRADE_CLIENT_CODE) {
+		return v2SignonFailureMessage(errorCode);
+	}
+	const raw = (errorMessage ?? "").trim();
+	if (containsPassword(raw, password)) {
+		return withErrorCode(fallback, errorCode, username);
+	}
+	const scrubbed = redactCredentialSecrets(raw, [username], [password]).trim();
+	const removedSecret = scrubbed !== raw;
+	if (scrubbed && /[a-z0-9]/i.test(scrubbed) && !removedSecret) {
+		return scrubbed;
+	}
+	if (scrubbed && /[a-z0-9]/i.test(scrubbed)) {
+		const statusBit = statusCode ? ` (HTTP ${statusCode})` : "";
+		return withErrorCode(`${scrubbed}${statusBit}`, errorCode, username);
+	}
+	return withErrorCode(fallback, errorCode, username);
+}
+
+function safeThrownMessage(message: string, username: string, password: string): string {
+	if (containsPassword(message, password)) return "Authentication failed";
+	const scrubbed = redactCredentialSecrets(message, [username], [password]).trim();
+	if (!scrubbed || !/[a-z0-9]/i.test(scrubbed)) return "Authentication failed";
+	return scrubbed;
 }
 
 function readSignonHttpResult(response: unknown): {
@@ -163,7 +207,10 @@ export async function testTickTickSessionApi(
 
 		const parsedResult = parseSignonPayload(rawBody);
 		if (!parsedResult.ok) {
-			return { status: "Error", message: safeMessage(parsedResult.message, password) };
+			return {
+				status: "Error",
+				message: safeThrownMessage(parsedResult.message, username, password),
+			};
 		}
 		const parsed = parsedResult.parsed;
 		const { errorCode, errorMessage } = signonErrorFields(parsed);
@@ -171,14 +218,15 @@ export async function testTickTickSessionApi(
 		if (statusCode >= 400 || statusCode === 0) {
 			return {
 				status: "Error",
-				message: safeMessage(
-					errorCode === NEED_UPGRADE_CLIENT_CODE
-						? v2SignonFailureMessage(errorCode, errorMessage)
-						: errorMessage ||
-							(statusCode
-								? `Authentication failed (HTTP ${statusCode})`
-								: "Authentication failed"),
+				message: presentedSignonMessage(
+					statusCode,
+					errorCode,
+					errorMessage,
+					username,
 					password,
+					statusCode
+						? `Authentication failed (HTTP ${statusCode})`
+						: "Authentication failed",
 				),
 			};
 		}
@@ -193,12 +241,13 @@ export async function testTickTickSessionApi(
 		if (!parsed?.token) {
 			return {
 				status: "Error",
-				message: safeMessage(
-					errorCode === NEED_UPGRADE_CLIENT_CODE
-						? v2SignonFailureMessage(errorCode, errorMessage)
-						: errorMessage ||
-							"Authentication failed. Please check your credentials.",
+				message: presentedSignonMessage(
+					statusCode,
+					errorCode,
+					errorMessage,
+					username,
 					password,
+					"Authentication failed. Please check your credentials.",
 				),
 			};
 		}
@@ -208,7 +257,11 @@ export async function testTickTickSessionApi(
 		const err = error as { message?: string };
 		return {
 			status: "Error",
-			message: safeMessage(err?.message || "Authentication failed", password),
+			message: safeThrownMessage(
+				err?.message || "Authentication failed",
+				username,
+				password,
+			),
 		};
 	}
 }

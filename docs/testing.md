@@ -17,6 +17,8 @@ Tests for the TickTick API using Bun test runner.
 
 3. Disable 2FA on your TickTick account (not supported for testing)
 
+Do not run repeated sign-on attempts with a wrong password. TickTick locks the account after too many failures (`incorrect_password_too_many_times`), and the lock lasts longer than this node's own 10-minute backoff. Integration tests should use the real password from `.env`.
+
 ## Running Tests
 
 ```bash

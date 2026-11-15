@@ -164,6 +164,38 @@ function passwordFromBody(body: string | undefined): string {
 	return JSON.parse(body ?? "{}").password as string;
 }
 
+function assertSecretsOmitted(error: unknown, ...secrets: string[]) {
+	const apiError = error as NodeApiError & {
+		description?: string;
+		messages?: string[];
+		errorResponse?: unknown;
+		httpCode?: string | null;
+	};
+	const blob = [
+		String(apiError?.message ?? ""),
+		String(apiError?.description ?? ""),
+		JSON.stringify(apiError),
+		errorText(error),
+		errorText(apiError?.cause),
+		JSON.stringify(apiError?.messages ?? null),
+		JSON.stringify(apiError?.errorResponse ?? null),
+	].join("\n");
+	for (const secret of secrets) {
+		expect(blob.includes(secret)).toBe(false);
+		expect(blob.toLowerCase().includes(secret.toLowerCase())).toBe(false);
+	}
+	return apiError;
+}
+
+function rejectedSignon(status: number, body: Record<string, unknown>) {
+	return {
+		statusCode: status,
+		message: `Request failed with status code ${status}`,
+		response: { status, data: body },
+		config: { data: JSON.stringify(body) },
+	};
+}
+
 describe("authenticateV2 need_upgrade_client", () => {
 	test("translates a rejected HTTP 500 with an object body", async () => {
 		const { username, context } = signonContext(async () => {
@@ -435,6 +467,10 @@ describe("V2 sign-on error redaction", () => {
 			expect(JSON.stringify(apiError)).not.toContain(password);
 			expect(errorText(thrown)).not.toContain(password);
 			expect(errorText(apiError.cause)).not.toContain(password);
+			expect(errorText(thrown).toLowerCase()).not.toContain(username.toLowerCase());
+			expect(JSON.stringify(apiError).toLowerCase()).not.toContain(
+				username.toLowerCase(),
+			);
 
 			let second: unknown;
 			try {
@@ -588,6 +624,50 @@ describe("V2 login failure cache and in-flight sharing", () => {
 		}
 	});
 
+	test("shares one in-flight login when sign-on fails", async () => {
+		const username = `flight-fail-${crypto.randomUUID()}@example.com`;
+		const password = "shared-wrong-password";
+		let calls = 0;
+		let release!: () => void;
+		const gate = new Promise<void>((resolve) => {
+			release = resolve;
+		});
+		const { context } = signonContext(async () => {
+			calls += 1;
+			await gate;
+			throw {
+				statusCode: 401,
+				response: {
+					status: 401,
+					data: {
+						errorCode: "username_password_not_match",
+						errorMessage: username,
+					},
+				},
+			};
+		}, { username, password });
+
+		try {
+			const first = getV2Session(context);
+			const second = getV2Session(context);
+			for (let i = 0; i < 20 && calls < 1; i++) await Promise.resolve();
+			expect(calls).toBe(1);
+			release();
+			const settled = await Promise.allSettled([first, second]);
+			expect(settled[0].status).toBe("rejected");
+			expect(settled[1].status).toBe("rejected");
+			if (settled[0].status === "rejected") {
+				assertSecretsOmitted(settled[0].reason, username, password);
+			}
+			if (settled[1].status === "rejected") {
+				assertSecretsOmitted(settled[1].reason, username, password);
+			}
+			expect(calls).toBe(1);
+		} finally {
+			clearV2Session(username);
+		}
+	});
+
 	test("evicts expired session entries", async () => {
 		let now = 1_700_000_000_000;
 		_setV2SessionClockForTests(() => now);
@@ -618,6 +698,217 @@ describe("V2 login failure cache and in-flight sharing", () => {
 			_setV2SessionClockForTests();
 			clearV2Session(userA);
 			clearV2Session(userB);
+		}
+	});
+});
+
+describe("V2 sign-on errors omit the account email", () => {
+	async function capture(
+		httpRequest: () => Promise<unknown>,
+		username: string,
+		password: string,
+	) {
+		const { context } = signonContext(httpRequest, { username, password });
+		try {
+			await getV2Session(context);
+			throw new Error("expected sign-on to fail");
+		} catch (error) {
+			if (
+				error instanceof Error &&
+				error.message === "expected sign-on to fail"
+			) {
+				throw error;
+			}
+			return error;
+		}
+	}
+
+	test("scrubs an email that TickTick returns as errorMessage", async () => {
+		const password = "wrong-password-value";
+		const username = `Wrong.User.${crypto.randomUUID()}@Example.com`;
+		const echoed = username.toLowerCase();
+		try {
+			const thrown = await capture(async () => ({
+				body: {
+					errorCode: "username_password_not_match",
+					errorMessage: echoed,
+					username: echoed,
+				},
+				headers: {},
+				statusCode: 200,
+			}), username, password);
+			const apiError = assertSecretsOmitted(thrown, username, echoed, password);
+			expect(apiError.message).toContain("Please check your credentials");
+			expect(apiError.message).not.toContain("@");
+			expect(apiError.description).toContain("username_password_not_match");
+		} finally {
+			clearV2Session(username);
+		}
+	});
+
+	test.each([
+		[401, "username_password_not_match"],
+		[403, "username_password_not_match"],
+	])("keeps HTTP %s and the error code without the email", async (status, errorCode) => {
+		const password = `pw-${status}-secret`;
+		const username = `status-${status}-${crypto.randomUUID()}@example.com`;
+		try {
+			const thrown = await capture(async () => {
+				throw rejectedSignon(status, {
+					errorCode,
+					errorMessage: username,
+					username,
+					password,
+				});
+			}, username, password);
+			const apiError = assertSecretsOmitted(thrown, username, password);
+			expect(apiError.httpCode).toBe(String(status));
+			expect(apiError.message).toContain(`HTTP ${status}`);
+			expect(apiError.description).toContain(errorCode);
+			expect(apiError.cause).toBeUndefined();
+		} finally {
+			clearV2Session(username);
+		}
+	});
+
+	test("keeps a 5xx credential error for 10 minutes and omits the email", async () => {
+		let now = 1_700_000_000_000;
+		_setV2SessionClockForTests(() => now);
+		const password = "lockout-password-value";
+		const username = `Lockout.${crypto.randomUUID()}@Example.com`;
+		let calls = 0;
+		const { context } = signonContext(async () => {
+			calls += 1;
+			throw rejectedSignon(500, {
+				errorCode: "username_password_not_match",
+				errorMessage: `Account ${username.toLowerCase()} was rejected`,
+			});
+		}, { username, password });
+
+		try {
+			let thrown: unknown;
+			try {
+				await getV2Session(context);
+			} catch (error) {
+				thrown = error;
+			}
+			const apiError = assertSecretsOmitted(thrown, username, password);
+			expect(apiError.httpCode).toBe("500");
+			expect(apiError.message).toBe("Account was rejected");
+			expect(apiError.description).toBe(
+				"Error code: username_password_not_match",
+			);
+
+			now += V2_TRANSIENT_FAILURE_TTL_MS + 1;
+			let cached: unknown;
+			try {
+				await getV2Session(context);
+			} catch (error) {
+				cached = error;
+			}
+			assertSecretsOmitted(cached, username, password);
+			expect(calls).toBe(1);
+
+			now += V2_LOGIN_FAILURE_TTL_MS;
+			await expect(getV2Session(context)).rejects.toThrow(
+				"Account was rejected",
+			);
+			expect(calls).toBe(2);
+		} finally {
+			_setV2SessionClockForTests();
+			clearV2Session(username);
+		}
+	});
+
+	test("retries a transient 5xx after 30 seconds without echoing the email", async () => {
+		let now = 1_700_000_000_000;
+		_setV2SessionClockForTests(() => now);
+		const password = "outage-password-value";
+		const username = `outage-mail-${crypto.randomUUID()}@example.com`;
+		let calls = 0;
+		const { context } = signonContext(async () => {
+			calls += 1;
+			throw rejectedSignon(502, {
+				errorCode: "internal_error",
+				errorMessage: `upstream failed for ${username}`,
+			});
+		}, { username, password });
+
+		try {
+			let thrown: unknown;
+			try {
+				await getV2Session(context);
+			} catch (error) {
+				thrown = error;
+			}
+			const apiError = assertSecretsOmitted(thrown, username, password);
+			expect(apiError.httpCode).toBe("502");
+			expect(apiError.message).toBe("upstream failed for");
+			expect(apiError.description).toBe("Error code: internal_error");
+
+			await expect(getV2Session(context)).rejects.toThrow(/upstream failed for/);
+			expect(calls).toBe(1);
+
+			now += V2_TRANSIENT_FAILURE_TTL_MS + 1;
+			await expect(getV2Session(context)).rejects.toThrow(/upstream failed for/);
+			expect(calls).toBe(2);
+			expect(V2_TRANSIENT_FAILURE_TTL_MS).toBe(30_000);
+			expect(V2_LOGIN_FAILURE_TTL_MS).toBe(10 * 60 * 1000);
+		} finally {
+			_setV2SessionClockForTests();
+			clearV2Session(username);
+		}
+	});
+
+	test("omits the email and password from a network failure and retries after 30 seconds", async () => {
+		let now = 1_700_000_000_000;
+		_setV2SessionClockForTests(() => now);
+		const password = "network-password-value";
+		const username = `net-${crypto.randomUUID()}@example.com`;
+		let calls = 0;
+		const { context } = signonContext(async () => {
+			calls += 1;
+			throw Object.assign(
+				new Error(`socket hang up for ${username} using ${password}`),
+				{
+					config: {
+						data: JSON.stringify({ username, password }),
+						body: { username, password },
+					},
+					cause: {
+						message: `connect ECONNREFUSED ${username}`,
+						request: { body: `password=${password}&username=${username}` },
+					},
+				},
+			);
+		}, { username, password });
+
+		try {
+			let thrown: unknown;
+			try {
+				await getV2Session(context);
+			} catch (error) {
+				thrown = error;
+			}
+			const apiError = assertSecretsOmitted(thrown, username, password);
+			expect(apiError).toBeInstanceOf(NodeApiError);
+			expect(apiError.message).toBe("TickTick sign-on request failed");
+			expect(apiError.httpCode ?? null).toBeNull();
+			expect(apiError.cause).toBeUndefined();
+
+			await expect(getV2Session(context)).rejects.toThrow(
+				"TickTick sign-on request failed",
+			);
+			expect(calls).toBe(1);
+
+			now += V2_TRANSIENT_FAILURE_TTL_MS + 1;
+			await expect(getV2Session(context)).rejects.toThrow(
+				"TickTick sign-on request failed",
+			);
+			expect(calls).toBe(2);
+		} finally {
+			_setV2SessionClockForTests();
+			clearV2Session(username);
 		}
 	});
 });
