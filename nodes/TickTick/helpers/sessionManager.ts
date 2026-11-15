@@ -254,6 +254,7 @@ export function _setV2SessionClockForTests(next?: () => number): void {
 
 export const V2_SESSION_TTL_MS = 23 * 60 * 60 * 1000;
 export const V2_LOGIN_FAILURE_TTL_MS = 10 * 60 * 1000;
+export const V2_TRANSIENT_FAILURE_TTL_MS = 30 * 1000;
 const MAX_CACHE_ENTRIES = 256;
 
 function normalizeEmail(email: string | undefined): string {
@@ -299,6 +300,17 @@ export function getV2SessionCacheStats(): {
 	return { sessions: sessionCache.size, failures: failureCache.size };
 }
 
+function isCredentialRejection(
+	httpCode: string | undefined,
+	description: string | undefined,
+): boolean {
+	const status = Number(httpCode);
+	if (status === 401 || status === 403) return true;
+	const errorCode = description?.match(/Error code:\s*(\S+)/)?.[1]?.toLowerCase();
+	if (!errorCode) return false;
+	return errorCode.includes("password");
+}
+
 function cacheSignonFailure(key: string, email: string, error: unknown): void {
 	const safe = error instanceof NodeApiError
 		? {
@@ -311,9 +323,12 @@ function cacheSignonFailure(key: string, email: string, error: unknown): void {
 			description: undefined,
 			httpCode: undefined,
 		};
+	const ttl = isCredentialRejection(safe.httpCode, safe.description)
+		? V2_LOGIN_FAILURE_TTL_MS
+		: V2_TRANSIENT_FAILURE_TTL_MS;
 
 	failureCache.set(key, {
-		expiresAt: nowMs() + V2_LOGIN_FAILURE_TTL_MS,
+		expiresAt: nowMs() + ttl,
 		email,
 		message: safe.message,
 		description: safe.description,

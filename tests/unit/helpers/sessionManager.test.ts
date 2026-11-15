@@ -8,6 +8,7 @@ import {
 	NEED_UPGRADE_CLIENT_MESSAGE,
 	V2_LOGIN_FAILURE_TTL_MS,
 	V2_SESSION_TTL_MS,
+	V2_TRANSIENT_FAILURE_TTL_MS,
 	buildDeviceHeader,
 	_setV2SessionClockForTests,
 	clearV2Session,
@@ -479,6 +480,34 @@ describe("V2 login failure cache and in-flight sharing", () => {
 			await expect(getV2Session(context)).rejects.toThrow(/Incorrect password/);
 			expect(calls).toBe(2);
 			expect(getV2SessionCacheStats().failures).toBe(before + 1);
+		} finally {
+			_setV2SessionClockForTests();
+			clearV2Session(username);
+		}
+	});
+
+	test("retries a transient sign-on failure before the credential lockout window", async () => {
+		let now = 1_700_000_000_000;
+		_setV2SessionClockForTests(() => now);
+		const username = `outage-${crypto.randomUUID()}@example.com`;
+		let calls = 0;
+		const { context } = signonContext(async () => {
+			calls += 1;
+			throw {
+				statusCode: 500,
+				response: { status: 500, data: {} },
+			};
+		}, { username, password: "correct-password" });
+
+		try {
+			await expect(getV2Session(context)).rejects.toThrow(/HTTP 500/);
+			await expect(getV2Session(context)).rejects.toThrow(/HTTP 500/);
+			expect(calls).toBe(1);
+
+			now += V2_TRANSIENT_FAILURE_TTL_MS + 1;
+			await expect(getV2Session(context)).rejects.toThrow(/HTTP 500/);
+			expect(calls).toBe(2);
+			expect(V2_TRANSIENT_FAILURE_TTL_MS).toBeLessThan(V2_LOGIN_FAILURE_TTL_MS);
 		} finally {
 			_setV2SessionClockForTests();
 			clearV2Session(username);
