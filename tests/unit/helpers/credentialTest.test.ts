@@ -19,7 +19,7 @@ function credential(username: string, password: string) {
 }
 
 describe("testTickTickSessionApi", () => {
-	test("uses n8n's request helper with a timeout", async () => {
+	test("uses n8n's httpRequest helper with a timeout", async () => {
 		let fetchCalls = 0;
 		globalThis.fetch = (async () => {
 			fetchCalls += 1;
@@ -28,7 +28,10 @@ describe("testTickTickSessionApi", () => {
 
 		let requestOptions: Record<string, unknown> | undefined;
 		const helpers = {
-			request: async (options: Record<string, unknown>) => {
+			request: async () => {
+				throw new Error("deprecated request helper should not be used");
+			},
+			httpRequest: async (options: Record<string, unknown>) => {
 				requestOptions = options;
 				return {
 					statusCode: 200,
@@ -55,41 +58,14 @@ describe("testTickTickSessionApi", () => {
 		);
 		expect(String(requestOptions?.body)).toContain("correct-password");
 		expect(requestOptions?.json).toBe(false);
-		expect(requestOptions?.resolveWithFullResponse).toBe(true);
-		expect(requestOptions?.simple).toBe(false);
-	});
-
-	test("prefers httpRequest when the credential test helpers provide it", async () => {
-		let usedHttpRequest = false;
-		const helpers = {
-			request: async () => {
-				throw new Error("deprecated request helper should not be used");
-			},
-			httpRequest: async (options: { timeout?: number; url?: string }) => {
-				usedHttpRequest = true;
-				expect(options.timeout).toBe(CREDENTIAL_TEST_TIMEOUT_MS);
-				expect(options.url).toContain("/api/v2/user/signon");
-				return {
-					statusCode: 200,
-					body: JSON.stringify({ token: "from-http-request" }),
-				};
-			},
-		};
-		const context = { helpers } as unknown as ICredentialTestFunctions;
-
-		const result = await testTickTickSessionApi.call(
-			context,
-			credential("user@example.com", "correct-password"),
-		);
-
-		expect(usedHttpRequest).toBe(true);
-		expect(result.status).toBe("OK");
+		expect(requestOptions?.returnFullResponse).toBe(true);
+		expect(requestOptions?.ignoreHttpStatusErrors).toBe(true);
 	});
 
 	test("returns TickTick's error message without the password", async () => {
 		const password = "s3cret-password-value";
 		const helpers = {
-			request: async () => ({
+			httpRequest: async () => ({
 				statusCode: 401,
 				body: JSON.stringify({
 					errorCode: "incorrect_password",
@@ -112,7 +88,7 @@ describe("testTickTickSessionApi", () => {
 	test("strips the password from a thrown request error", async () => {
 		const password = "s3cret-password-value";
 		const helpers = {
-			request: async () => {
+			httpRequest: async () => {
 				throw new Error(
 					`timeout posting {"password":"${password}"}`,
 				);
@@ -152,7 +128,7 @@ describe("testTickTickSessionApi", () => {
 
 	test("reports an unexpected sign-on body", async () => {
 		const helpers = {
-			request: async () => ({
+			httpRequest: async () => ({
 				statusCode: 200,
 				body: "<html>nope</html>",
 			}),

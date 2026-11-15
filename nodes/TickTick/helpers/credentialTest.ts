@@ -72,8 +72,8 @@ function readSignonHttpResult(response: unknown): {
 	return { statusCode: 0, rawBody: "" };
 }
 
-type CredentialTestHelpers = ICredentialTestFunctions["helpers"] & {
-	httpRequest?: (requestOptions: IHttpRequestOptions) => Promise<unknown>;
+type CredentialTestHelpers = {
+	httpRequest(requestOptions: IHttpRequestOptions): Promise<unknown>;
 };
 
 async function requestSignon(
@@ -82,11 +82,11 @@ async function requestSignon(
 	headers: Record<string, string>,
 	body: string,
 ): Promise<{ statusCode: number; rawBody: string }> {
-	const helpers = this.helpers as CredentialTestHelpers | undefined;
-	// Credential-test helpers are typed with request. Some n8n versions also
-	// expose httpRequest. Both go through n8n's proxy and CA handling.
+	const helpers = this.helpers as Partial<CredentialTestHelpers> | undefined;
+	// httpRequest uses n8n's proxy and CA settings. ignoreHttpStatusErrors keeps
+	// TickTick's 4xx body available so the password never rides out on a thrown error.
 	if (typeof helpers?.httpRequest === "function") {
-		const response = await helpers.httpRequest({
+		const response = await (this.helpers as unknown as CredentialTestHelpers).httpRequest({
 			method: "POST",
 			url,
 			headers,
@@ -95,20 +95,6 @@ async function requestSignon(
 			json: false,
 			returnFullResponse: true,
 			ignoreHttpStatusErrors: true,
-		});
-		return readSignonHttpResult(response);
-	}
-
-	if (typeof helpers?.request === "function") {
-		const response: unknown = await helpers.request({
-			method: "POST",
-			url,
-			headers,
-			body,
-			timeout: CREDENTIAL_TEST_TIMEOUT_MS,
-			json: false,
-			resolveWithFullResponse: true,
-			simple: false,
 		});
 		return readSignonHttpResult(response);
 	}
