@@ -114,14 +114,14 @@ export async function projectGetExecute(
 		}
 
 		if (mode === "getWithData") {
-			endpoint = `${ENDPOINTS.OPEN_V1_PROJECT}/${projectId}/data`;
+			endpoint = ENDPOINTS.OPEN_V1_PROJECT_DATA(projectId);
 		} else {
 			if (projectId === "inbox") {
 				throw new Error(
 					"The 'Get Specific Project' mode does not support the Inbox. Please use 'Get Project With Data' to see Inbox tasks, or select a custom project.",
 				);
 			}
-			endpoint = `${ENDPOINTS.OPEN_V1_PROJECT}/${projectId}`;
+			endpoint = ENDPOINTS.OPEN_V1_PROJECT_BY_ID(projectId);
 		}
 	}
 

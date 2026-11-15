@@ -34,7 +34,7 @@ export class TickTickTokenApi implements ICredentialType {
 
 	test: ICredentialTestRequest = {
 		request: {
-			baseURL: TICKTICK_URLS.BASE_URL,
+			baseURL: TICKTICK_URLS.API_BASE_URL,
 			url: ENDPOINTS.OPEN_V1_PROJECT,
 		},
 	};
