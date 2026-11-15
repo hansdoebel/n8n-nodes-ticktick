@@ -73,6 +73,10 @@ Dynamic dropdowns use `loadOptions` methods:
 - **V2**: Uses `/api/v2/` endpoints, requires Session API
 - Check credential type with `this.getNodeParameter('authentication')`
 
+## Runtime dependencies
+
+`luxon` is imported by the node and listed in `devDependencies`. n8n provides `luxon` at runtime (`n8n-workflow` depends on it as well), so the published package does not ship its own copy. Leave the import in place; do not add a second `luxon` dependency.
+
 ## Publishing
 
 ```bash

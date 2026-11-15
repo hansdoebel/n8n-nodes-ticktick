@@ -54,6 +54,19 @@ describe("ProjectGet Operation", () => {
 				expect(result[0].json.id).toBe("project456");
 			});
 
+			test("rejects a traversal-style project id", async () => {
+				const mockContext = createMockExecuteFunctions({
+					authentication: "tickTickTokenApi",
+					nodeParameters: {
+						mode: "getSpecific",
+						projectId: { mode: "id", value: "../task/x?" },
+					},
+				});
+
+				await expect(projectGetExecute.call(mockContext as any, 0)).rejects
+					.toThrow(/Invalid projectId/);
+			});
+
 			test("throws error for inbox in getSpecific mode", async () => {
 				const mockContext = createMockExecuteFunctions({
 					authentication: "tickTickTokenApi",
@@ -90,6 +103,39 @@ describe("ProjectGet Operation", () => {
 
 				expect(result).toHaveLength(1);
 				expectApiCalled(mockContext, "GET", "/project456/data");
+			});
+
+			test("rejects a traversal-style project id for getWithData", async () => {
+				const mockContext = createMockExecuteFunctions({
+					authentication: "tickTickTokenApi",
+					nodeParameters: {
+						mode: "getWithData",
+						projectId: "../task/x?",
+					},
+				});
+
+				await expect(projectGetExecute.call(mockContext as any, 0)).rejects
+					.toThrow(/Invalid projectId/);
+			});
+
+			test("accepts the inbox id for getWithData", async () => {
+				const mockContext = createMockExecuteFunctions({
+					authentication: "tickTickTokenApi",
+					nodeParameters: {
+						mode: "getWithData",
+						projectId: "inbox",
+					},
+				});
+
+				mockContext._addApiHandler({
+					method: "GET",
+					endpoint: ENDPOINTS.OPEN_V1_PROJECT_DATA("inbox"),
+					response: { project: { id: "inbox" }, tasks: [] },
+				});
+
+				await projectGetExecute.call(mockContext as any, 0);
+
+				expectApiCalled(mockContext, "GET", "/inbox/data");
 			});
 
 			test("uses inbox as default projectId for getWithData", async () => {

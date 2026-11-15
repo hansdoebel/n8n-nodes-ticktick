@@ -44,7 +44,7 @@ export class TickTickOAuth2Api implements ICredentialType {
 			displayName: "Scope",
 			name: "scope",
 			type: "hidden",
-			default: ``,
+			default: "tasks:read tasks:write",
 		},
 		{
 			displayName: "Auth URI Query Parameters",
