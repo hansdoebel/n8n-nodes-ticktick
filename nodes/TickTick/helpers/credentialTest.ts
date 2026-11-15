@@ -8,8 +8,28 @@ import {
 	buildDeviceHeader,
 	DEFAULT_V2_USER_AGENT,
 	generateDeviceId,
+	NEED_UPGRADE_CLIENT_CODE,
 	toPythonStyleJson,
+	v2SignonFailureMessage,
 } from "./sessionManager";
+
+function signonErrorFields(parsed: Record<string, unknown>): {
+	errorCode?: string;
+	errorMessage?: string;
+} {
+	const errorCode =
+		parsed.errorCode === NEED_UPGRADE_CLIENT_CODE ||
+		parsed.errorId === NEED_UPGRADE_CLIENT_CODE
+			? NEED_UPGRADE_CLIENT_CODE
+			: typeof parsed.errorCode === "string"
+				? parsed.errorCode
+				: typeof parsed.errorId === "string"
+					? parsed.errorId
+					: undefined;
+	const errorMessage =
+		typeof parsed.errorMessage === "string" ? parsed.errorMessage : undefined;
+	return { errorCode, errorMessage };
+}
 
 export async function testTickTickSessionApi(
 	this: ICredentialTestFunctions,
@@ -51,12 +71,15 @@ export async function testTickTickSessionApi(
 			? (JSON.parse(rawBody) as Record<string, unknown>)
 			: ({} as Record<string, unknown>);
 
+		const { errorCode, errorMessage } = signonErrorFields(parsed);
+
 		if (statusCode >= 400) {
 			return {
 				status: "Error",
 				message:
-					(parsed?.errorMessage as string) ||
-					`Authentication failed (HTTP ${statusCode})`,
+					errorCode === NEED_UPGRADE_CLIENT_CODE
+						? v2SignonFailureMessage(errorCode, errorMessage)
+						: errorMessage || `Authentication failed (HTTP ${statusCode})`,
 			};
 		}
 
@@ -72,8 +95,10 @@ export async function testTickTickSessionApi(
 			return {
 				status: "Error",
 				message:
-					(parsed?.errorMessage as string) ||
-					"Authentication failed. Please check your credentials.",
+					errorCode === NEED_UPGRADE_CLIENT_CODE
+						? v2SignonFailureMessage(errorCode, errorMessage)
+						: errorMessage ||
+							"Authentication failed. Please check your credentials.",
 			};
 		}
 

@@ -16,7 +16,9 @@
   <a href="#installation">Installation</a> |
   <a href="#credentials">Credentials</a> |
   <a href="#resources">Resources</a> |
+  <a href="#troubleshooting">Troubleshooting</a> |
   <a href="#development">Development</a> |
+  <a href="#version-history">Version history</a> |
   <a href="#contributors">Contributors</a> |
   <a href="#license">License</a>
 </p>
@@ -39,6 +41,12 @@ This node supports three authentication methods:
 1. **TickTick Session API (V2)** -- Enter your TickTick email and password in n8n. Provides access to all features including V2 API operations. Session tokens are managed automatically.
 2. **TickTick API Token (V1)** -- Go to TickTick Account Settings, then API Token, then Manage. Copy the token and paste it into a new TickTick API Token credential in n8n.
 3. **TickTick OAuth2 (V1)** -- Visit [developer.ticktick.com](https://developer.ticktick.com/), go to Manage Apps, create a new app, copy the Client ID and Client Secret, and paste them into a new TickTick OAuth2 API credential in n8n.
+
+## Troubleshooting
+
+**Sign-in fails with `need_upgrade_client`**
+
+TickTick rejects an outdated V2 web client during session sign-on. The response is HTTP 500 with error code `need_upgrade_client`. This node sends device version `8240` in the `X-Device` header, matching the current TickTick web client. If TickTick still returns that error, the node reports: "TickTick requires a newer client version…"
 
 ## Resources
 
@@ -157,6 +165,14 @@ npm install
 npm run build
 npm run lint
 ```
+
+## Version history
+
+### 2.2.3
+
+- V2 sign-on `X-Device` version bumped to `8240` to fix `need_upgrade_client` sign-in failures ([#25](https://github.com/hansdoebel/n8n-nodes-ticktick/issues/25), PR [#26](https://github.com/hansdoebel/n8n-nodes-ticktick/pull/26) by [@eps90](https://github.com/eps90))
+- Clearer error message when TickTick requires a newer client version, including when sign-on fails with HTTP 500
+- Integration tests share the production device version
 
 ## Contributors
 
