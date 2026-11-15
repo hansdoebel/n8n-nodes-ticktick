@@ -12,6 +12,12 @@
 	<img alt="Static Badge" src="https://img.shields.io/badge/n8n-2.47.7-EA4B71?logo=n8n">
 </p>
 
+<div align="center">
+
+[![Greptile: The War on Bugs](https://www.greptile.com/badge.svg)](https://www.greptile.com/?utm_source=oss_badge&utm_medium=readme&utm_campaign=greptile_for_open_source)
+
+</div>
+
 <p align="center">
   <a href="#installation">Installation</a> |
   <a href="#credentials">Credentials</a> |
