@@ -21,8 +21,8 @@ After installation:
 ## Compatibility
 
 Tested with:
-- n8n 2.4.8
-- Node 22.21.1
-- Bun 1.3.8
+- n8n 2.47.7
+- Node 22
+- Bun 1.4.4 (repo requires Bun 1.4+)
 
-Last verified: 2026-02-01
+Last verified: 2026-11-15

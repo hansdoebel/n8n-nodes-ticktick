@@ -175,7 +175,7 @@ The trigger polls for newly created tasks. It is not offered as an AI tool. The 
 ```bash
 git clone https://github.com/hansdoebel/n8n-nodes-ticktick.git
 cd n8n-nodes-ticktick
-bun install
+bun install --frozen-lockfile
 bun run build
 bun run lint
 bun test tests/unit
