@@ -79,7 +79,6 @@ describe("TickTick V2 Authentication", () => {
 
 		if (response.body.errorCode) {
 			console.error("Error code:", response.body.errorCode);
-			console.error("Error message:", response.body.errorMessage);
 		}
 
 		if (response.body.authId && !response.body.token) {

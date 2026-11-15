@@ -126,6 +126,145 @@ describe("testTickTickSessionApi", () => {
 		expect(signal?.aborted).toBe(false);
 	});
 
+	function assertResultOmitsSecrets(
+		result: { status: string; message: string },
+		...secrets: string[]
+	) {
+		const blob = [result.status, result.message, JSON.stringify(result)].join("\n");
+		for (const secret of secrets) {
+			expect(blob.includes(secret)).toBe(false);
+			expect(blob.toLowerCase().includes(secret.toLowerCase())).toBe(false);
+		}
+	}
+
+	test("omits the email when TickTick returns it as the error message", async () => {
+		const password = "s3cret-password-value";
+		const username = `User.Name.${crypto.randomUUID()}@Example.com`;
+		const helpers = {
+			httpRequest: async () => ({
+				statusCode: 500,
+				body: JSON.stringify({
+					errorCode: "username_password_not_match",
+					errorMessage: username.toLowerCase(),
+				}),
+			}),
+		};
+		const context = { helpers } as unknown as ICredentialTestFunctions;
+
+		const result = await testTickTickSessionApi.call(
+			context,
+			credential(username, password),
+		);
+
+		expect(result.status).toBe("Error");
+		assertResultOmitsSecrets(result, username, password);
+		expect(result.message).toContain("HTTP 500");
+		expect(result.message).toContain("username_password_not_match");
+		expect(result.message).not.toContain("@");
+	});
+
+	test.each([401, 403, 502])(
+		"reports HTTP %s without the email or password",
+		async (statusCode) => {
+			const password = `pw-${statusCode}-secret`;
+			const username = `cred-${statusCode}-${crypto.randomUUID()}@example.com`;
+			const errorCode = statusCode === 502
+				? "internal_error"
+				: "username_password_not_match";
+			const helpers = {
+				httpRequest: async () => ({
+					statusCode,
+					body: JSON.stringify({
+						errorCode,
+						errorMessage: `failed for ${username}`,
+						password,
+					}),
+				}),
+			};
+			const context = { helpers } as unknown as ICredentialTestFunctions;
+
+			const result = await testTickTickSessionApi.call(
+				context,
+				credential(username, password),
+			);
+
+			expect(result.status).toBe("Error");
+			assertResultOmitsSecrets(result, username, password);
+			expect(result.message).toContain(`HTTP ${statusCode}`);
+			expect(result.message).toContain(errorCode);
+			expect(result.message).toContain("failed for");
+		},
+	);
+
+	test("omits the email from a 200 sign-on body that has no token", async () => {
+		const password = "s3cret-password-value";
+		const username = `nobody-${crypto.randomUUID()}@example.com`;
+		const helpers = {
+			httpRequest: async () => ({
+				statusCode: 200,
+				body: JSON.stringify({
+					errorCode: "username_password_not_match",
+					errorMessage: username,
+				}),
+			}),
+		};
+		const context = { helpers } as unknown as ICredentialTestFunctions;
+
+		const result = await testTickTickSessionApi.call(
+			context,
+			credential(username, password),
+		);
+
+		expect(result.status).toBe("Error");
+		assertResultOmitsSecrets(result, username, password);
+		expect(result.message).toContain("username_password_not_match");
+		expect(result.message).toContain("check your credentials");
+	});
+
+	test("omits the email from a thrown network error", async () => {
+		const password = "s3cret-password-value";
+		const username = `down-${crypto.randomUUID()}@example.com`;
+		const helpers = {
+			httpRequest: async () => {
+				throw new Error(`getaddrinfo ENOTFOUND while calling for ${username}`);
+			},
+		};
+		const context = { helpers } as unknown as ICredentialTestFunctions;
+
+		const result = await testTickTickSessionApi.call(
+			context,
+			credential(username, password),
+		);
+
+		expect(result.status).toBe("Error");
+		assertResultOmitsSecrets(result, username, password);
+		expect(result.message).toContain("getaddrinfo ENOTFOUND");
+	});
+
+	test("replaces a thrown error that contains the password and the email", async () => {
+		const password = "s3cret-password-value";
+		const username = `dump-${crypto.randomUUID()}@example.com`;
+		const helpers = {
+			httpRequest: async () => {
+				throw new Error(
+					`timeout posting {"username":"${username}","password":"${password}"}`,
+				);
+			},
+		};
+		const context = { helpers } as unknown as ICredentialTestFunctions;
+
+		const result = await testTickTickSessionApi.call(
+			context,
+			credential(username, password),
+		);
+
+		expect(result).toEqual({
+			status: "Error",
+			message: "Authentication failed",
+		});
+		assertResultOmitsSecrets(result, username, password);
+	});
+
 	test("reports an unexpected sign-on body", async () => {
 		const helpers = {
 			httpRequest: async () => ({

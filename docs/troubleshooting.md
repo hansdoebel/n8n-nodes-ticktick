@@ -26,6 +26,9 @@
 - Credentials are stored securely by n8n
 - Consider security implications for your use case
 - 2FA is not supported for Session API authentication
+- A wrong password is remembered for 10 minutes, and a network or HTTP 5xx sign-on failure for 30 seconds, so the node does not keep retrying
+- Sign-on errors do not include the account email or the password. They do include TickTick's error code and the HTTP status
+- Repeated wrong-password attempts against TickTick, including ones made outside this node, can lock the account (`incorrect_password_too_many_times`)
 
 ### General
 
@@ -54,3 +57,11 @@ A: Session tokens are valid for ~24 hours. The node automatically refreshes sess
 **Q: Can I use 2FA with the Session API?**
 
 A: No, 2FA is not supported. You'll need to disable 2FA on your TickTick account to use Session API authentication.
+
+**Q: Why did a wrong password stop retrying?**
+
+A: The node keeps a failed sign-on for 10 minutes when TickTick rejects the credentials, and for 30 seconds when the failure looks transient. That protects the account from TickTick's lockout. The error names the TickTick error code and HTTP status, and it leaves out the email and the password.
+
+**Q: Can an AI agent use the TickTick Trigger as a tool?**
+
+A: No. The trigger polls for new tasks and is not offered as an AI tool. The TickTick action node can still be used as a tool.

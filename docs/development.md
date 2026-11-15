@@ -9,23 +9,28 @@ n8n-nodes-ticktick/
 │   ├── TickTickSessionApi.credentials.ts
 │   └── TickTickTokenApi.credentials.ts
 ├── nodes/TickTick/                 # Main node implementation
-│   ├── TickTick.node.ts            # Node entry point
-│   ├── constants/                  # API constants
-│   ├── helpers/                    # Utility functions
-│   ├── resources/                  # Resource implementations
-│   └── types/                      # TypeScript types
-├── tests/                          # Test suite
+│   ├── TickTick.node.ts            # Action node
+│   ├── TickTickTrigger.node.ts     # Poll trigger (not an AI tool)
+│   ├── helpers/                    # API, session, and path helpers
+│   └── resources/                  # Resource implementations
+├── tests/unit/                     # Unit tests
+├── tests/integration/              # Live TickTick tests
 └── dist/                           # Build output
 ```
 
 ## Commands
 
+Requires Bun 1.4 or newer (lockfile version 2).
+
 ```bash
-bun run build      # Build with tsc + tsc-alias + icons
-bun run dev        # Development mode
-bun run lint       # ESLint check
-bun run lintfix    # ESLint auto-fix
-bun test           # Run all tests
+bun install            # Install from bun.lock
+bun run build          # Build with the n8n node CLI
+bun run dev            # Development mode
+bun run lint           # ESLint check
+bun run lint:fix       # ESLint auto-fix
+bun test tests/unit    # Unit tests
+bun test tests/integration  # Live API tests (needs .env)
+bun test               # All tests
 ```
 
 ## Adding a New Resource
@@ -63,7 +68,7 @@ Each resource has its own folder with:
 Dynamic dropdowns use `loadOptions` methods:
 ```typescript
 // Return INodePropertyOptions[] with name and value
-// Use this.helpers.requestWithAuthentication() for API calls
+// Call the API with this.helpers.httpRequest (or httpRequestWithAuthentication for V1)
 // Register in TickTick.node.ts under methods.loadOptions
 ```
 
@@ -79,10 +84,6 @@ Dynamic dropdowns use `loadOptions` methods:
 
 ## Publishing
 
-```bash
-npm version patch   # 2.1.1 -> 2.1.2
-npm version minor   # 2.1.1 -> 2.2.0
-npm version major   # 2.1.1 -> 3.0.0
+Publishing is the tag workflow in `.github/workflows/publish.yml`. Pushing a tag that matches `v*` on `main` runs it. Creating a GitHub Release does not. The workflow builds and tests in one job, then a second job publishes the packed tarball with npm trusted publishing (GitHub OIDC). It does not use an `NPM_TOKEN`.
 
-git push origin v2.1.2  # Triggers publish workflow
-```
+Bump `package.json` in a pull request. After that pull request is merged, the tag is pushed from `main`. Do not publish from a laptop with `npm publish`, and do not create the tag before the version bump is on `main`.

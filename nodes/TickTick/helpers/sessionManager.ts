@@ -31,6 +31,65 @@ export function v2SignonFailureMessage(
 	return errorMessage || "Please check your credentials.";
 }
 
+function escapeRegExp(value: string): string {
+	return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function secretVariants(
+	values: Array<string | undefined>,
+	flags: "g" | "gi",
+): Array<{ value: string; flags: "g" | "gi" }> {
+	const variants: Array<{ value: string; flags: "g" | "gi" }> = [];
+	for (const value of values) {
+		if (typeof value !== "string" || value.length === 0) continue;
+		const candidates = new Set<string>([value]);
+		const trimmed = value.trim();
+		if (trimmed.length > 0) candidates.add(trimmed);
+		const encoded = encodeURIComponent(trimmed || value);
+		if (encoded.length > 0 && encoded !== value && encoded !== trimmed) {
+			candidates.add(encoded);
+		}
+		for (const candidate of candidates) {
+			if (!variants.some((item) => item.value === candidate && item.flags === flags)) {
+				variants.push({ value: candidate, flags });
+			}
+		}
+	}
+	return variants;
+}
+
+/**
+ * Remove account emails and passwords from text that may be shown or logged.
+ * Emails are matched case-insensitively. Passwords are matched exactly.
+ * Longer secrets are removed first so a password that contains the email
+ * does not leave the rest of the address behind.
+ */
+export function redactCredentialSecrets(
+	text: string | undefined,
+	emails: Array<string | undefined>,
+	passwords: Array<string | undefined> = [],
+): string {
+	if (!text) return "";
+	const needles = [
+		...secretVariants(emails, "gi"),
+		...secretVariants(passwords, "g"),
+	].sort((a, b) => b.value.length - a.value.length);
+	let result = text;
+	for (const needle of needles) {
+		result = result.replace(new RegExp(escapeRegExp(needle.value), needle.flags), "");
+	}
+	return result
+		.replace(/[ \t]{2,}/g, " ")
+		.replace(/[ \t]+([,.;:])/g, "$1")
+		.trim();
+}
+
+function usableSignonText(text: string | undefined): string | undefined {
+	const trimmed = text?.trim();
+	if (!trimmed || !/[a-z0-9]/i.test(trimmed)) return undefined;
+	return trimmed;
+}
+
 type SignonContext =
 	| IExecuteFunctions
 	| ILoadOptionsFunctions
@@ -160,18 +219,31 @@ function stringField(
 	return typeof record[key] === "string" ? record[key] : undefined;
 }
 
+function safeSignonCode(
+	errorCode: string | undefined,
+	username: string,
+): string | undefined {
+	return usableSignonText(redactCredentialSecrets(errorCode, [username], []));
+}
+
 function throwSignonApiError(
 	context: SignonContext,
 	statusCode: number | undefined,
 	errorCode: string | undefined,
 	errorMessage: string | undefined,
+	username: string,
+	password: string,
 ): never {
-	const message = errorMessage
-		? v2SignonFailureMessage(errorCode, errorMessage)
+	const scrubbed = usableSignonText(
+		redactCredentialSecrets(errorMessage, [username], [password]),
+	);
+	const safeCode = safeSignonCode(errorCode, username);
+	const message = scrubbed
+		? v2SignonFailureMessage(safeCode, scrubbed)
 		: statusCode
 			? `TickTick sign-on failed (HTTP ${statusCode})`
 			: "TickTick sign-on request failed";
-	const description = errorCode ? `Error code: ${errorCode}` : undefined;
+	const description = safeCode ? `Error code: ${safeCode}` : undefined;
 	const payload: JsonObject = { message };
 	if (description) payload.description = description;
 
@@ -314,8 +386,13 @@ function isCredentialRejection(
 function cacheSignonFailure(key: string, email: string, error: unknown): void {
 	const safe = error instanceof NodeApiError
 		? {
-			message: error.message || "TickTick sign-on request failed",
-			description: error.description || undefined,
+			message: redactCredentialSecrets(
+				error.message || "TickTick sign-on request failed",
+				[email],
+			) || "TickTick sign-on request failed",
+			description: error.description
+				? usableSignonText(redactCredentialSecrets(error.description, [email]))
+				: undefined,
 			httpCode: error.httpCode || undefined,
 		}
 		: {
@@ -341,11 +418,16 @@ function throwCachedSignonFailure(
 	context: SignonContext,
 	failure: FailureCacheEntry,
 ): never {
-	const payload: JsonObject = { message: failure.message };
-	if (failure.description) payload.description = failure.description;
+	const message = redactCredentialSecrets(failure.message, [failure.email]) ||
+		"TickTick sign-on request failed";
+	const description = failure.description
+		? usableSignonText(redactCredentialSecrets(failure.description, [failure.email]))
+		: undefined;
+	const payload: JsonObject = { message };
+	if (description) payload.description = description;
 	throw new NodeApiError(context.getNode(), payload, {
-		message: failure.message,
-		description: failure.description,
+		message,
+		description,
 		httpCode: failure.httpCode,
 	});
 }
@@ -452,6 +534,8 @@ async function authenticateV2(
 			readHttpStatus(error),
 			errorCode,
 			errorMessage,
+			username,
+			password,
 		);
 	}
 
@@ -487,13 +571,17 @@ async function authenticateV2(
 	}
 
 	if (!token) {
+		const scrubbed = usableSignonText(
+			redactCredentialSecrets(errorMessage, [username], [password]),
+		);
+		const safeCode = safeSignonCode(errorCode, username);
 		throw new NodeApiError(
 			context.getNode(),
 			{
 				message: `Failed to obtain session token from TickTick. ${
-					v2SignonFailureMessage(errorCode, errorMessage)
+					v2SignonFailureMessage(safeCode, scrubbed)
 				}`,
-				description: errorCode ? `Error code: ${errorCode}` : undefined,
+				description: safeCode ? `Error code: ${safeCode}` : undefined,
 			} as JsonObject,
 		);
 	}
