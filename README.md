@@ -179,7 +179,7 @@ npm run lint
 Contributions are welcome! Please open an [issue](https://github.com/hansdoebel/n8n-nodes-ticktick/issues) or [pull request](https://github.com/hansdoebel/n8n-nodes-ticktick/pulls).
 
 <p align="left">
-    <a href="https://github.com/mrozekadam"><img src="https://avatars.githubusercontent.com/u/56890953?v=4&s=48" width="48" height="48" alt="mrozekadam" title="mrozekadam"/></a><a href="https://github.com/kazhuravlev"><img src="https://avatars.githubusercontent.com/u/7666955?v=4&s=48" width="48" height="48" alt="kazhuravlev" title="kazhuravlev"/></a>
+    <a href="https://github.com/mrozekadam"><img src="https://avatars.githubusercontent.com/u/56890953?v=4&s=48" width="48" height="48" alt="mrozekadam" title="mrozekadam"/></a><a href="https://github.com/kazhuravlev"><img src="https://avatars.githubusercontent.com/u/7666955?v=4&s=48" width="48" height="48" alt="kazhuravlev" title="kazhuravlev"/></a><a href="https://github.com/eps90"><img src="https://avatars.githubusercontent.com/u/1702899?v=4&s=48" width="48" height="48" alt="eps90" title="eps90"/></a>
 </p>
 
 ## License

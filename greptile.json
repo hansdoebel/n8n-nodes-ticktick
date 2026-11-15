@@ -1,0 +1,3 @@
+{
+	"ignorePatterns": "README.md\n*.md\ndocs/**"
+}
