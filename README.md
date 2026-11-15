@@ -9,7 +9,7 @@
 	<img alt="GitHub License" src="https://img.shields.io/github/license/hansdoebel/n8n-nodes-ticktick">
 	<img alt="NPM Downloads" src="https://img.shields.io/npm/dm/n8n-nodes-ticktick">
 	<img alt="NPM Last Update" src="https://img.shields.io/npm/last-update/n8n-nodes-ticktick">
-	<img alt="Static Badge" src="https://img.shields.io/badge/n8n-2.21.7-EA4B71?logo=n8n">
+	<img alt="Static Badge" src="https://img.shields.io/badge/n8n-2.47.7-EA4B71?logo=n8n">
 </p>
 
 <p align="center">
@@ -179,7 +179,7 @@ npm run lint
 Contributions are welcome! Please open an [issue](https://github.com/hansdoebel/n8n-nodes-ticktick/issues) or [pull request](https://github.com/hansdoebel/n8n-nodes-ticktick/pulls).
 
 <p align="left">
-    <a href="https://github.com/mrozekadam"><img src="https://avatars.githubusercontent.com/u/56890953?v=4&s=48" width="48" height="48" alt="mrozekadam" title="mrozekadam"/></a><a href="https://github.com/kazhuravlev"><img src="https://avatars.githubusercontent.com/u/7666955?v=4&s=48" width="48" height="48" alt="kazhuravlev" title="kazhuravlev"/></a>
+    <a href="https://github.com/mrozekadam"><img src="https://avatars.githubusercontent.com/u/56890953?v=4&s=48" width="48" height="48" alt="mrozekadam" title="mrozekadam"/></a><a href="https://github.com/kazhuravlev"><img src="https://avatars.githubusercontent.com/u/7666955?v=4&s=48" width="48" height="48" alt="kazhuravlev" title="kazhuravlev"/></a><a href="https://github.com/eps90"><img src="https://avatars.githubusercontent.com/u/1702899?v=4&s=48" width="48" height="48" alt="eps90" title="eps90"/></a>
 </p>
 
 ## License
