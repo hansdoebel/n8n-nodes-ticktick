@@ -271,7 +271,6 @@ export class TickTickTrigger implements INodeType {
 				],
 			},
 		],
-		usableAsTool: true,
 	};
 
 	methods = {
